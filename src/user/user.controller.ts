@@ -2,18 +2,20 @@ import {
     Body,
     Controller,
     Get,
+    HttpCode,
+    HttpStatus,
     Patch,
     Post,
     Req,
     UseGuards,
 } from '@nestjs/common';
 import { UserService } from './user.service';
-import { SuccessResponse } from 'src/common';
 import { AtJwtGuard } from 'src/auth/guards';
 import { GetEmail } from 'src/common/decorators/';
 import { ForgetPassDto, UpdateUserDto } from './dto';
 import { CreateUserEmailDto } from 'src/auth/dto';
 import { Request } from 'express';
+import { SuccessResponse } from 'src/common/response';
 
 @Controller('/api/v1/users')
 export class UserController {
@@ -21,6 +23,7 @@ export class UserController {
 
     @Get('profile')
     @UseGuards(AtJwtGuard)
+    @HttpCode(HttpStatus.OK)
     async getProfile(@GetEmail() email: string): Promise<SuccessResponse> {
         return {
             code: 200,
@@ -32,6 +35,7 @@ export class UserController {
 
     @Post('change-pass')
     @UseGuards(AtJwtGuard)
+    @HttpCode(HttpStatus.OK)
     async changePass(
         @Body() forgetPassDto: ForgetPassDto,
     ): Promise<SuccessResponse> {
@@ -45,6 +49,7 @@ export class UserController {
 
     @Post('reset-pass')
     @UseGuards(AtJwtGuard)
+    @HttpCode(HttpStatus.OK)
     async resetPass(
         @Body() createUserEmailDto: CreateUserEmailDto,
     ): Promise<SuccessResponse> {
@@ -58,6 +63,7 @@ export class UserController {
 
     @Patch('profile')
     @UseGuards(AtJwtGuard)
+    @HttpCode(HttpStatus.OK)
     async updateProfile(
         @Req() req: Request,
         @Body() updateUserDto: UpdateUserDto,

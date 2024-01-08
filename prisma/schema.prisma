@@ -17,7 +17,8 @@ model Banner {
   title      String   @unique
   image      String
   link       String
-  status     String
+  status     String   @default("show")
+  slug       String
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
 
@@ -93,12 +94,12 @@ model Product {
   review          Review[]
   Cart            Cart[]
   is_sale         Boolean         @default(false)
-  is_delete       Boolean         @default(false)
+  is_deleted      Boolean         @default(false)
   slug            String
   created_at      DateTime        @default(now())
   updated_at      DateTime        @updatedAt
 
-  @@index([slug, is_sale, stock, discount, is_delete])
+  @@index([slug, is_sale, stock, discount, is_deleted])
   @@map("products")
 }
 
@@ -134,26 +135,26 @@ model Brand {
   description String?
   logo_url    String
   products    Product[]
-  is_delete   Boolean   @default(false)
+  is_deleted  Boolean   @default(false)
   slug        String
   created_at  DateTime  @default(now())
   updated_at  DateTime  @updatedAt
 
-  @@index([slug, is_delete])
+  @@index([slug, is_deleted])
   @@map("brands")
 }
 
 model Category {
   id          Int       @id @default(autoincrement())
   name        String
-  description String
+  description String?
   products    Product[]
-  is_delete   Boolean   @default(false)
+  is_deleted  Boolean   @default(false)
   slug        String
   created_at  DateTime  @default(now())
   updated_at  DateTime  @updatedAt
 
-  @@index([slug, is_delete])
+  @@index([slug, is_deleted])
   @@map("categories")
 }
 

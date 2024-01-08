@@ -14,9 +14,9 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import * as bcrypt from 'bcrypt';
 import { UserService } from 'src/user/user.service';
-import { JwtPayload } from 'src/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
+import { JwtPayload } from 'src/common/types';
 
 @Injectable()
 export class AuthService {
@@ -58,7 +58,7 @@ export class AuthService {
         });
 
         return {
-            id_success: isUpdated ? true : false,
+            is_success: isUpdated ? true : false,
         };
     }
 
@@ -123,7 +123,7 @@ export class AuthService {
         }
 
         return {
-            id_success: true,
+            is_success: true,
         };
     }
 
@@ -193,7 +193,7 @@ export class AuthService {
         }
 
         return {
-            id_success: true,
+            is_success: true,
         };
     }
 

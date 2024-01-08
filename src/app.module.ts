@@ -8,6 +8,9 @@ import { MailModule } from './mail/mail.module';
 import { BullModule } from '@nestjs/bull';
 import { APP_GUARD } from '@nestjs/core';
 import { MongooseModule } from '@nestjs/mongoose';
+import { BrandModule } from './brand/brand.module';
+import { BannerModule } from './banner/banner.module';
+import { CategoryModule } from './category/category.module';
 
 @Module({
     imports: [
@@ -39,6 +42,9 @@ import { MongooseModule } from '@nestjs/mongoose';
         AuthModule,
         UserModule,
         MailModule,
+        BrandModule,
+        BannerModule,
+        CategoryModule,
     ],
     controllers: [],
     providers: [

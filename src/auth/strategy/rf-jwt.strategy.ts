@@ -3,7 +3,7 @@ import { PassportStrategy } from '@nestjs/passport';
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { UserService } from 'src/user/user.service';
-import { JwtPayload } from 'src/common';
+import { JwtPayload } from 'src/common/types';
 import { Request } from 'express';
 import * as bcrypt from 'bcrypt';
 
