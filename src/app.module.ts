@@ -11,6 +11,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { BrandModule } from './brand/brand.module';
 import { BannerModule } from './banner/banner.module';
 import { CategoryModule } from './category/category.module';
+import { ProductModule } from './product/product.module';
 
 @Module({
     imports: [
@@ -45,6 +46,7 @@ import { CategoryModule } from './category/category.module';
         BrandModule,
         BannerModule,
         CategoryModule,
+        ProductModule,
     ],
     controllers: [],
     providers: [

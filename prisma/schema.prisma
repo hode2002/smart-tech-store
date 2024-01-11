@@ -62,71 +62,98 @@ model User {
 }
 
 model Cart {
-  id         Int      @id @default(autoincrement())
-  user       User     @relation(fields: [user_id], references: [id])
-  user_id    Int      @unique
-  product    Product? @relation(fields: [product_id], references: [id])
-  product_id Int?
-  quantity   Int      @default(1)
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
+  id                Int           @id @default(autoincrement())
+  user              User          @relation(fields: [user_id], references: [id])
+  user_id           Int           @unique
+  product           Product       @relation(fields: [product_id], references: [id])
+  product_id        Int
+  product_option    ProductOption @relation(fields: [product_option_id], references: [id])
+  product_option_id Int
+  quantity          Int           @default(1)
+  created_at        DateTime      @default(now())
+  updated_at        DateTime      @updatedAt
 
   @@index([user_id])
   @@map("carts")
 }
 
 model Product {
-  id              Int             @id @default(autoincrement())
+  id              Int                  @id @default(autoincrement())
   name            String
-  description     String
-  thumbnail       String
-  brand           Brand           @relation(fields: [brand_id], references: [id])
+  descriptions    ProductDescription[]
+  brand           Brand                @relation(fields: [brand_id], references: [id])
   brand_id        Int
-  category        Category        @relation(fields: [category_id], references: [id])
+  category        Category             @relation(fields: [category_id], references: [id])
   category_id     Int
   price           Float
-  stock           Int             @default(0)
-  discount        Float           @default(0)
-  release_date    DateTime        @default(now())
-  product_images  ProductImage[]
   product_options ProductOption[]
-  orderDetail     OrderDetail?
-  review          Review[]
-  Cart            Cart[]
-  is_sale         Boolean         @default(false)
-  is_deleted      Boolean         @default(false)
-  slug            String
-  created_at      DateTime        @default(now())
-  updated_at      DateTime        @updatedAt
+  orderDetail     OrderDetail[]
+  reviews         Review[]
+  cart            Cart[]
+  created_at      DateTime             @default(now())
+  updated_at      DateTime             @updatedAt
 
-  @@index([slug, is_sale, stock, discount, is_deleted])
   @@map("products")
 }
 
-model ProductImage {
-  id             Int      @id @default(autoincrement())
-  product        Product  @relation(fields: [product_id], references: [id])
+model ProductOption {
+  id             Int            @id @default(autoincrement())
+  product        Product        @relation(fields: [product_id], references: [id])
   product_id     Int
-  image_url      String
-  image_alt_text String?
-  created_at     DateTime @default(now())
-  updated_at     DateTime @updatedAt
+  thumbnail      String
+  product_images ProductImage[]
+  price_modifier Float          @default(0)
+  stock          Int            @default(0)
+  SKU            String
+  discount       Float          @default(0)
+  is_sale        Boolean        @default(false)
+  is_deleted     Boolean        @default(false)
+  slug           String
+  options        Options[]
+  reviews        Review[]
+  orderDetail    OrderDetail[]
+  cart           Cart[]
+  created_at     DateTime       @default(now())
+  updated_at     DateTime       @updatedAt
 
-  @@index([product_id])
-  @@map("product_images")
+  @@index([slug, is_sale, is_deleted])
+  @@map("product_option")
 }
 
-model ProductOption {
+model Options {
+  id                Int           @id @default(autoincrement())
+  product_option    ProductOption @relation(fields: [product_option_id], references: [id])
+  product_option_id Int
+  name              String
+  value             String
+  additional_cost   Float         @default(0)
+
+  @@index([name, value])
+  @@map("options")
+}
+
+model ProductDescription {
   id         Int      @id @default(autoincrement())
   product    Product  @relation(fields: [product_id], references: [id])
   product_id Int
-  name       String
-  value      String
+  content    String
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
 
-  @@index([name, value])
-  @@map("product_option")
+  @@index([product_id])
+  @@map("product_descriptions")
+}
+
+model ProductImage {
+  id                Int           @id @default(autoincrement())
+  ProductOption     ProductOption @relation(fields: [product_option_id], references: [id])
+  product_option_id Int
+  image_url         String
+  image_alt_text    String?
+  created_at        DateTime      @default(now())
+  updated_at        DateTime      @updatedAt
+
+  @@map("product_images")
 }
 
 model Brand {
@@ -178,16 +205,18 @@ model Order {
 }
 
 model OrderDetail {
-  id         Int      @id @default(autoincrement())
-  order      Order    @relation(fields: [order_id], references: [id])
-  order_id   Int      @unique
-  product    Product  @relation(fields: [product_id], references: [id])
-  product_id Int      @unique
-  quantity   Int      @default(1)
-  price      Float
-  subtotal   Float
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
+  id                Int           @id @default(autoincrement())
+  order             Order         @relation(fields: [order_id], references: [id])
+  order_id          Int           @unique
+  product           Product       @relation(fields: [product_id], references: [id])
+  product_id        Int           @unique
+  productOption     ProductOption @relation(fields: [product_option_id], references: [id])
+  product_option_id Int           @unique
+  quantity          Int           @default(1)
+  price             Float
+  subtotal          Float
+  created_at        DateTime      @default(now())
+  updated_at        DateTime      @updatedAt
 
   @@map("order_details")
 }
@@ -231,15 +260,17 @@ model HistorySearch {
 }
 
 model Review {
-  id         Int      @id @default(autoincrement())
-  user       User     @relation(fields: [user_id], references: [id])
-  user_id    Int
-  product    Product  @relation(fields: [product_id], references: [id])
-  product_id Int
-  star       Float    @default(5)
-  comment    String
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
+  id                Int           @id @default(autoincrement())
+  user              User          @relation(fields: [user_id], references: [id])
+  user_id           Int
+  product           Product       @relation(fields: [product_id], references: [id])
+  product_id        Int
+  productOption     ProductOption @relation(fields: [product_option_id], references: [id])
+  product_option_id Int
+  star              Float         @default(5)
+  comment           String
+  created_at        DateTime      @default(now())
+  updated_at        DateTime      @updatedAt
 
   @@index([star])
   @@map("reviews")
