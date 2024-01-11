@@ -45,7 +45,7 @@ model User {
   email          String          @unique
   password       String?
   name           String?
-  avatar         String?         @default("https://t3.ftcdn.net/jpg/03/64/62/36/360_F_364623623_ERzQYfO4HHHyawYkJ16tREsizLyvcaeg.jpg")
+  avatar         String?         @default("default.jpg")
   phone          String?
   cart           Cart?
   orders         Order[]

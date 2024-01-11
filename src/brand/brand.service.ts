@@ -1,17 +1,23 @@
 import {
     ConflictException,
     Injectable,
+    InternalServerErrorException,
     NotFoundException,
 } from '@nestjs/common';
 import { CreateBrandDto, UpdateBrandDto } from './dto';
 import { PrismaService } from './../prisma/prisma.service';
 import slugify from 'slugify';
+import { FileUploadDto } from 'src/media/dto';
+import { MediaService } from 'src/media/media.service';
 
 @Injectable()
 export class BrandService {
-    constructor(private readonly prismaService: PrismaService) {}
+    constructor(
+        private readonly prismaService: PrismaService,
+        private readonly mediaService: MediaService,
+    ) {}
 
-    async create(createBrandDto: CreateBrandDto) {
+    async create(createBrandDto: CreateBrandDto, fileUploadDto: FileUploadDto) {
         const slug = slugify(createBrandDto.name, {
             replacement: '-',
             remove: undefined,
@@ -26,9 +32,20 @@ export class BrandService {
             throw new ConflictException('Brand Already Exists');
         }
 
+        const res = await this.mediaService.upload(fileUploadDto);
+        if (!res?.is_success) {
+            throw new InternalServerErrorException('Internal Server Error');
+        }
+
+        const awsKey = res?.key;
+        if (!awsKey) {
+            throw new InternalServerErrorException('Internal Server Error');
+        }
+
         return await this.prismaService.brand.create({
             data: {
                 ...createBrandDto,
+                logo_url: awsKey,
                 slug,
             },
             select: {
@@ -86,17 +103,31 @@ export class BrandService {
         return brand;
     }
 
-    async update(id: number, updateBrandDto: UpdateBrandDto) {
-        const isExist = await this.prismaService.category.findUnique({
-            where: { id },
-        });
-        if (!isExist) {
-            throw new NotFoundException('Brand Not Found');
+    async update(
+        id: number,
+        updateBrandDto: UpdateBrandDto,
+        fileUploadDto: FileUploadDto,
+    ) {
+        const brand = await this.findById(id);
+
+        const res = await this.mediaService.upload(fileUploadDto);
+        if (!res?.is_success) {
+            throw new InternalServerErrorException('Internal Server Error');
         }
+
+        const awsKey = res?.key;
+        if (!awsKey) {
+            throw new InternalServerErrorException('Internal Server Error');
+        }
+
+        await this.mediaService.deleteFileS3(brand.logo_url);
 
         return await this.prismaService.brand.update({
             where: { id },
-            data: updateBrandDto,
+            data: {
+                ...updateBrandDto,
+                logo_url: awsKey,
+            },
             select: {
                 id: true,
                 name: true,
@@ -110,9 +141,23 @@ export class BrandService {
     async remove(id: number) {
         const isExist = await this.findById(id);
         if (!isExist) {
-            throw new NotFoundException('Brand Not Found');
+            throw new NotFoundException('Banner Not Found');
         }
 
-        return await this.update(id, { is_deleted: true });
+        const isDeleted = await this.prismaService.brand.update({
+            where: { id },
+            data: { is_deleted: true },
+            select: {
+                id: true,
+                name: true,
+                logo_url: true,
+                description: true,
+                slug: true,
+            },
+        });
+
+        return {
+            is_success: isDeleted ? true : false,
+        };
     }
 }

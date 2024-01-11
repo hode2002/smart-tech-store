@@ -7,7 +7,9 @@ import {
     Patch,
     Post,
     Req,
+    UploadedFile,
     UseGuards,
+    UseInterceptors,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { AtJwtGuard } from 'src/auth/guards';
@@ -16,6 +18,8 @@ import { ForgetPassDto, UpdateUserDto } from './dto';
 import { CreateUserEmailDto } from 'src/auth/dto';
 import { Request } from 'express';
 import { SuccessResponse } from 'src/common/response';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { FileUploadDto } from 'src/media/dto';
 
 @Controller('/api/v1/users')
 export class UserController {
@@ -76,6 +80,22 @@ export class UserController {
                 req.user['email'],
                 updateUserDto,
             ),
+        };
+    }
+
+    @Patch('avatar')
+    @UseGuards(AtJwtGuard)
+    @UseInterceptors(FileInterceptor('avatar'))
+    @HttpCode(HttpStatus.OK)
+    async upload(
+        @GetEmail() email: string,
+        @UploadedFile() file: FileUploadDto,
+    ): Promise<SuccessResponse> {
+        return {
+            code: 200,
+            status: 'Success',
+            message: 'Update avatar success',
+            data: await this.userService.updateAvatar(email, file),
         };
     }
 }

@@ -7,9 +7,5 @@ export class CreateBannerDto {
 
     @IsString()
     @IsNotEmpty()
-    image: string;
-
-    @IsString()
-    @IsNotEmpty()
     link: string;
 }

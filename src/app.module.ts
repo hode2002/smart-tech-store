@@ -12,6 +12,7 @@ import { BrandModule } from './brand/brand.module';
 import { BannerModule } from './banner/banner.module';
 import { CategoryModule } from './category/category.module';
 import { ProductModule } from './product/product.module';
+import { MediaModule } from './media/media.module';
 
 @Module({
     imports: [
@@ -47,6 +48,7 @@ import { ProductModule } from './product/product.module';
         BannerModule,
         CategoryModule,
         ProductModule,
+        MediaModule,
     ],
     controllers: [],
     providers: [
