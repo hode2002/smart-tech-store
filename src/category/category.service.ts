@@ -43,7 +43,6 @@ export class CategoryService {
 
     async findAll() {
         return await this.prismaService.category.findMany({
-            where: { is_deleted: false },
             select: {
                 id: true,
                 name: true,
