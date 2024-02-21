@@ -69,26 +69,28 @@ export class BannerService {
                 image: true,
                 link: true,
                 slug: true,
+                status: true,
             },
         });
     }
 
     async findBySlug(slug: string) {
         return await this.prismaService.banner.findFirst({
-            where: { slug },
+            where: { slug, status: 'show' },
             select: {
                 id: true,
                 title: true,
                 image: true,
                 link: true,
                 slug: true,
+                status: true,
             },
         });
     }
 
     async findById(id: number) {
         const banner = await this.prismaService.banner.findUnique({
-            where: { id },
+            where: { id, status: 'show' },
             select: {
                 id: true,
                 title: true,

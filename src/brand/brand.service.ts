@@ -60,7 +60,6 @@ export class BrandService {
 
     async findAll() {
         return await this.prismaService.brand.findMany({
-            where: { is_deleted: false },
             select: {
                 id: true,
                 name: true,
