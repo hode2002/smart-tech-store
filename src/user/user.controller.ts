@@ -14,7 +14,7 @@ import {
 import { UserService } from './user.service';
 import { AtJwtGuard } from 'src/auth/guards';
 import { GetEmail } from 'src/common/decorators/';
-import { ForgetPassDto, UpdateUserDto } from './dto';
+import { ChangePasswordDto, UpdateUserDto } from './dto';
 import { CreateUserEmailDto } from 'src/auth/dto';
 import { Request } from 'express';
 import { SuccessResponse } from 'src/common/response';
@@ -37,22 +37,21 @@ export class UserController {
         };
     }
 
-    @Post('change-pass')
+    @Post('change-password')
     @UseGuards(AtJwtGuard)
     @HttpCode(HttpStatus.OK)
     async changePass(
-        @Body() forgetPassDto: ForgetPassDto,
+        @Body() changePasswordDto: ChangePasswordDto,
     ): Promise<SuccessResponse> {
         return {
             code: 200,
             status: 'Success',
             message: 'Change password success',
-            data: await this.userService.changePass(forgetPassDto),
+            data: await this.userService.changePassword(changePasswordDto),
         };
     }
 
-    @Post('reset-pass')
-    @UseGuards(AtJwtGuard)
+    @Post('reset-password')
     @HttpCode(HttpStatus.OK)
     async resetPass(
         @Body() createUserEmailDto: CreateUserEmailDto,
@@ -61,7 +60,7 @@ export class UserController {
             code: 200,
             status: 'Success',
             message: 'Send new password success',
-            data: await this.userService.resetPass(createUserEmailDto),
+            data: await this.userService.resetPassword(createUserEmailDto),
         };
     }
 

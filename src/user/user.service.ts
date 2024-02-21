@@ -6,7 +6,7 @@ import {
     NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from './../prisma/prisma.service';
-import { ForgetPassDto, UpdateUserDto } from './dto';
+import { ChangePasswordDto, UpdateUserDto } from './dto';
 import { CreateUserEmailDto } from 'src/auth/dto';
 import * as bcrypt from 'bcrypt';
 import * as passwordGenerator from 'generate-password';
@@ -80,8 +80,8 @@ export class UserService {
         });
     }
 
-    async changePass(forgetPassDto: ForgetPassDto) {
-        const { email, newPass, oldPass } = forgetPassDto;
+    async changePassword(changePasswordDto: ChangePasswordDto) {
+        const { email, newPass, oldPass } = changePasswordDto;
 
         const user = await this.findByEmail(email);
         if (!user) {
@@ -133,14 +133,14 @@ export class UserService {
         return isUpdated;
     }
 
-    async resetPass({ email }: { email: string }) {
+    async resetPassword({ email }: { email: string }) {
         const user = await this.findByEmail(email);
         if (!user) {
             throw new NotFoundException('Email Not Found');
         }
 
         const newPass = passwordGenerator.generate({
-            length: 6,
+            length: 10,
             lowercase: true,
             uppercase: true,
             numbers: true,
