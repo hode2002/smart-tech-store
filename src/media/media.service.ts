@@ -22,7 +22,7 @@ export class MediaService {
 
         return {
             is_success: true,
-            key,
+            key: this.configService.get('AWS_BASE_URL') + key,
         };
     }
 
@@ -57,7 +57,7 @@ export class MediaService {
         const s3 = this.createInstanceS3();
         const params = {
             Bucket: this.configService.get('AWS_PUBLIC_BUCKET_NAME'),
-            Key: key,
+            Key: key.replace(this.configService.get('AWS_BASE_URL'), '').trim(),
         };
 
         // eslint-disable-next-line
