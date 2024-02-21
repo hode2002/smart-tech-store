@@ -27,17 +27,33 @@ model Banner {
 }
 
 model Coupon {
-  id               Int      @id @default(autoincrement())
-  name             String   @unique
-  description      String?
-  discount_percent Float    @default(0)
-  start_date       DateTime
-  end_date         DateTime
-  created_at       DateTime @default(now())
-  updated_at       DateTime @updatedAt
+  id                Int               @id @default(autoincrement())
+  name              String            @unique
+  description       String?
+  discount_percent  Float             @default(0)
+  start_date        DateTime
+  end_date          DateTime
+  is_active         Boolean
+  status            Int               @default(1)
+  created_at        DateTime          @default(now())
+  updated_at        DateTime          @updatedAt
+  product_to_coupon ProductToCoupon[]
 
   @@index([name, start_date, end_date])
   @@map("coupons")
+}
+
+model ProductToCoupon {
+  id              Int      @id @default(autoincrement())
+  product         Product  @relation(fields: [product_id], references: [id])
+  product_id      Int
+  coupon          Coupon   @relation(fields: [coupon_id], references: [id])
+  coupon_id       Int
+  activation_date DateTime
+  created_at      DateTime @default(now())
+  updated_at      DateTime @updatedAt
+
+  @@map("product_to_coupon")
 }
 
 model User {
@@ -78,20 +94,24 @@ model Cart {
 }
 
 model Product {
-  id              Int                  @id @default(autoincrement())
-  name            String
-  descriptions    ProductDescription[]
-  brand           Brand                @relation(fields: [brand_id], references: [id])
-  brand_id        Int
-  category        Category             @relation(fields: [category_id], references: [id])
-  category_id     Int
-  price           Float
-  product_options ProductOption[]
-  orderDetail     OrderDetail[]
-  reviews         Review[]
-  cart            Cart[]
-  created_at      DateTime             @default(now())
-  updated_at      DateTime             @updatedAt
+  id                Int                  @id @default(autoincrement())
+  name              String
+  descriptions      ProductDescription[]
+  brand             Brand                @relation(fields: [brand_id], references: [id])
+  brand_id          Int
+  category          Category             @relation(fields: [category_id], references: [id])
+  category_id       Int
+  price             Float
+  promotions        Json
+  warranties        Json
+  label             String
+  product_options   ProductOption[]
+  orderDetail       OrderDetail[]
+  reviews           Review[]
+  cart              Cart[]
+  product_to_coupon ProductToCoupon[]
+  created_at        DateTime             @default(now())
+  updated_at        DateTime             @updatedAt
 
   @@map("products")
 }
@@ -102,6 +122,7 @@ model ProductOption {
   product_id     Int
   thumbnail      String
   product_images ProductImage[]
+  label_image    String
   price_modifier Float          @default(0)
   stock          Int            @default(0)
   SKU            String
@@ -189,13 +210,14 @@ model Order {
   id            Int           @id @default(autoincrement())
   User          User          @relation(fields: [user_id], references: [id])
   user_id       Int
+  name          String
+  phone_number  String
   delivery      Delivery?
   order_date    DateTime?
   total_amount  Float         @default(0)
   payment_id    Payment?
   order_details OrderDetail[]
   address       String
-  phone         String
   status        Int           @default(0)
   created_at    DateTime      @default(now())
   updated_at    DateTime      @updatedAt
