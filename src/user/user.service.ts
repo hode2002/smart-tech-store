@@ -7,14 +7,13 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from './../prisma/prisma.service';
 import { ChangePasswordDto, UpdateUserDto } from './dto';
-import { CreateUserEmailDto } from 'src/auth/dto';
+import { CreateUserEmailDto, ThirdPartyLoginDto } from 'src/auth/dto';
 import * as bcrypt from 'bcrypt';
 import * as passwordGenerator from 'generate-password';
 import { InjectQueue } from '@nestjs/bull';
 import { Queue } from 'bull';
 import { FileUploadDto } from 'src/media/dto';
 import { MediaService } from 'src/media/media.service';
-import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class UserService {
@@ -23,8 +22,24 @@ export class UserService {
         private readonly queue: Queue,
         private readonly prismaService: PrismaService,
         private readonly mediaService: MediaService,
-        private readonly configService: ConfigService,
     ) {}
+
+    async create3rdPartyAuthentication(thirdPartyLoginDto: ThirdPartyLoginDto) {
+        const { email, avatar } = thirdPartyLoginDto;
+
+        const isExist = await this.findByEmail(email);
+        if (isExist) {
+            throw new ConflictException('Email Already Exists');
+        }
+
+        return await this.prismaService.user.create({
+            data: {
+                email,
+                is_active: true,
+                avatar,
+            },
+        });
+    }
 
     async createEmail(createUserEmailDto: CreateUserEmailDto) {
         const { email } = createUserEmailDto;
