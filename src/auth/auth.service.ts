@@ -5,7 +5,7 @@ import {
     InternalServerErrorException,
 } from '@nestjs/common';
 import { CreateUserDto } from 'src/user/dto';
-import { CreateUserEmailDto } from './dto';
+import { CreateUserEmailDto, EmailVerificationDto } from './dto';
 import { Queue } from 'bull';
 import { InjectQueue } from '@nestjs/bull';
 import * as otpGenerator from 'otp-generator';
@@ -29,6 +29,19 @@ export class AuthService {
         private readonly jwtService: JwtService,
         private readonly configService: ConfigService,
     ) {}
+
+    async emailVerification(createUserEmailDto: CreateUserEmailDto) {
+        const { email } = createUserEmailDto;
+
+        const response = await fetch(
+            this.configService.get('MAIL_VERIFICATION_URL') + email,
+        );
+
+        const data = (await response.json()) as EmailVerificationDto;
+        return {
+            email_available: data.smtpCheck,
+        };
+    }
 
     async register(createUserEmailDto: CreateUserEmailDto) {
         const { email } = createUserEmailDto;

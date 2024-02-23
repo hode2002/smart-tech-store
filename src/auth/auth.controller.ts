@@ -18,6 +18,18 @@ import { SuccessResponse } from 'src/common/response';
 export class AuthController {
     constructor(private readonly authService: AuthService) {}
 
+    @Post('email-verification')
+    async emailVerification(
+        @Body() createUserEmailDto: CreateUserEmailDto,
+    ): Promise<SuccessResponse> {
+        return {
+            code: 200,
+            status: 'Success',
+            message: 'Email verification',
+            data: await this.authService.emailVerification(createUserEmailDto),
+        };
+    }
+
     @Post('register')
     @Throttle({ default: { limit: 3, ttl: 60000 } })
     async register(
