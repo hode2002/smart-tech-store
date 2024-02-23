@@ -126,7 +126,7 @@ export class UserService {
         }
 
         const oldAvatar = user?.avatar;
-        if (oldAvatar !== 'default.jpg') {
+        if (!oldAvatar.includes('default.jpg')) {
             await this.mediaService.deleteFileS3(oldAvatar);
         }
 
