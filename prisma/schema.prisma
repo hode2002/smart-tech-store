@@ -61,7 +61,7 @@ model User {
   email          String          @unique
   password       String?
   name           String?
-  avatar         String?         @default("default.jpg")
+  avatar         String?         @default("https://ct466-project.s3.ap-southeast-2.amazonaws.com/default.jpg")
   phone          String?
   cart           Cart?
   orders         Order[]
