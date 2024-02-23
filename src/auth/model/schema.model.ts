@@ -1,9 +1,9 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument } from 'mongoose';
 
-export type CatDocument = HydratedDocument<Otp>;
+export type OtpDocument = HydratedDocument<Otp>;
 
-@Schema()
+@Schema({})
 export class Otp {
     @Prop()
     email: string;
@@ -11,13 +11,8 @@ export class Otp {
     @Prop()
     otpCode: string;
 
-    @Prop({
-        index: {
-            expireAfterSeconds: 60 * 5, //5m
-            default: Date.now(),
-        },
-    })
-    time?: Date;
+    @Prop({ type: Date, expires: 300, default: Date.now })
+    createdAt: Date;
 }
 
 export const OtpSchema = SchemaFactory.createForClass(Otp);
