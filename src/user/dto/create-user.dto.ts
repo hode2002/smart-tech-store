@@ -5,9 +5,10 @@ export class CreateUserDto {
     @IsEmail()
     email: string;
 
-    @Matches(/^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{6,}$/, {
+    @IsNotEmpty()
+    @Matches(/^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?!.* ).{6,}$/, {
         message:
-            'Password must be at least 6 characters and must contain 1 lowercase character',
+            'Password must contain one digit from 1 to 9, one lowercase letter, one uppercase letter and it must be 6 characters long.',
     })
     password: string;
 }
