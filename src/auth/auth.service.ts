@@ -5,7 +5,11 @@ import {
     InternalServerErrorException,
 } from '@nestjs/common';
 import { CreateUserDto } from 'src/user/dto';
-import { CreateUserEmailDto, EmailVerificationDto } from './dto';
+import {
+    CreateUserEmailDto,
+    EmailVerificationDto,
+    ThirdPartyLoginDto,
+} from './dto';
 import { Queue } from 'bull';
 import { InjectQueue } from '@nestjs/bull';
 import * as otpGenerator from 'otp-generator';
@@ -29,6 +33,36 @@ export class AuthService {
         private readonly jwtService: JwtService,
         private readonly configService: ConfigService,
     ) {}
+
+    async thirdPartyLogin(thirdPartyLoginDto: ThirdPartyLoginDto) {
+        const { email } = thirdPartyLoginDto;
+
+        let user = await this.userService.findByEmail(email);
+        if (!user) {
+            user =
+                await this.userService.create3rdPartyAuthentication(
+                    thirdPartyLoginDto,
+                );
+            if (!user) {
+                throw new InternalServerErrorException('Internal Server Error');
+            }
+        }
+
+        const tokens = this.createTokenPairs({
+            email,
+            userId: user.id,
+            role: user.role,
+        });
+
+        const isUpdated = await this.userService.updateByEmail(email, {
+            refresh_token: await bcrypt.hash(tokens.refresh_Token, 10),
+        });
+        if (!isUpdated) {
+            throw new InternalServerErrorException('Internal Server Error');
+        }
+
+        return tokens;
+    }
 
     async emailVerification(createUserEmailDto: CreateUserEmailDto) {
         const { email } = createUserEmailDto;

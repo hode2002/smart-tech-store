@@ -6,12 +6,13 @@ import {
     Req,
     HttpStatus,
     HttpCode,
+    Get,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { CreateUserDto } from 'src/user/dto';
 import { CreateUserEmailDto, VerifyOtpDto } from './dto';
 import { Throttle } from '@nestjs/throttler';
-import { AtJwtGuard, RfJwtGuard } from './guards';
+import { AtJwtGuard, FacebookGuard, GoogleGuard, RfJwtGuard } from './guards';
 import { SuccessResponse } from 'src/common/response';
 
 @Controller('api/v1/auth')
@@ -27,6 +28,48 @@ export class AuthController {
             status: 'Success',
             message: 'Email verification',
             data: await this.authService.emailVerification(createUserEmailDto),
+        };
+    }
+
+    @Get('facebook')
+    @UseGuards(FacebookGuard)
+    async facebookLogin(): Promise<SuccessResponse> {
+        return {
+            code: 201,
+            status: 'Success',
+            message: 'Redirect to facebook login',
+        };
+    }
+
+    @Get('facebook/redirect')
+    @UseGuards(FacebookGuard)
+    async facebookLoginRedirect(@Req() req: Request): Promise<SuccessResponse> {
+        return {
+            code: 200,
+            status: 'Success',
+            message: 'Login successfully',
+            data: await this.authService.thirdPartyLogin(req['user']),
+        };
+    }
+
+    @Get('google')
+    @UseGuards(GoogleGuard)
+    async googleLogin(): Promise<SuccessResponse> {
+        return {
+            code: 201,
+            status: 'Success',
+            message: 'Redirect to google login',
+        };
+    }
+
+    @Get('google/redirect')
+    @UseGuards(GoogleGuard)
+    async googleLoginRedirect(@Req() req: Request): Promise<SuccessResponse> {
+        return {
+            code: 200,
+            status: 'Success',
+            message: 'Login successfully',
+            data: await this.authService.thirdPartyLogin(req['user']),
         };
     }
 

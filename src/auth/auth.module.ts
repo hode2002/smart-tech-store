@@ -9,6 +9,8 @@ import { UserModule } from 'src/user/user.module';
 import { BullModule } from '@nestjs/bull';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Otp, OtpSchema } from './model/schema.model';
+import { FacebookStrategy } from './strategy/facebook.stategy';
+import { GoogleStrategy } from './strategy/google.strategy';
 
 @Module({
     imports: [
@@ -22,7 +24,13 @@ import { Otp, OtpSchema } from './model/schema.model';
         MongooseModule.forFeature([{ name: Otp.name, schema: OtpSchema }]),
     ],
     controllers: [AuthController],
-    providers: [AuthService, AtJwtStrategy, RfJwtStrategy],
+    providers: [
+        AuthService,
+        AtJwtStrategy,
+        RfJwtStrategy,
+        FacebookStrategy,
+        GoogleStrategy,
+    ],
     exports: [AuthService],
 })
 export class AuthModule {}
