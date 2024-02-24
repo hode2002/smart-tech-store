@@ -13,6 +13,7 @@ import { BannerModule } from './banner/banner.module';
 import { CategoryModule } from './category/category.module';
 import { ProductModule } from './product/product.module';
 import { MediaModule } from './media/media.module';
+import { HistorySearchModule } from './history-search/history-search.module';
 
 @Module({
     imports: [
@@ -49,6 +50,7 @@ import { MediaModule } from './media/media.module';
         CategoryModule,
         ProductModule,
         MediaModule,
+        HistorySearchModule,
     ],
     controllers: [],
     providers: [
