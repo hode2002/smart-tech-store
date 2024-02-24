@@ -31,6 +31,18 @@ export class CreateProductDto {
     @IsNotEmpty()
     @IsNumber()
     category_id: number;
+
+    @IsNotEmpty()
+    @IsArray()
+    promotions: Array<object>;
+
+    @IsNotEmpty()
+    @IsArray()
+    warranties: Array<object>;
+
+    @IsNotEmpty()
+    @IsString()
+    label: string;
 }
 
 class ProductDescriptionDto {
@@ -55,6 +67,10 @@ class ProductOptionDto {
     @IsNotEmpty()
     @IsArray()
     product_images: ProductImageDto[];
+
+    @IsOptional()
+    @IsString()
+    label_image: string;
 
     @IsNotEmpty()
     @IsNumber()

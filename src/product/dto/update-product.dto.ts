@@ -22,6 +22,18 @@ export class UpdateProductDto {
 
     @IsNotEmpty()
     @IsArray()
+    promotions: Array<object>;
+
+    @IsNotEmpty()
+    @IsArray()
+    warranties: Array<object>;
+
+    @IsNotEmpty()
+    @IsString()
+    label: string;
+
+    @IsNotEmpty()
+    @IsArray()
     product_options: ProductOptionDto[];
 }
 
@@ -47,6 +59,10 @@ class ProductOptionDto {
     @IsNotEmpty()
     @IsArray()
     product_images: ProductImageDto[];
+
+    @IsOptional()
+    @IsString()
+    label_image: string;
 
     @IsNotEmpty()
     @IsNumber()
