@@ -2,8 +2,8 @@ import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { S3 } from 'aws-sdk';
 import { ConfigService } from '@nestjs/config';
 import { randomBytes } from 'crypto';
-import slugify from 'slugify';
 import { AwsS3DataDto, FileUploadDto } from './dto';
+import { generateSlug } from 'src/utils';
 
 @Injectable()
 export class MediaService {
@@ -16,7 +16,7 @@ export class MediaService {
         const arr_name = file.originalname.split('.');
         const extension = arr_name.pop();
         const name = arr_name.join('.');
-        const key = uuid + '/' + this.generateSlug(name) + '.' + extension;
+        const key = uuid + '/' + generateSlug(name) + '.' + extension;
 
         await this.uploadS3(file.buffer, key, file.mimetype);
 
@@ -73,17 +73,6 @@ export class MediaService {
             region: this.configService.get('AWS_REGION'),
             accessKeyId: this.configService.get('AWS_ACCESS_KEY_ID'),
             secretAccessKey: this.configService.get('AWS_SECRET_ACCESS_KEY'),
-        });
-    }
-
-    generateSlug(text: string) {
-        return slugify(text, {
-            replacement: '-',
-            remove: undefined,
-            lower: true,
-            strict: false,
-            locale: 'vi',
-            trim: true,
         });
     }
 }
