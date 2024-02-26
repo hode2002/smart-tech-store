@@ -48,7 +48,10 @@ export class AuthController {
             code: 200,
             status: 'Success',
             message: 'Login successfully',
-            data: await this.authService.thirdPartyLogin(req['user']),
+            data: await this.authService.thirdPartyLogin(
+                req['user'],
+                'FACEBOOK',
+            ),
         };
     }
 
@@ -69,7 +72,7 @@ export class AuthController {
             code: 200,
             status: 'Success',
             message: 'Login successfully',
-            data: await this.authService.thirdPartyLogin(req['user']),
+            data: await this.authService.thirdPartyLogin(req['user'], 'GOOGLE'),
         };
     }
 

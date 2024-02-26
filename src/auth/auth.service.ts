@@ -21,6 +21,7 @@ import { UserService } from 'src/user/user.service';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { JwtPayload } from 'src/common/types';
+import { AuthType } from '@prisma/client';
 
 @Injectable()
 export class AuthService {
@@ -34,15 +35,18 @@ export class AuthService {
         private readonly configService: ConfigService,
     ) {}
 
-    async thirdPartyLogin(thirdPartyLoginDto: ThirdPartyLoginDto) {
+    async thirdPartyLogin(
+        thirdPartyLoginDto: ThirdPartyLoginDto,
+        authType: AuthType,
+    ) {
         const { email } = thirdPartyLoginDto;
 
         let user = await this.userService.findByEmail(email);
         if (!user) {
-            user =
-                await this.userService.create3rdPartyAuthentication(
-                    thirdPartyLoginDto,
-                );
+            user = await this.userService.create3rdPartyAuthentication(
+                thirdPartyLoginDto,
+                authType,
+            );
             if (!user) {
                 throw new InternalServerErrorException('Internal Server Error');
             }
