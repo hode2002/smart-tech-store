@@ -14,6 +14,7 @@ import { InjectQueue } from '@nestjs/bull';
 import { Queue } from 'bull';
 import { FileUploadDto } from 'src/media/dto';
 import { MediaService } from 'src/media/media.service';
+import { AuthType } from '@prisma/client';
 
 @Injectable()
 export class UserService {
@@ -24,7 +25,10 @@ export class UserService {
         private readonly mediaService: MediaService,
     ) {}
 
-    async create3rdPartyAuthentication(thirdPartyLoginDto: ThirdPartyLoginDto) {
+    async create3rdPartyAuthentication(
+        thirdPartyLoginDto: ThirdPartyLoginDto,
+        authType: AuthType,
+    ) {
         const { email, avatar } = thirdPartyLoginDto;
 
         const isExist = await this.findByEmail(email);
@@ -37,6 +41,7 @@ export class UserService {
                 email,
                 is_active: true,
                 avatar,
+                auth_type: authType,
             },
         });
     }
@@ -206,7 +211,7 @@ export class UserService {
         });
     }
 
-    async findById(id: number) {
+    async findById(id: string) {
         return await this.prismaService.user.findUnique({
             where: { id },
         });
