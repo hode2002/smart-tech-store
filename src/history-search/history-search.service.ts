@@ -14,7 +14,7 @@ export class HistorySearchService {
         private readonly userService: UserService,
     ) {}
 
-    async getHistorySearch(userId: number) {
+    async getHistorySearch(userId: string) {
         return await this.prismaService.historySearch.findMany({
             take: 10,
             orderBy: {
@@ -31,7 +31,7 @@ export class HistorySearchService {
     }
 
     async createHistorySearch(
-        userId: number,
+        userId: string,
         createHistorySearchDto: CreateHistorySearchDto,
     ) {
         const { content } = createHistorySearchDto;
@@ -52,6 +52,7 @@ export class HistorySearchService {
 
             return {
                 is_success: isCreated ? true : false,
+                content: createHistorySearchDto.content,
             };
         }
 
@@ -67,10 +68,11 @@ export class HistorySearchService {
 
         return {
             is_success: true,
+            content: createHistorySearchDto.content,
         };
     }
 
-    async deleteHistorySearch(searchId: number, userId: number) {
+    async deleteHistorySearch(searchId: string, userId: string) {
         const user = await this.userService.findById(userId);
         if (!user) {
             throw new BadRequestException('User does not exist');
@@ -96,7 +98,7 @@ export class HistorySearchService {
         };
     }
 
-    async findById(searchId: number) {
+    async findById(searchId: string) {
         if (!searchId) {
             throw new BadRequestException('Missing search id');
         }
