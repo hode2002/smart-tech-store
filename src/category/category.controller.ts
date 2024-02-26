@@ -20,12 +20,12 @@ import { AtJwtGuard } from 'src/auth/guards';
 import { RoleGuard } from 'src/common/guards';
 
 @Controller('api/v1/categories')
-@Permission(Role.ADMIN)
-@UseGuards(AtJwtGuard, RoleGuard)
 export class CategoryController {
     constructor(private readonly categoryService: CategoryService) {}
 
     @Post()
+    @Permission(Role.ADMIN)
+    @UseGuards(AtJwtGuard, RoleGuard)
     @HttpCode(HttpStatus.CREATED)
     async create(
         @Body() createCategoryDto: CreateCategoryDto,
@@ -49,6 +49,19 @@ export class CategoryController {
         };
     }
 
+    @Get('admin')
+    @Permission(Role.ADMIN)
+    @UseGuards(AtJwtGuard, RoleGuard)
+    @HttpCode(HttpStatus.OK)
+    async adminFindAll() {
+        return {
+            code: 200,
+            status: 'Success',
+            message: 'Get all categories success',
+            data: await this.categoryService.adminFindAll(),
+        };
+    }
+
     @Get(':id')
     @HttpCode(HttpStatus.OK)
     async findById(@Param('id') id: string): Promise<SuccessResponse> {
@@ -56,11 +69,12 @@ export class CategoryController {
             code: 200,
             status: 'Success',
             message: 'Get category success',
-            data: await this.categoryService.findById(+id),
+            data: await this.categoryService.findById(id),
         };
     }
 
     @Patch(':id')
+    @Permission(Role.ADMIN)
     @HttpCode(HttpStatus.OK)
     async update(
         @Param('id') id: string,
@@ -70,18 +84,19 @@ export class CategoryController {
             code: 200,
             status: 'Success',
             message: 'Update success',
-            data: await this.categoryService.update(+id, updateCategoryDto),
+            data: await this.categoryService.update(id, updateCategoryDto),
         };
     }
 
     @Delete(':id')
+    @UseGuards(AtJwtGuard, RoleGuard)
     @HttpCode(HttpStatus.OK)
     async remove(@Param('id') id: string): Promise<SuccessResponse> {
         return {
             code: 200,
             status: 'Success',
             message: 'Remove success',
-            data: await this.categoryService.remove(+id),
+            data: await this.categoryService.remove(id),
         };
     }
 }

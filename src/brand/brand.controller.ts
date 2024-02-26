@@ -54,16 +54,27 @@ export class BrandController {
         };
     }
 
-    @Get(':id')
+    @Get('admin')
     @Permission(Role.ADMIN)
     @UseGuards(AtJwtGuard, RoleGuard)
+    @HttpCode(HttpStatus.OK)
+    async adminFindAll(): Promise<SuccessResponse> {
+        return {
+            code: 200,
+            status: 'Success',
+            message: 'Get all brands success',
+            data: await this.brandService.adminFindAll(),
+        };
+    }
+
+    @Get(':id')
     @HttpCode(HttpStatus.OK)
     async findById(@Param('id') id: string): Promise<SuccessResponse> {
         return {
             code: 200,
             status: 'Success',
             message: 'Get brand success',
-            data: await this.brandService.findById(+id),
+            data: await this.brandService.findById(id),
         };
     }
 
@@ -82,7 +93,7 @@ export class BrandController {
             status: 'Success',
             message: 'Update success',
             data: await this.brandService.update(
-                +id,
+                id,
                 updateBrandDto,
                 fileUploadDto,
             ),
@@ -98,7 +109,7 @@ export class BrandController {
             code: 200,
             status: 'Success',
             message: 'Delete success',
-            data: await this.brandService.remove(+id),
+            data: await this.brandService.remove(id),
         };
     }
 }

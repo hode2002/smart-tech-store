@@ -6,9 +6,9 @@ import {
 } from '@nestjs/common';
 import { CreateBrandDto, UpdateBrandDto } from './dto';
 import { PrismaService } from './../prisma/prisma.service';
-import slugify from 'slugify';
 import { FileUploadDto } from 'src/media/dto';
 import { MediaService } from 'src/media/media.service';
+import { generateSlug } from 'src/utils';
 
 @Injectable()
 export class BrandService {
@@ -18,14 +18,7 @@ export class BrandService {
     ) {}
 
     async create(createBrandDto: CreateBrandDto, fileUploadDto: FileUploadDto) {
-        const slug = slugify(createBrandDto.name, {
-            replacement: '-',
-            remove: undefined,
-            lower: true,
-            strict: false,
-            locale: 'vi',
-            trim: true,
-        });
+        const slug = generateSlug(createBrandDto.name);
 
         const isExist = await this.findBySlug(slug);
         if (isExist) {
@@ -60,12 +53,30 @@ export class BrandService {
 
     async findAll() {
         return await this.prismaService.brand.findMany({
+            where: {
+                is_deleted: false,
+            },
             select: {
                 id: true,
                 name: true,
                 description: true,
                 logo_url: true,
                 slug: true,
+            },
+        });
+    }
+
+    async adminFindAll() {
+        return await this.prismaService.brand.findMany({
+            select: {
+                id: true,
+                name: true,
+                description: true,
+                logo_url: true,
+                slug: true,
+                is_deleted: true,
+                created_at: true,
+                updated_at: true,
             },
         });
     }
@@ -83,7 +94,7 @@ export class BrandService {
         });
     }
 
-    async findById(id: number) {
+    async findById(id: string) {
         const brand = await this.prismaService.brand.findUnique({
             where: { id, is_deleted: false },
             select: {
@@ -103,7 +114,7 @@ export class BrandService {
     }
 
     async update(
-        id: number,
+        id: string,
         updateBrandDto: UpdateBrandDto,
         fileUploadDto: FileUploadDto,
     ) {
@@ -137,7 +148,7 @@ export class BrandService {
         });
     }
 
-    async remove(id: number) {
+    async remove(id: string) {
         const isExist = await this.findById(id);
         if (!isExist) {
             throw new NotFoundException('Banner Not Found');
