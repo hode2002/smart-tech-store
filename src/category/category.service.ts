@@ -5,22 +5,15 @@ import {
 } from '@nestjs/common';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
-import slugify from 'slugify';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { generateSlug } from 'src/utils';
 
 @Injectable()
 export class CategoryService {
     constructor(private readonly prismaService: PrismaService) {}
 
     async create(createCategoryDto: CreateCategoryDto) {
-        const slug = slugify(createCategoryDto.name, {
-            replacement: '-',
-            remove: undefined,
-            lower: true,
-            strict: false,
-            locale: 'vi',
-            trim: true,
-        });
+        const slug = generateSlug(createCategoryDto.name);
 
         const isExist = await this.findBySlug(slug);
         if (isExist) {
@@ -43,11 +36,28 @@ export class CategoryService {
 
     async findAll() {
         return await this.prismaService.category.findMany({
+            where: {
+                is_deleted: false,
+            },
             select: {
                 id: true,
                 name: true,
                 description: true,
                 slug: true,
+            },
+        });
+    }
+
+    async adminFindAll() {
+        return await this.prismaService.category.findMany({
+            select: {
+                id: true,
+                name: true,
+                description: true,
+                slug: true,
+                is_deleted: true,
+                created_at: true,
+                updated_at: true,
             },
         });
     }
@@ -64,7 +74,7 @@ export class CategoryService {
         });
     }
 
-    async findById(id: number) {
+    async findById(id: string) {
         const category = await this.prismaService.category.findUnique({
             where: { id, is_deleted: false },
             select: {
@@ -82,7 +92,7 @@ export class CategoryService {
         return category;
     }
 
-    async update(id: number, updateCategoryDto: UpdateCategoryDto) {
+    async update(id: string, updateCategoryDto: UpdateCategoryDto) {
         const isExist = await this.prismaService.category.findUnique({
             where: { id },
         });
@@ -102,7 +112,7 @@ export class CategoryService {
         });
     }
 
-    async remove(id: number) {
+    async remove(id: string) {
         const isExist = await this.findById(id);
         if (!isExist) {
             throw new NotFoundException('Category Not Found');

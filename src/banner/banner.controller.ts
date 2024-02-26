@@ -57,16 +57,27 @@ export class BannerController {
         };
     }
 
-    @Get(':id')
+    @Get('admin')
     @Permission(Role.ADMIN)
     @UseGuards(AtJwtGuard, RoleGuard)
+    @HttpCode(HttpStatus.OK)
+    async AdminFindAll(): Promise<SuccessResponse> {
+        return {
+            code: 200,
+            status: 'Success',
+            message: 'Get all banners success',
+            data: await this.bannerService.AdminFindAll(),
+        };
+    }
+
+    @Get(':id')
     @HttpCode(HttpStatus.OK)
     async findById(@Param('id') id: string) {
         return {
             code: 200,
             status: 'Success',
             message: 'Get banner success',
-            data: await this.bannerService.findById(+id),
+            data: await this.bannerService.findById(id),
         };
     }
 
@@ -85,7 +96,7 @@ export class BannerController {
             status: 'Success',
             message: 'Update success',
             data: await this.bannerService.update(
-                +id,
+                id,
                 updateBannerDto,
                 fileUploadDto,
             ),
@@ -101,7 +112,7 @@ export class BannerController {
             code: 200,
             status: 'Success',
             message: 'Remove success',
-            data: await this.bannerService.remove(+id),
+            data: await this.bannerService.remove(id),
         };
     }
 }
