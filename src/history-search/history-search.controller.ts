@@ -23,7 +23,7 @@ export class HistorySearchController {
     @UseGuards(AtJwtGuard)
     @HttpCode(HttpStatus.OK)
     async getHistorySearch(
-        @GetUserId() userId: number,
+        @GetUserId() userId: string,
     ): Promise<SuccessResponse> {
         return {
             code: 200,
@@ -37,7 +37,7 @@ export class HistorySearchController {
     @UseGuards(AtJwtGuard)
     @HttpCode(HttpStatus.OK)
     async createHistorySearch(
-        @GetUserId() userId: number,
+        @GetUserId() userId: string,
         @Body() createHistorySearchDto: CreateHistorySearchDto,
     ): Promise<SuccessResponse> {
         return {
@@ -55,15 +55,15 @@ export class HistorySearchController {
     @UseGuards(AtJwtGuard)
     @HttpCode(HttpStatus.OK)
     async deleteHistorySearch(
-        @GetUserId() userId: number,
-        @Param('id') searchId: number,
+        @GetUserId() userId: string,
+        @Param('id') searchId: string,
     ): Promise<SuccessResponse> {
         return {
             code: 2010,
             status: 'Success',
             message: 'Delete history search success',
             data: await this.historySearchService.deleteHistorySearch(
-                +searchId,
+                searchId,
                 userId,
             ),
         };
