@@ -8,70 +8,40 @@ import {
 } from 'class-validator';
 
 export class UpdateProductOptionDto {
-    @IsNotEmpty()
-    @IsNumber()
-    product_id: number;
-
-    @IsNotEmpty()
     @IsString()
-    thumbnail: string;
+    @IsOptional()
+    id?: string;
 
-    @IsNotEmpty()
+    @IsString()
+    @IsOptional()
+    thumbnail?: string;
+
+    @IsOptional()
     @IsArray()
-    product_images: ProductImageDto[];
+    product_images?: Array<ProductImageDto>;
 
     @IsOptional()
     @IsString()
-    label_image: string;
+    label_image?: string;
 
-    @IsNotEmpty()
+    @IsOptional()
     @IsNumber()
-    price_modifier: number;
+    price_modifier?: number;
 
-    @IsNotEmpty()
+    @IsOptional()
     @IsNumber()
-    stock: number;
+    stock?: number;
 
-    @IsNotEmpty()
+    @IsOptional()
     @IsNumber()
-    discount: number;
+    discount?: number;
 
-    @IsNotEmpty()
+    @IsOptional()
     @IsBoolean()
-    is_sale: boolean;
-
-    @IsNotEmpty()
-    @IsBoolean()
-    is_deleted: boolean;
-
-    @IsNotEmpty()
-    @IsArray()
-    options: OptionsDto[];
-}
-
-class OptionsDto {
-    @IsNotEmpty()
-    @IsNumber()
-    product_option_id: number;
-
-    @IsNotEmpty()
-    @IsString()
-    name: string;
-
-    @IsNotEmpty()
-    @IsString()
-    value: string;
-
-    @IsNotEmpty()
-    @IsNumber()
-    additional_cost: number;
+    is_sale?: boolean;
 }
 
 class ProductImageDto {
-    @IsNotEmpty()
-    @IsNumber()
-    product_option_id: number;
-
     @IsNotEmpty()
     @IsString()
     image_url: string;

@@ -8,52 +8,14 @@ import {
     IsString,
 } from 'class-validator';
 
-export class CreateProductDto {
-    @IsNotEmpty()
+export class CreateProductOptionDto {
     @IsString()
-    name: string;
-
     @IsNotEmpty()
-    @IsArray()
-    descriptions: Array<ProductDescriptionDto>;
-
-    @IsNotEmpty()
-    @IsNumber()
-    price: number;
-
-    @IsNotEmpty()
-    @IsArray()
-    product_options: Array<ProductOptionDto>;
-
-    @IsNotEmpty()
-    @IsString()
-    brand_id: string;
-
-    @IsNotEmpty()
-    @IsString()
-    category_id: string;
-
-    @IsNotEmpty()
-    @IsArray()
-    promotions: Array<object>;
-
-    @IsNotEmpty()
-    @IsArray()
-    warranties: Array<object>;
-
-    @IsNotEmpty()
-    @IsString()
-    label: string;
-}
-
-class ProductDescriptionDto {
-    @IsNotEmpty()
-    @IsString()
     product_id: string;
 
+    @IsArray()
     @IsNotEmpty()
-    @IsString()
-    content: string;
+    product_options: Array<ProductOptionDto>;
 }
 
 class TechnicalSpecs {
