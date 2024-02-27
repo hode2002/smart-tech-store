@@ -12,8 +12,14 @@ enum Role {
   ADMIN
 }
 
+enum AuthType {
+  GOOGLE
+  EMAIL
+  FACEBOOK
+}
+
 model Banner {
-  id         Int      @id @default(autoincrement())
+  id         String   @id @default(uuid())
   title      String   @unique
   image      String
   link       String
@@ -22,12 +28,12 @@ model Banner {
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
 
-  @@index([status])
+  @@index([status, slug])
   @@map("banners")
 }
 
 model Coupon {
-  id                Int               @id @default(autoincrement())
+  id                String            @id @default(uuid())
   name              String            @unique
   description       String?
   discount_percent  Float             @default(0)
@@ -39,16 +45,16 @@ model Coupon {
   updated_at        DateTime          @updatedAt
   product_to_coupon ProductToCoupon[]
 
-  @@index([name, start_date, end_date])
+  @@index([name, start_date, end_date, status])
   @@map("coupons")
 }
 
 model ProductToCoupon {
-  id              Int      @id @default(autoincrement())
+  id              String   @id @default(uuid())
   product         Product  @relation(fields: [product_id], references: [id])
-  product_id      Int
+  product_id      String
   coupon          Coupon   @relation(fields: [coupon_id], references: [id])
-  coupon_id       Int
+  coupon_id       String
   activation_date DateTime
   created_at      DateTime @default(now())
   updated_at      DateTime @updatedAt
@@ -57,7 +63,7 @@ model ProductToCoupon {
 }
 
 model User {
-  id             Int             @id @default(autoincrement())
+  id             String          @id @default(uuid())
   email          String          @unique
   password       String?
   name           String?
@@ -69,6 +75,7 @@ model User {
   review         Review[]
   refresh_token  String?
   role           Role            @default(USER)
+  auth_type      AuthType        @default(EMAIL)
   is_active      Boolean         @default(false)
   created_at     DateTime        @default(now())
   updated_at     DateTime        @updatedAt
@@ -78,37 +85,32 @@ model User {
 }
 
 model Cart {
-  id                Int           @id @default(autoincrement())
+  id                String        @id @default(uuid())
   user              User          @relation(fields: [user_id], references: [id])
-  user_id           Int           @unique
-  product           Product       @relation(fields: [product_id], references: [id])
-  product_id        Int
+  user_id           String        @unique
   product_option    ProductOption @relation(fields: [product_option_id], references: [id])
-  product_option_id Int
+  product_option_id String
   quantity          Int           @default(1)
   created_at        DateTime      @default(now())
   updated_at        DateTime      @updatedAt
 
-  @@index([user_id])
+  @@index([user_id, product_option_id])
   @@map("carts")
 }
 
 model Product {
-  id                Int                  @id @default(autoincrement())
+  id                String               @id @default(uuid())
   name              String
   descriptions      ProductDescription[]
   brand             Brand                @relation(fields: [brand_id], references: [id])
-  brand_id          Int
+  brand_id          String
   category          Category             @relation(fields: [category_id], references: [id])
-  category_id       Int
+  category_id       String
   price             Float
   promotions        Json
   warranties        Json
   label             String
   product_options   ProductOption[]
-  orderDetail       OrderDetail[]
-  reviews           Review[]
-  cart              Cart[]
   product_to_coupon ProductToCoupon[]
   created_at        DateTime             @default(now())
   updated_at        DateTime             @updatedAt
@@ -117,58 +119,89 @@ model Product {
 }
 
 model ProductOption {
-  id             Int            @id @default(autoincrement())
-  product        Product        @relation(fields: [product_id], references: [id])
-  product_id     Int
-  thumbnail      String
-  product_images ProductImage[]
-  label_image    String
-  price_modifier Float          @default(0)
-  stock          Int            @default(0)
-  SKU            String
-  discount       Float          @default(0)
-  is_sale        Boolean        @default(false)
-  is_deleted     Boolean        @default(false)
-  slug           String
-  options        Options[]
-  reviews        Review[]
-  orderDetail    OrderDetail[]
-  cart           Cart[]
-  created_at     DateTime       @default(now())
-  updated_at     DateTime       @updatedAt
+  id                   String               @id @default(uuid())
+  product              Product              @relation(fields: [product_id], references: [id])
+  product_id           String
+  thumbnail            String
+  product_images       ProductImage[]
+  label_image          String
+  price_modifier       Float                @default(0)
+  stock                Int                  @default(0)
+  sku                  String
+  discount             Float                @default(0)
+  is_sale              Boolean              @default(false)
+  is_deleted           Boolean              @default(false)
+  slug                 String
+  reviews              Review[]
+  order_detail         OrderDetail[]
+  cart                 Cart[]
+  created_at           DateTime             @default(now())
+  updated_at           DateTime             @updatedAt
+  product_option_value ProductOptionValue[]
+  technical_specs      TechnicalSpecs?
 
   @@index([slug, is_sale, is_deleted])
-  @@map("product_option")
+  @@map("product_options")
 }
 
-model Options {
-  id                Int           @id @default(autoincrement())
+model TechnicalSpecs {
+  id                String        @id @default(uuid())
   product_option    ProductOption @relation(fields: [product_option_id], references: [id])
-  product_option_id Int
-  name              String
-  value             String
-  additional_cost   Float         @default(0)
+  product_option_id String        @unique
+  screen            String?
+  screen_size       String?
+  os                String?
+  front_camera      String?
+  rear_camera       String?
+  chip              String?
+  ram               String?
+  rom               String?
+  sim               String?
+  battery           String?
+  connection        String?
+  created_at        DateTime      @default(now())
+  updated_at        DateTime      @updatedAt
 
-  @@index([name, value])
+  @@index([screen_size, ram, rom, connection])
+  @@map("technical_specs")
+}
+
+model Option {
+  id                   String               @id @default(uuid())
+  name                 String
+  product_option_value ProductOptionValue[]
+
   @@map("options")
 }
 
+model ProductOptionValue {
+  id                String        @id @default(uuid())
+  product_option    ProductOption @relation(fields: [product_option_id], references: [id])
+  product_option_id String
+  option            Option        @relation(fields: [option_id], references: [id])
+  option_id         String
+  value             String
+  adjust_price      Float         @default(0)
+
+  @@index([product_option_id, option_id])
+  @@map("product_option_values")
+}
+
 model ProductDescription {
-  id         Int      @id @default(autoincrement())
+  id         String   @id @default(uuid())
   product    Product  @relation(fields: [product_id], references: [id])
-  product_id Int
+  product_id String
   content    String
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
 
-  @@index([product_id])
   @@map("product_descriptions")
 }
 
 model ProductImage {
-  id                Int           @id @default(autoincrement())
-  ProductOption     ProductOption @relation(fields: [product_option_id], references: [id])
-  product_option_id Int
+  id                String        @id @default(uuid())
+  product_option    ProductOption @relation(fields: [product_option_id], references: [id])
+  product_option_id String
   image_url         String
   image_alt_text    String?
   created_at        DateTime      @default(now())
@@ -178,7 +211,7 @@ model ProductImage {
 }
 
 model Brand {
-  id          Int       @id @default(autoincrement())
+  id          String    @id @default(uuid())
   name        String
   description String?
   logo_url    String
@@ -193,7 +226,7 @@ model Brand {
 }
 
 model Category {
-  id          Int       @id @default(autoincrement())
+  id          String    @id @default(uuid())
   name        String
   description String?
   products    Product[]
@@ -207,15 +240,15 @@ model Category {
 }
 
 model Order {
-  id            Int           @id @default(autoincrement())
+  id            String        @id @default(uuid())
   User          User          @relation(fields: [user_id], references: [id])
-  user_id       Int
+  user_id       String
   name          String
-  phone_number  String
+  phone         String
   delivery      Delivery?
   order_date    DateTime?
   total_amount  Float         @default(0)
-  payment_id    Payment?
+  payment       Payment?
   order_details OrderDetail[]
   address       String
   status        Int           @default(0)
@@ -227,13 +260,11 @@ model Order {
 }
 
 model OrderDetail {
-  id                Int           @id @default(autoincrement())
+  id                String        @id @default(uuid())
   order             Order         @relation(fields: [order_id], references: [id])
-  order_id          Int           @unique
-  product           Product       @relation(fields: [product_id], references: [id])
-  product_id        Int           @unique
-  productOption     ProductOption @relation(fields: [product_option_id], references: [id])
-  product_option_id Int           @unique
+  order_id          String        @unique
+  product_option    ProductOption @relation(fields: [product_option_id], references: [id])
+  product_option_id String        @unique
   quantity          Int           @default(1)
   price             Float
   subtotal          Float
@@ -244,9 +275,9 @@ model OrderDetail {
 }
 
 model Payment {
-  id             Int      @id @default(autoincrement())
+  id             String   @id @default(uuid())
   order          Order    @relation(fields: [order_id], references: [id])
-  order_id       Int      @unique
+  order_id       String   @unique
   amount         Float
   payment_method String
   transaction_id String?
@@ -257,10 +288,10 @@ model Payment {
 }
 
 model Delivery {
-  id              Int      @id @default(autoincrement())
+  id              String   @id @default(uuid())
   order           Order    @relation(fields: [order_id], references: [id])
-  order_id        Int      @unique
-  estimate_date   String
+  order_id        String   @unique
+  estimate_date   DateTime
   tracking_number String
   status          Int      @default(0)
   created_at      DateTime @default(now())
@@ -271,9 +302,9 @@ model Delivery {
 }
 
 model HistorySearch {
-  id             Int      @id @default(autoincrement())
+  id             String   @id @default(uuid())
   user           User     @relation(fields: [user_id], references: [id])
-  user_id        Int
+  user_id        String
   search_content String
   created_at     DateTime @default(now())
   updated_at     DateTime @updatedAt
@@ -282,13 +313,11 @@ model HistorySearch {
 }
 
 model Review {
-  id                Int           @id @default(autoincrement())
+  id                String        @id @default(uuid())
   user              User          @relation(fields: [user_id], references: [id])
-  user_id           Int
-  product           Product       @relation(fields: [product_id], references: [id])
-  product_id        Int
-  productOption     ProductOption @relation(fields: [product_option_id], references: [id])
-  product_option_id Int
+  user_id           String
+  product_option    ProductOption @relation(fields: [product_option_id], references: [id])
+  product_option_id String
   star              Float         @default(5)
   comment           String
   created_at        DateTime      @default(now())
