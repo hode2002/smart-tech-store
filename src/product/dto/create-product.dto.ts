@@ -3,6 +3,7 @@ import {
     IsBoolean,
     IsNotEmpty,
     IsNumber,
+    IsObject,
     IsOptional,
     IsString,
 } from 'class-validator';
@@ -14,7 +15,7 @@ export class CreateProductDto {
 
     @IsNotEmpty()
     @IsArray()
-    descriptions: ProductDescriptionDto[];
+    descriptions: Array<ProductDescriptionDto>;
 
     @IsNotEmpty()
     @IsNumber()
@@ -22,15 +23,15 @@ export class CreateProductDto {
 
     @IsNotEmpty()
     @IsArray()
-    product_options: ProductOptionDto[];
+    product_options: Array<ProductOptionDto>;
 
     @IsNotEmpty()
-    @IsNumber()
-    brand_id: number;
+    @IsString()
+    brand_id: string;
 
     @IsNotEmpty()
-    @IsNumber()
-    category_id: number;
+    @IsString()
+    category_id: string;
 
     @IsNotEmpty()
     @IsArray()
@@ -47,26 +48,68 @@ export class CreateProductDto {
 
 class ProductDescriptionDto {
     @IsNotEmpty()
-    @IsNumber()
-    product_id: number;
+    @IsString()
+    product_id: string;
 
     @IsNotEmpty()
     @IsString()
     content: string;
 }
 
-class ProductOptionDto {
-    @IsNotEmpty()
+class TechnicalSpecs {
     @IsString()
-    product_id: number;
+    @IsOptional()
+    screen?: string;
 
+    @IsString()
+    @IsOptional()
+    screen_size?: string;
+
+    @IsString()
+    @IsOptional()
+    os?: string;
+
+    @IsString()
+    @IsOptional()
+    front_camera?: string;
+
+    @IsString()
+    @IsOptional()
+    rear_camera?: string;
+
+    @IsString()
+    @IsOptional()
+    chip?: string;
+
+    @IsString()
+    @IsOptional()
+    ram?: string;
+
+    @IsString()
+    @IsOptional()
+    rom?: string;
+
+    @IsString()
+    @IsOptional()
+    sim?: string;
+
+    @IsString()
+    @IsOptional()
+    battery?: string;
+
+    @IsString()
+    @IsOptional()
+    connection?: string;
+}
+
+class ProductOptionDto {
     @IsNotEmpty()
     @IsString()
     thumbnail: string;
 
     @IsNotEmpty()
     @IsArray()
-    product_images: ProductImageDto[];
+    product_images: Array<ProductImageDto>;
 
     @IsOptional()
     @IsString()
@@ -82,7 +125,7 @@ class ProductOptionDto {
 
     @IsNotEmpty()
     @IsString()
-    SKU: string;
+    sku: string;
 
     @IsOptional()
     @IsNumber()
@@ -96,19 +139,17 @@ class ProductOptionDto {
     @IsString()
     slug: string;
 
-    @IsNotEmpty()
+    @IsObject()
+    technical_specs: TechnicalSpecs;
+
     @IsArray()
-    options: OptionsDto[];
+    product_option_value: Array<ProductOptionValue>;
 }
 
-class OptionsDto {
-    @IsNotEmpty()
-    @IsNumber()
-    product_option_id: number;
-
+class ProductOptionValue {
     @IsNotEmpty()
     @IsString()
-    name: string;
+    option_id: string;
 
     @IsNotEmpty()
     @IsString()
@@ -116,14 +157,10 @@ class OptionsDto {
 
     @IsNotEmpty()
     @IsNumber()
-    additional_cost: number;
+    adjust_price: number;
 }
 
 class ProductImageDto {
-    @IsNotEmpty()
-    @IsNumber()
-    product_option_id: number;
-
     @IsNotEmpty()
     @IsString()
     image_url: string;

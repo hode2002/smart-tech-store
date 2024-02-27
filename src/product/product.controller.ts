@@ -14,8 +14,7 @@ import {
 import { ProductService } from './product.service';
 import {
     CreateProductDto,
-    RemoveProductDto,
-    RestoreProductDto,
+    CreateProductOptionDto,
     UpdateProductDto,
     UpdateProductOptionDto,
 } from './dto';
@@ -59,7 +58,7 @@ export class ProductController {
             code: 200,
             status: 'Success',
             message: 'Get product detail success',
-            data: await this.productService.findById(+id),
+            data: await this.productService.findById(id),
         };
     }
 
@@ -67,7 +66,9 @@ export class ProductController {
     @Permission(Role.ADMIN)
     @UseGuards(AtJwtGuard, RoleGuard)
     @HttpCode(HttpStatus.CREATED)
-    async create(@Body() createProductDto: CreateProductDto) {
+    async create(
+        @Body() createProductDto: CreateProductDto,
+    ): Promise<SuccessResponse> {
         return {
             code: 201,
             status: 'Success',
@@ -76,16 +77,20 @@ export class ProductController {
         };
     }
 
-    @Post('restore')
+    @Post('options')
     @Permission(Role.ADMIN)
     @UseGuards(AtJwtGuard, RoleGuard)
-    @HttpCode(HttpStatus.OK)
-    async restore(@Body() restoreProductDto: RestoreProductDto) {
+    @HttpCode(HttpStatus.CREATED)
+    async createProductOption(
+        @Body() createProductOptionDto: CreateProductOptionDto,
+    ): Promise<SuccessResponse> {
         return {
-            code: 200,
+            code: 201,
             status: 'Success',
-            message: 'Restore product success',
-            data: await this.productService.restore(restoreProductDto),
+            message: 'Create new product option success',
+            data: await this.productService.createProductOption(
+                createProductOptionDto,
+            ),
         };
     }
 
@@ -96,12 +101,12 @@ export class ProductController {
     async update(
         @Param('id') id: string,
         @Body() updateProductDto: UpdateProductDto,
-    ) {
+    ): Promise<SuccessResponse> {
         return {
             code: 200,
             status: 'Success',
             message: 'Update product success',
-            data: await this.productService.update(+id, updateProductDto),
+            data: await this.productService.update(id, updateProductDto),
         };
     }
 
@@ -109,31 +114,48 @@ export class ProductController {
     @Permission(Role.ADMIN)
     @UseGuards(AtJwtGuard, RoleGuard)
     @HttpCode(HttpStatus.OK)
-    async updateVariant(
+    async updateProductOption(
         @Param('id') id: string,
         @Body() updateProductOptionDto: UpdateProductOptionDto,
-    ) {
+    ): Promise<SuccessResponse> {
         return {
             code: 200,
             status: 'Success',
             message: 'Update product option success',
             data: await this.productService.updateProductOption(
-                +id,
+                id,
                 updateProductOptionDto,
             ),
         };
     }
 
-    @Delete()
+    @Patch('options/restore/:id')
     @Permission(Role.ADMIN)
     @UseGuards(AtJwtGuard, RoleGuard)
     @HttpCode(HttpStatus.OK)
-    async remove(@Body() removeProductDto: RemoveProductDto) {
+    async restoreProductOption(
+        @Param('id') id: string,
+    ): Promise<SuccessResponse> {
         return {
             code: 200,
             status: 'Success',
-            message: 'Remove product success',
-            data: await this.productService.remove(removeProductDto),
+            message: 'Restore product option success',
+            data: await this.productService.restoreProductOption(id),
+        };
+    }
+
+    @Delete('options/:id')
+    @Permission(Role.ADMIN)
+    @UseGuards(AtJwtGuard, RoleGuard)
+    @HttpCode(HttpStatus.OK)
+    async removeProductOption(
+        @Param('id') id: string,
+    ): Promise<SuccessResponse> {
+        return {
+            code: 200,
+            status: 'Success',
+            message: 'Remove product option success',
+            data: await this.productService.removeProductOption(id),
         };
     }
 }

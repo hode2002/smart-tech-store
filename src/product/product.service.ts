@@ -7,15 +7,13 @@ import {
 } from '@nestjs/common';
 import {
     CreateProductDto,
-    RemoveProductDto,
-    RestoreProductDto,
+    CreateProductOptionDto,
     UpdateProductDto,
     UpdateProductOptionDto,
 } from './dto';
 import { PrismaService } from './../prisma/prisma.service';
-import slugify from 'slugify';
 import { Request } from 'express';
-import { pagination } from 'src/utils';
+import { generateSlug, pagination } from 'src/utils';
 
 @Injectable()
 export class ProductService {
@@ -31,8 +29,9 @@ export class ProductService {
                 product_options: {
                     none: {
                         slug:
-                            this.generateSlug(productDto.name) +
-                            product_options[0].SKU.trim()
+                            generateSlug(productDto.name) +
+                            product_options[0].sku
+                                .trim()
                                 .replaceAll(' ', '-')
                                 .toLowerCase(),
                     },
@@ -57,26 +56,83 @@ export class ProductService {
 
         const productOptionPromises = product_options.map(
             async (product_option) => {
-                const { options, product_images, ...other } = product_option;
+                const {
+                    technical_specs,
+                    product_option_value,
+                    product_images,
+                    ...other
+                } = product_option;
 
                 return this.prismaService.productOption.create({
                     data: {
+                        ...other,
                         product_id: newProduct.id,
-                        options: {
-                            createMany: {
-                                data: options,
-                            },
-                        },
                         product_images: {
                             createMany: {
                                 data: product_images,
                             },
                         },
+                        technical_specs: {
+                            create: technical_specs,
+                        },
+                        product_option_value: {
+                            createMany: {
+                                data: product_option_value,
+                            },
+                        },
                         slug:
-                            this.generateSlug(newProduct.name) +
+                            generateSlug(newProduct.name) +
                             '-' +
-                            other.SKU.trim().replaceAll(' ', '-').toLowerCase(),
+                            generateSlug(other.sku),
+                    },
+                });
+            },
+        );
+
+        return {
+            ...newProduct,
+            product_options: await Promise.all(productOptionPromises),
+        };
+    }
+
+    async createProductOption(createProductOptionDto: CreateProductOptionDto) {
+        const { product_id, product_options } = createProductOptionDto;
+
+        const product = await this.findById(product_id);
+        if (!product) {
+            throw new NotFoundException('Product Does Not Exist');
+        }
+
+        const productOptionPromises = product_options.map(
+            async (product_option) => {
+                const {
+                    technical_specs,
+                    product_option_value,
+                    product_images,
+                    ...other
+                } = product_option;
+
+                return this.prismaService.productOption.create({
+                    data: {
                         ...other,
+                        product_id: product.id,
+                        product_images: {
+                            createMany: {
+                                data: product_images,
+                            },
+                        },
+                        technical_specs: {
+                            create: technical_specs,
+                        },
+                        product_option_value: {
+                            createMany: {
+                                data: product_option_value,
+                            },
+                        },
+                        slug:
+                            generateSlug(product.name) +
+                            '-' +
+                            generateSlug(other.sku),
                     },
                 });
             },
@@ -84,7 +140,7 @@ export class ProductService {
 
         await Promise.all(productOptionPromises);
 
-        return await this.findById(newProduct.id);
+        return await this.findById(product_id);
     }
 
     async findAll(request: Request) {
@@ -137,14 +193,14 @@ export class ProductService {
                     },
                     select: {
                         id: true,
-                        SKU: true,
+                        sku: true,
                         thumbnail: true,
                         price_modifier: true,
+                        stock: true,
                         discount: true,
                         is_sale: true,
-                        stock: true,
-                        label_image: true,
                         slug: true,
+                        label_image: true,
                         product_images: {
                             select: {
                                 id: true,
@@ -152,12 +208,12 @@ export class ProductService {
                                 image_alt_text: true,
                             },
                         },
-                        options: {
+                        technical_specs: true,
+                        product_option_value: {
                             select: {
                                 id: true,
-                                name: true,
                                 value: true,
-                                additional_cost: true,
+                                adjust_price: true,
                             },
                         },
                     },
@@ -173,7 +229,7 @@ export class ProductService {
         };
     }
 
-    async findById(id: number) {
+    async findById(id: string) {
         if (!id) {
             throw new ForbiddenException('Missing product id');
         }
@@ -215,7 +271,7 @@ export class ProductService {
                     },
                     select: {
                         id: true,
-                        SKU: true,
+                        sku: true,
                         thumbnail: true,
                         price_modifier: true,
                         stock: true,
@@ -230,12 +286,12 @@ export class ProductService {
                                 image_alt_text: true,
                             },
                         },
-                        options: {
+                        technical_specs: true,
+                        product_option_value: {
                             select: {
                                 id: true,
-                                name: true,
                                 value: true,
-                                additional_cost: true,
+                                adjust_price: true,
                             },
                         },
                     },
@@ -250,14 +306,59 @@ export class ProductService {
         return product;
     }
 
+    async findByProductOptionId(id: string) {
+        if (!id) {
+            throw new ForbiddenException('Missing product id');
+        }
+
+        const product = await this.prismaService.productOption.findUnique({
+            where: {
+                id,
+                is_deleted: false,
+            },
+            select: {
+                id: true,
+                sku: true,
+                thumbnail: true,
+                price_modifier: true,
+                stock: true,
+                discount: true,
+                is_sale: true,
+                slug: true,
+                label_image: true,
+                product_images: {
+                    select: {
+                        id: true,
+                        image_url: true,
+                        image_alt_text: true,
+                    },
+                },
+                technical_specs: true,
+                product_option_value: {
+                    select: {
+                        id: true,
+                        value: true,
+                        adjust_price: true,
+                    },
+                },
+            },
+        });
+
+        if (!product) {
+            throw new NotFoundException('Product option not found');
+        }
+
+        return product;
+    }
+
     async getByParameters(request: Request) {
         return await this.prismaService.product.findMany({
             where: {
                 ...(request.query['cId'] && {
-                    category_id: +request.query['cId'],
+                    category_id: request.query['cId'].toString(),
                 }),
                 ...(request.query['bId'] && {
-                    brand_id: +request.query['bId'],
+                    brand_id: request.query['bId'].toString(),
                 }),
             },
             select: {
@@ -287,33 +388,33 @@ export class ProductService {
                             {
                                 is_deleted: false,
                             },
-                            {
-                                options: {
-                                    some: {
-                                        name: 'RAM',
-                                        value: request.query['ram']
-                                            .toString()
-                                            ?.replaceAll('-', ' ')
-                                            .toUpperCase(),
-                                    },
-                                },
-                            },
-                            {
-                                options: {
-                                    some: {
-                                        name: 'Dung lượng lưu trữ',
-                                        value: request.query['rom']
-                                            .toString()
-                                            ?.replaceAll('-', ' ')
-                                            .toUpperCase(),
-                                    },
-                                },
-                            },
+                            // {
+                            //     options: {
+                            //         some: {
+                            //             name: 'RAM',
+                            //             value: request.query['ram']
+                            //                 .toString()
+                            //                 ?.replaceAll('-', ' ')
+                            //                 .toUpperCase(),
+                            //         },
+                            //     },
+                            // },
+                            // {
+                            //     options: {
+                            //         some: {
+                            //             name: 'Dung lượng lưu trữ',
+                            //             value: request.query['rom']
+                            //                 .toString()
+                            //                 ?.replaceAll('-', ' ')
+                            //                 .toUpperCase(),
+                            //         },
+                            //     },
+                            // },
                         ],
                     },
                     select: {
                         id: true,
-                        SKU: true,
+                        sku: true,
                         thumbnail: true,
                         price_modifier: true,
                         stock: true,
@@ -321,21 +422,21 @@ export class ProductService {
                         is_sale: true,
                         slug: true,
                         label_image: true,
-                        options: {
-                            select: {
-                                id: true,
-                                name: true,
-                                value: true,
-                                additional_cost: true,
-                            },
-                        },
+                        // options: {
+                        //     select: {
+                        //         id: true,
+                        //         name: true,
+                        //         value: true,
+                        //         additional_cost: true,
+                        //     },
+                        // },
                     },
                 },
             },
         });
     }
 
-    async update(id: number, updateProductDto: UpdateProductDto) {
+    async update(id: string, updateProductDto: UpdateProductDto) {
         if (!id) {
             throw new ForbiddenException('Missing product id');
         }
@@ -361,63 +462,33 @@ export class ProductService {
             },
         });
 
-        for (const productOption of product_options) {
-            await this.updateProductOption(productOption.id, productOption);
-
-            /*
-            const { options, product_images, ...other } = productOption;
-            const id = other?.id;
-
-            const isExist = await this.prismaService.productOption.findUnique({
-                where: { id },
-            });
-
-            if (!isExist) {
-                throw new NotFoundException(
-                    `Not found: product_options with id: ${id} not found`,
+        const productOptionsPromises = product_options.map(
+            async (product_option) => {
+                return this.updateProductOption(
+                    product_option.id,
+                    product_option,
                 );
-            }
+            },
+        );
 
-            await this.prismaService.productOption.update({
-                where: { id },
-                data: {
-                    product_images: {
-                        deleteMany: { product_option_id: id },
-                        createMany: {
-                            data: product_images,
-                        },
-                    },
-                    options: {
-                        deleteMany: { product_option_id: id },
-                        createMany: {
-                            data: options,
-                        },
-                    },
-                    ...other,
-                },
-            });
-
-            */
-        }
+        await Promise.all(productOptionsPromises);
 
         return await this.findById(id);
     }
 
     async updateProductOption(
-        productOptionId: number,
+        productOptionId: string,
         updateProductOptionDto: UpdateProductOptionDto,
     ) {
         if (!productOptionId) {
             throw new BadRequestException('Missing product option id');
         }
 
-        const { options, product_images, ...other } = updateProductOptionDto;
-        const productId = other?.product_id;
+        const { product_images, ...other } = updateProductOptionDto;
 
         const isExist = await this.prismaService.productOption.findUnique({
             where: {
                 id: productOptionId,
-                product_id: productId,
             },
         });
 
@@ -428,7 +499,7 @@ export class ProductService {
         }
 
         return await this.prismaService.productOption.update({
-            where: { id: productOptionId, product_id: productId },
+            where: { id: productOptionId },
             data: {
                 product_images: {
                     deleteMany: { product_option_id: productOptionId },
@@ -436,17 +507,11 @@ export class ProductService {
                         data: product_images,
                     },
                 },
-                options: {
-                    deleteMany: { product_option_id: productOptionId },
-                    createMany: {
-                        data: options,
-                    },
-                },
                 ...other,
             },
             select: {
                 id: true,
-                SKU: true,
+                sku: true,
                 thumbnail: true,
                 price_modifier: true,
                 stock: true,
@@ -461,30 +526,29 @@ export class ProductService {
                         image_alt_text: true,
                     },
                 },
-                options: {
+                technical_specs: true,
+                product_option_value: {
                     select: {
                         id: true,
-                        name: true,
                         value: true,
-                        additional_cost: true,
+                        adjust_price: true,
                     },
                 },
             },
         });
     }
 
-    async restore(restoreProductDto: RestoreProductDto) {
-        const { productId, variantId } = restoreProductDto;
-
-        const isExist = await this.findById(productId);
+    async restoreProductOption(product_option_id: string) {
+        const isExist = await this.prismaService.productOption.findUnique({
+            where: { id: product_option_id },
+        });
         if (!isExist) {
-            throw new NotFoundException('Product not found');
+            throw new NotFoundException('Product option not found');
         }
 
-        const isUpdated = await this.prismaService.productOption.update({
+        const isDeleted = await this.prismaService.productOption.update({
             where: {
-                id: variantId,
-                product_id: productId,
+                id: product_option_id,
             },
             data: {
                 is_deleted: false,
@@ -492,22 +556,19 @@ export class ProductService {
         });
 
         return {
-            is_success: isUpdated ? true : false,
+            is_success: isDeleted ? true : false,
         };
     }
 
-    async remove(removeProductDto: RemoveProductDto) {
-        const { productId, variantId } = removeProductDto;
-
-        const isExist = await this.findById(productId);
+    async removeProductOption(product_option_id: string) {
+        const isExist = await this.findByProductOptionId(product_option_id);
         if (!isExist) {
-            throw new NotFoundException('Product not found');
+            throw new NotFoundException('Product option not found');
         }
 
         const isDeleted = await this.prismaService.productOption.update({
             where: {
-                id: variantId,
-                product_id: productId,
+                id: product_option_id,
             },
             data: {
                 is_deleted: true,
@@ -517,16 +578,5 @@ export class ProductService {
         return {
             is_success: isDeleted ? true : false,
         };
-    }
-
-    generateSlug(text: string) {
-        return slugify(text, {
-            replacement: '-',
-            remove: undefined,
-            lower: true,
-            strict: false,
-            locale: 'vi',
-            trim: true,
-        });
     }
 }
