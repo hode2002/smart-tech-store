@@ -62,6 +62,10 @@ class TechnicalSpecs {
     @IsString()
     @IsOptional()
     connection?: string;
+
+    @IsString()
+    @IsOptional()
+    weight?: string;
 }
 
 class ProductOptionDto {
