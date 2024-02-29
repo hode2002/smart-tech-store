@@ -69,6 +69,7 @@ model User {
   name           String?
   avatar         String?         @default("https://ct466-project.s3.ap-southeast-2.amazonaws.com/default.jpg")
   phone          String?
+  address        UserAddress?
   cart           Cart?
   orders         Order[]
   history_search HistorySearch[]
@@ -82,6 +83,21 @@ model User {
 
   @@index([email, is_active])
   @@map("users")
+}
+
+model UserAddress {
+  id         String   @id @default(uuid())
+  user       User     @relation(fields: [user_id], references: [id])
+  user_id    String   @unique
+  address    String
+  province   String
+  district   String
+  ward       String
+  hamlet     String
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  @@map("user_address")
 }
 
 model Cart {
@@ -159,6 +175,7 @@ model TechnicalSpecs {
   sim               String?
   battery           String?
   connection        String?
+  weight            String?
   created_at        DateTime      @default(now())
   updated_at        DateTime      @updatedAt
 
@@ -240,20 +257,21 @@ model Category {
 }
 
 model Order {
-  id            String        @id @default(uuid())
-  User          User          @relation(fields: [user_id], references: [id])
+  id            String         @id @default(uuid())
+  User          User           @relation(fields: [user_id], references: [id])
   user_id       String
   name          String
   phone         String
-  delivery      Delivery?
+  shipping      OrderShipping?
   order_date    DateTime?
-  total_amount  Float         @default(0)
+  total_amount  Float          @default(0)
   payment       Payment?
   order_details OrderDetail[]
   address       String
-  status        Int           @default(0)
-  created_at    DateTime      @default(now())
-  updated_at    DateTime      @updatedAt
+  note          String
+  status        Int            @default(0)
+  created_at    DateTime       @default(now())
+  updated_at    DateTime       @updatedAt
 
   @@index([status])
   @@map("orders")
@@ -278,7 +296,7 @@ model Payment {
   id             String   @id @default(uuid())
   order          Order    @relation(fields: [order_id], references: [id])
   order_id       String   @unique
-  amount         Float
+  total_price    Float
   payment_method String
   transaction_id String?
   created_at     DateTime @default(now())
@@ -288,9 +306,24 @@ model Payment {
 }
 
 model Delivery {
+  id             String         @id @default(uuid())
+  name           String
+  charge         Int
+  status         Int            @default(0)
+  created_at     DateTime       @default(now())
+  updated_at     DateTime       @updatedAt
+  order_shipping OrderShipping?
+
+  @@index([status])
+  @@map("delivery")
+}
+
+model OrderShipping {
   id              String   @id @default(uuid())
   order           Order    @relation(fields: [order_id], references: [id])
   order_id        String   @unique
+  delivery        Delivery @relation(fields: [delivery_id], references: [id])
+  delivery_id     String   @unique
   estimate_date   DateTime
   tracking_number String
   status          Int      @default(0)
@@ -298,7 +331,7 @@ model Delivery {
   updated_at      DateTime @updatedAt
 
   @@index([status])
-  @@map("delivery")
+  @@map("order_shipping")
 }
 
 model HistorySearch {
