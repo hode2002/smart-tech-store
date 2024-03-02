@@ -89,11 +89,11 @@ model UserAddress {
   id         String   @id @default(uuid())
   user       User     @relation(fields: [user_id], references: [id])
   user_id    String   @unique
-  address    String
+  address    String?
   province   String
   district   String
   ward       String
-  hamlet     String
+  hamlet     String?
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
 
@@ -262,13 +262,12 @@ model Order {
   user_id       String
   name          String
   phone         String
+  order_details OrderDetail[]
   shipping      OrderShipping?
   order_date    DateTime?
   total_amount  Float          @default(0)
   payment       Payment?
-  order_details OrderDetail[]
-  address       String
-  note          String
+  note          String?
   status        Int            @default(0)
   created_at    DateTime       @default(now())
   updated_at    DateTime       @updatedAt
@@ -280,9 +279,9 @@ model Order {
 model OrderDetail {
   id                String        @id @default(uuid())
   order             Order         @relation(fields: [order_id], references: [id])
-  order_id          String        @unique
+  order_id          String
   product_option    ProductOption @relation(fields: [product_option_id], references: [id])
-  product_option_id String        @unique
+  product_option_id String
   quantity          Int           @default(1)
   price             Float
   subtotal          Float
@@ -306,15 +305,15 @@ model Payment {
 }
 
 model Delivery {
-  id             String         @id @default(uuid())
+  id             String          @id @default(uuid())
   name           String
-  charge         Int
-  status         Int            @default(0)
-  created_at     DateTime       @default(now())
-  updated_at     DateTime       @updatedAt
-  order_shipping OrderShipping?
+  status         Int             @default(0)
+  slug           String          @unique
+  created_at     DateTime        @default(now())
+  updated_at     DateTime        @updatedAt
+  order_shipping OrderShipping[]
 
-  @@index([status])
+  @@index([status, slug])
   @@map("delivery")
 }
 
@@ -323,9 +322,16 @@ model OrderShipping {
   order           Order    @relation(fields: [order_id], references: [id])
   order_id        String   @unique
   delivery        Delivery @relation(fields: [delivery_id], references: [id])
-  delivery_id     String   @unique
-  estimate_date   DateTime
-  tracking_number String
+  delivery_id     String
+  address         String?
+  province        String
+  district        String
+  ward            String
+  hamlet          String?
+  estimate_date   String
+  fee             Int      @default(0)
+  tracking_number String   @unique
+  order_label     String?  @unique
   status          Int      @default(0)
   created_at      DateTime @default(now())
   updated_at      DateTime @updatedAt
