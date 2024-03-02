@@ -6,7 +6,7 @@ import {
     NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from './../prisma/prisma.service';
-import { ChangePasswordDto, UpdateUserDto } from './dto';
+import { ChangePasswordDto, UpdateUserAddressDto, UpdateUserDto } from './dto';
 import { CreateUserEmailDto, ThirdPartyLoginDto } from 'src/auth/dto';
 import * as bcrypt from 'bcrypt';
 import * as passwordGenerator from 'generate-password';
@@ -119,6 +119,47 @@ export class UserService {
 
         return {
             is_success: isUpdated ? true : false,
+        };
+    }
+
+    async updatedAddress(
+        userId: string,
+        updateUserAddressDto: UpdateUserAddressDto,
+    ) {
+        const user = await this.prismaService.user.findUnique({
+            where: { id: userId },
+            select: {
+                name: true,
+                address: true,
+            },
+        });
+        if (!user) {
+            throw new NotFoundException('User not found');
+        }
+
+        const upsertData = await this.prismaService.userAddress.upsert({
+            where: {
+                user_id: userId,
+            },
+            create: {
+                user_id: userId,
+                ...updateUserAddressDto,
+            },
+            update: {
+                ...updateUserAddressDto,
+            },
+            select: {
+                address: true,
+                province: true,
+                district: true,
+                ward: true,
+                hamlet: true,
+            },
+        });
+
+        return {
+            is_success: true,
+            ...upsertData,
         };
     }
 

@@ -13,8 +13,8 @@ import {
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { AtJwtGuard } from 'src/auth/guards';
-import { GetEmail } from 'src/common/decorators/';
-import { ChangePasswordDto, UpdateUserDto } from './dto';
+import { GetEmail, GetUserId } from 'src/common/decorators/';
+import { ChangePasswordDto, UpdateUserAddressDto, UpdateUserDto } from './dto';
 import { CreateUserEmailDto } from 'src/auth/dto';
 import { Request } from 'express';
 import { SuccessResponse } from 'src/common/response';
@@ -78,6 +78,24 @@ export class UserController {
             data: await this.userService.updateByEmail(
                 req.user['email'],
                 updateUserDto,
+            ),
+        };
+    }
+
+    @Patch('address')
+    @UseGuards(AtJwtGuard)
+    @HttpCode(HttpStatus.OK)
+    async updatedAddress(
+        @GetUserId() userId: string,
+        @Body() updateUserAddressDto: UpdateUserAddressDto,
+    ): Promise<SuccessResponse> {
+        return {
+            code: 200,
+            status: 'Success',
+            message: 'Update address success',
+            data: await this.userService.updatedAddress(
+                userId,
+                updateUserAddressDto,
             ),
         };
     }
