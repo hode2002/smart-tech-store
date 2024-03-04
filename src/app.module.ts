@@ -17,6 +17,7 @@ import { HistorySearchModule } from './history-search/history-search.module';
 import { CartModule } from './cart/cart.module';
 import { DeliveryModule } from './delivery/delivery.module';
 import { OrderModule } from './order/order.module';
+import { ReviewModule } from './review/review.module';
 
 @Module({
     imports: [
@@ -57,6 +58,7 @@ import { OrderModule } from './order/order.module';
         CartModule,
         DeliveryModule,
         OrderModule,
+        ReviewModule,
     ],
     controllers: [],
     providers: [
