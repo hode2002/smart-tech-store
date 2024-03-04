@@ -353,11 +353,14 @@ model HistorySearch {
 
 model Review {
   id                String        @id @default(uuid())
+  parent            Review?       @relation("parent", fields: [parent_id], references: [id])
+  parent_id         String?       @unique
+  child             Review?       @relation("parent")
   user              User          @relation(fields: [user_id], references: [id])
-  user_id           String
+  user_id           String        @unique
   product_option    ProductOption @relation(fields: [product_option_id], references: [id])
   product_option_id String
-  star              Float         @default(5)
+  star              Float?        @default(5)
   comment           String
   created_at        DateTime      @default(now())
   updated_at        DateTime      @updatedAt
