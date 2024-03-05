@@ -176,6 +176,7 @@ model TechnicalSpecs {
   battery           String?
   connection        String?
   weight            String?
+  other_info        Json?
   created_at        DateTime      @default(now())
   updated_at        DateTime      @updatedAt
 
@@ -353,11 +354,11 @@ model HistorySearch {
 
 model Review {
   id                String        @id @default(uuid())
-  parent            Review?       @relation("parent", fields: [parent_id], references: [id])
-  parent_id         String?       @unique
-  child             Review?       @relation("parent")
+  parent            Review?       @relation("parent", fields: [parent_id], references: [id], onDelete: Cascade)
+  parent_id         String?
+  children          Review[]      @relation("parent")
   user              User          @relation(fields: [user_id], references: [id])
-  user_id           String        @unique
+  user_id           String
   product_option    ProductOption @relation(fields: [product_option_id], references: [id])
   product_option_id String
   star              Float?        @default(5)
