@@ -43,20 +43,43 @@ export class ReviewService {
             );
         }
 
-        const review = await this.prismaService.review.upsert({
+        const review = await this.prismaService.review.findFirst({
             where: {
                 user_id: userId,
                 product_option_id,
+                parent_id: null,
             },
-            create: {
+            select: {
+                id: true,
+            },
+        });
+
+        if (review) {
+            const isUpdated = await this.prismaService.review.update({
+                where: { id: review.id },
+                data: {
+                    comment,
+                    star,
+                },
+                select: {
+                    id: true,
+                    star: true,
+                    comment: true,
+                },
+            });
+
+            return {
+                is_success: isUpdated ? true : false,
+                ...isUpdated,
+            };
+        }
+
+        const newReview = await this.prismaService.review.create({
+            data: {
                 comment,
                 star,
                 user_id: userId,
                 product_option_id,
-            },
-            update: {
-                comment,
-                star,
             },
             select: {
                 id: true,
@@ -66,8 +89,8 @@ export class ReviewService {
         });
 
         return {
-            is_success: review ? true : false,
-            ...review,
+            is_success: newReview ? true : false,
+            ...newReview,
         };
     }
 
@@ -84,45 +107,65 @@ export class ReviewService {
         const review = await this.prismaService.review.findUnique({
             where: { id: reviewId },
             select: {
+                user: {
+                    select: { id: true },
+                },
                 product_option_id: true,
             },
         });
         if (!review) {
-            throw new NotFoundException('Review not found');
+            throw new NotFoundException('Reviews not found');
         }
+
+        const userComment = await this.prismaService.review.findFirst({
+            where: { parent_id: reviewId, user_id: userId },
+            select: {
+                id: true,
+                user: {
+                    select: { id: true },
+                },
+                product_option_id: true,
+            },
+        });
 
         const { comment } = createReplyReviewDto;
 
-        const isUpdated = await this.prismaService.review.upsert({
-            where: {
-                user_id: userId,
-                product_option_id: review.product_option_id,
-            },
-            update: {
+        if (!userComment) {
+            const newReply = await this.prismaService.review.create({
+                data: {
+                    user_id: userId,
+                    product_option_id: review.product_option_id,
+                    parent_id: reviewId,
+                    comment,
+                    star: null,
+                },
+                select: {
+                    id: true,
+                    comment: true,
+                },
+            });
+
+            return {
+                is_success: newReply ? true : false,
+                ...newReply,
+            };
+        }
+
+        const updateReply = await this.prismaService.review.update({
+            where: { id: userComment.id },
+            data: {
                 comment,
-            },
-            create: {
-                parent_id: reviewId,
-                user_id: userId,
-                product_option_id: review.product_option_id,
-                comment,
+                star: null,
             },
             select: {
                 id: true,
-                parent: {
-                    select: {
-                        id: true,
-                        star: true,
-                        comment: true,
-                    },
-                },
                 comment: true,
             },
         });
 
         return {
-            is_success: isUpdated ? true : false,
-            ...isUpdated,
+            is_success: updateReply ? true : false,
+            ...updateReply,
         };
     }
 
@@ -151,8 +194,10 @@ export class ReviewService {
                 },
                 star: true,
                 comment: true,
-                child: {
+                _count: true,
+                children: {
                     select: {
+                        id: true,
                         user: {
                             select: {
                                 id: true,
@@ -162,11 +207,93 @@ export class ReviewService {
                             },
                         },
                         comment: true,
-                        created_at: true,
+                        _count: true,
                     },
                 },
                 created_at: true,
             },
         });
+    }
+
+    async findByParentId(parentId: string) {
+        const review = await this.prismaService.review.findUnique({
+            where: { id: parentId },
+        });
+        if (!review) {
+            throw new NotFoundException('Review not found');
+        }
+
+        return await this.prismaService.review.findMany({
+            where: { parent_id: parentId },
+            select: {
+                id: true,
+                user: {
+                    select: {
+                        id: true,
+                        name: true,
+                        email: true,
+                        avatar: true,
+                    },
+                },
+                comment: true,
+                _count: true,
+                children: {
+                    select: {
+                        id: true,
+                        user: {
+                            select: {
+                                id: true,
+                                name: true,
+                                email: true,
+                                avatar: true,
+                            },
+                        },
+                        comment: true,
+                        _count: true,
+                    },
+                },
+                created_at: true,
+            },
+        });
+    }
+
+    async remove(reviewId: string, userId: string) {
+        const user = await this.userService.findById(userId);
+        if (!user) {
+            throw new NotFoundException('User not found');
+        }
+
+        const review = await this.prismaService.review.findUnique({
+            where: { id: reviewId, user_id: userId },
+            select: {
+                id: true,
+                user: {
+                    select: { id: true },
+                },
+                star: true,
+                parent_id: true,
+                product_option_id: true,
+            },
+        });
+
+        if (!review) {
+            throw new NotFoundException('Reviews not found');
+        }
+
+        const isDeleted = await this.prismaService.review.delete({
+            where: {
+                id: review.id,
+            },
+            select: {
+                id: true,
+                star: true,
+                comment: true,
+            },
+        });
+
+        return {
+            is_success: isDeleted ? true : false,
+            ...isDeleted,
+        };
     }
 }
