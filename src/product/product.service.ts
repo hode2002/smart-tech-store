@@ -13,7 +13,13 @@ import {
 } from './dto';
 import { PrismaService } from './../prisma/prisma.service';
 import { Request } from 'express';
-import { generateSlug, pagination } from 'src/utils';
+import { generateSlug, pagination, translateSpecs } from 'src/utils';
+import {
+    ProductDetailDB,
+    ProductDetailResponse,
+    ProductParameterDB,
+    ProductParameterResponse,
+} from './types';
 
 @Injectable()
 export class ProductService {
@@ -177,6 +183,7 @@ export class ProductService {
                     select: {
                         id: true,
                         name: true,
+                        logo_url: true,
                         slug: true,
                     },
                 },
@@ -188,9 +195,7 @@ export class ProductService {
                     },
                 },
                 product_options: {
-                    where: {
-                        is_deleted: false,
-                    },
+                    where: { is_deleted: false },
                     select: {
                         id: true,
                         sku: true,
@@ -208,12 +213,61 @@ export class ProductService {
                                 image_alt_text: true,
                             },
                         },
-                        technical_specs: true,
+                        technical_specs: {
+                            select: {
+                                screen: true,
+                                screen_size: true,
+                                os: true,
+                                front_camera: true,
+                                rear_camera: true,
+                                chip: true,
+                                ram: true,
+                                rom: true,
+                                sim: true,
+                                battery: true,
+                                weight: true,
+                                connection: true,
+                            },
+                        },
                         product_option_value: {
                             select: {
-                                id: true,
+                                option: {
+                                    select: { name: true },
+                                },
                                 value: true,
                                 adjust_price: true,
+                            },
+                        },
+                        reviews: {
+                            where: { parent_id: null },
+                            select: {
+                                id: true,
+                                user: {
+                                    select: {
+                                        id: true,
+                                        email: true,
+                                        name: true,
+                                        avatar: true,
+                                    },
+                                },
+                                star: true,
+                                comment: true,
+                                _count: true,
+                                children: {
+                                    select: {
+                                        user: {
+                                            select: {
+                                                id: true,
+                                                email: true,
+                                                name: true,
+                                                avatar: true,
+                                            },
+                                        },
+                                        comment: true,
+                                        created_at: true,
+                                    },
+                                },
+                                created_at: true,
                             },
                         },
                     },
@@ -225,19 +279,19 @@ export class ProductService {
             totalPages,
             ...(page < totalPages && { nextPage: page + 1 }),
             ...(page > 1 && page <= totalPages && { previousPage: page - 1 }),
-            products,
+            products: products.map((product) =>
+                this.convertProductResponse(product),
+            ),
         };
     }
 
-    async findById(id: string) {
+    async findById(id: string): Promise<ProductDetailResponse> {
         if (!id) {
             throw new ForbiddenException('Missing product id');
         }
 
-        const product = await this.prismaService.product.findUnique({
-            where: {
-                id,
-            },
+        const product = await this.prismaService.product.findFirst({
+            where: { id },
             select: {
                 id: true,
                 name: true,
@@ -255,6 +309,7 @@ export class ProductService {
                     select: {
                         id: true,
                         name: true,
+                        logo_url: true,
                         slug: true,
                     },
                 },
@@ -266,9 +321,7 @@ export class ProductService {
                     },
                 },
                 product_options: {
-                    where: {
-                        is_deleted: false,
-                    },
+                    where: { is_deleted: false },
                     select: {
                         id: true,
                         sku: true,
@@ -286,12 +339,65 @@ export class ProductService {
                                 image_alt_text: true,
                             },
                         },
-                        technical_specs: true,
+                        technical_specs: {
+                            select: {
+                                screen: true,
+                                screen_size: true,
+                                os: true,
+                                front_camera: true,
+                                rear_camera: true,
+                                chip: true,
+                                ram: true,
+                                rom: true,
+                                sim: true,
+                                battery: true,
+                                weight: true,
+                                connection: true,
+                            },
+                        },
                         product_option_value: {
                             select: {
-                                id: true,
+                                option: {
+                                    select: {
+                                        name: true,
+                                    },
+                                },
                                 value: true,
                                 adjust_price: true,
+                            },
+                        },
+                        reviews: {
+                            where: {
+                                parent_id: null,
+                            },
+                            select: {
+                                id: true,
+                                user: {
+                                    select: {
+                                        id: true,
+                                        email: true,
+                                        name: true,
+                                        avatar: true,
+                                    },
+                                },
+                                star: true,
+                                comment: true,
+                                _count: true,
+                                children: {
+                                    select: {
+                                        user: {
+                                            select: {
+                                                id: true,
+                                                email: true,
+                                                name: true,
+                                                avatar: true,
+                                            },
+                                        },
+                                        comment: true,
+                                        created_at: true,
+                                    },
+                                },
+                                created_at: true,
                             },
                         },
                     },
@@ -303,7 +409,7 @@ export class ProductService {
             throw new NotFoundException('Product not found');
         }
 
-        return product;
+        return this.convertProductResponse(product);
     }
 
     async findByProductOptionId(id: string) {
@@ -351,89 +457,180 @@ export class ProductService {
         return product;
     }
 
-    async getByParameters(request: Request) {
-        return await this.prismaService.product.findMany({
+    async getByParameters(
+        request: Request,
+    ): Promise<ProductParameterResponse[]> {
+        const products = await this.prismaService.technicalSpecs.findMany({
             where: {
-                ...(request.query['cId'] && {
-                    category_id: request.query['cId'].toString(),
-                }),
-                ...(request.query['bId'] && {
-                    brand_id: request.query['bId'].toString(),
-                }),
-            },
-            select: {
-                id: true,
-                name: true,
-                price: true,
-                promotions: true,
-                warranties: true,
-                label: true,
-                brand: {
-                    select: {
-                        id: true,
-                        name: true,
-                        slug: true,
-                    },
-                },
-                category: {
-                    select: {
-                        id: true,
-                        name: true,
-                        slug: true,
-                    },
-                },
-                product_options: {
-                    where: {
+                product_option: {
+                    product: {
                         AND: [
                             {
-                                is_deleted: false,
+                                ...(request.query['ca'] && {
+                                    category_id: <string>request.query['ca'],
+                                }),
                             },
-                            // {
-                            //     options: {
-                            //         some: {
-                            //             name: 'RAM',
-                            //             value: request.query['ram']
-                            //                 .toString()
-                            //                 ?.replaceAll('-', ' ')
-                            //                 .toUpperCase(),
-                            //         },
-                            //     },
-                            // },
-                            // {
-                            //     options: {
-                            //         some: {
-                            //             name: 'Dung lượng lưu trữ',
-                            //             value: request.query['rom']
-                            //                 .toString()
-                            //                 ?.replaceAll('-', ' ')
-                            //                 .toUpperCase(),
-                            //         },
-                            //     },
-                            // },
+                            {
+                                ...(request.query['b'] && {
+                                    brand_id: <string>request.query['b'],
+                                }),
+                            },
+                            {
+                                price: {
+                                    ...(request.query['pf'] && {
+                                        gte:
+                                            Number(request.query['pf']) *
+                                            1000000,
+                                    }),
+                                    ...(request.query['pt'] && {
+                                        lte:
+                                            Number(request.query['pt']) *
+                                            1000000,
+                                    }),
+                                },
+                            },
                         ],
                     },
-                    select: {
-                        id: true,
-                        sku: true,
-                        thumbnail: true,
-                        price_modifier: true,
-                        stock: true,
-                        discount: true,
-                        is_sale: true,
-                        slug: true,
-                        label_image: true,
-                        // options: {
-                        //     select: {
-                        //         id: true,
-                        //         name: true,
-                        //         value: true,
-                        //         additional_cost: true,
-                        //     },
-                        // },
+                },
+                AND: [
+                    {
+                        ...(request.query['ro'] && {
+                            rom: {
+                                equals: <string>request.query['ro'],
+                            },
+                        }),
+                    },
+                    {
+                        ...(request.query['co'] && {
+                            connection: {
+                                contains: <string>request.query['co'],
+                            },
+                        }),
+                    },
+                    {
+                        ...(request.query['ra'] && {
+                            ram: {
+                                contains: <string>request.query['ra'],
+                            },
+                        }),
+                    },
+                    {
+                        ...(request.query['c'] && {
+                            battery: {
+                                contains: <string>request.query['c'],
+                            },
+                        }),
+                    },
+                    {
+                        ...(request.query['p'] && {
+                            battery: {
+                                gte: <string>request.query['p'],
+                            },
+                        }),
+                    },
+                    {
+                        ...(request.query['o'] && {
+                            os: {
+                                contains: <string>request.query['o'],
+                            },
+                        }),
+                    },
+                ],
+            },
+            include: {
+                product_option: {
+                    include: {
+                        product: {
+                            select: {
+                                id: true,
+                                name: true,
+                                price: true,
+                                promotions: true,
+                                warranties: true,
+                                label: true,
+                                descriptions: {
+                                    select: {
+                                        id: true,
+                                        content: true,
+                                    },
+                                },
+                                brand: {
+                                    select: {
+                                        id: true,
+                                        name: true,
+                                        logo_url: true,
+                                        slug: true,
+                                    },
+                                },
+                                category: {
+                                    select: {
+                                        id: true,
+                                        name: true,
+                                        slug: true,
+                                    },
+                                },
+                            },
+                        },
+                        product_option_value: {
+                            select: {
+                                option: {
+                                    select: {
+                                        name: true,
+                                    },
+                                },
+                                value: true,
+                                adjust_price: true,
+                            },
+                        },
+                        product_images: {
+                            select: {
+                                id: true,
+                                image_url: true,
+                                image_alt_text: true,
+                            },
+                        },
+                        reviews: {
+                            where: {
+                                parent_id: null,
+                            },
+                            select: {
+                                id: true,
+                                user: {
+                                    select: {
+                                        id: true,
+                                        email: true,
+                                        name: true,
+                                        avatar: true,
+                                    },
+                                },
+                                star: true,
+                                comment: true,
+                                _count: true,
+                                children: {
+                                    select: {
+                                        user: {
+                                            select: {
+                                                id: true,
+                                                email: true,
+                                                name: true,
+                                                avatar: true,
+                                            },
+                                        },
+                                        comment: true,
+                                        created_at: true,
+                                    },
+                                },
+                                created_at: true,
+                            },
+                        },
                     },
                 },
             },
         });
+
+        return products.map((product) =>
+            this.convertProductParameterResponse(product),
+        );
     }
 
     async update(id: string, updateProductDto: UpdateProductDto) {
@@ -577,6 +774,100 @@ export class ProductService {
 
         return {
             is_success: isDeleted ? true : false,
+        };
+    }
+
+    private convertProductResponse(
+        product: ProductDetailDB,
+    ): ProductDetailResponse {
+        return {
+            ...product,
+            product_options: product.product_options.map((productOption) => {
+                const rating = <number[]>Array(6).fill(0);
+                let overall = 0;
+
+                productOption.reviews.forEach((review) => {
+                    rating[review.star]++;
+                });
+
+                rating.forEach((item, idx) => {
+                    if (item >= 1) {
+                        overall += idx;
+                    }
+                });
+
+                overall /= productOption.reviews.length;
+
+                const { product_option_value } = productOption;
+                delete productOption.product_option_value;
+
+                return {
+                    ...productOption,
+                    technical_specs: translateSpecs(
+                        productOption.technical_specs,
+                    ),
+                    options: product_option_value.map((el) => ({
+                        name: el.option.name,
+                        value: el.value,
+                        adjust_price: el.adjust_price,
+                    })),
+                    rating: {
+                        total_reviews: productOption.reviews.length,
+                        details: rating,
+                        overall: overall ? overall : 0,
+                    },
+                    reviews: productOption.reviews,
+                };
+            }),
+        };
+    }
+
+    private convertProductParameterResponse(
+        productParameter: ProductParameterDB,
+    ): ProductParameterResponse {
+        const { product_option } = productParameter;
+        const { product, product_option_value, id } = product_option;
+
+        delete product_option.product_option_value;
+        delete productParameter.product_option;
+        delete product_option.product_id;
+        delete product_option.created_at;
+        delete product_option.updated_at;
+        delete product_option.is_deleted;
+        delete product_option.product;
+        delete product_option.id;
+
+        const rating = <number[]>Array(6).fill(0);
+        let overall = 0;
+
+        product_option.reviews.forEach((review) => {
+            rating[review.star]++;
+        });
+
+        rating.forEach((item, idx) => {
+            if (item >= 1) {
+                overall += idx;
+            }
+        });
+
+        overall /= product_option.reviews.length;
+
+        return {
+            product_option_id: id,
+            ...product,
+            ...product_option,
+            technical_specs: translateSpecs(productParameter),
+            options: product_option_value.map((el) => ({
+                name: el.option.name,
+                value: el.value,
+                adjust_price: el.adjust_price,
+            })),
+            rating: {
+                total_reviews: product_option.reviews.length,
+                details: rating,
+                overall: overall ? overall : 0,
+            },
+            reviews: product_option.reviews,
         };
     }
 }
