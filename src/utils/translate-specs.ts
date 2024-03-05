@@ -16,8 +16,14 @@ const translation = {
 };
 
 export const translateSpecs = (specs: technicalSpecs) => {
-    return Object.keys(specs).map((key) => ({
-        name: <string>translation[key],
-        value: <string>specs[key],
-    }));
+    return Object.keys(specs)
+        .map((key) => {
+            return (
+                translation[key] && {
+                    name: <string>translation[key],
+                    value: <string>specs[key],
+                }
+            );
+        })
+        .filter((item) => item != null);
 };
