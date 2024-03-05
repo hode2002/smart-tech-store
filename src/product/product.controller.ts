@@ -93,7 +93,6 @@ export class ProductController {
             ),
         };
     }
-
     @Patch(':id')
     @Permission(Role.ADMIN)
     @UseGuards(AtJwtGuard, RoleGuard)
