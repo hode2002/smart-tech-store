@@ -7,13 +7,12 @@ import {
     UseGuards,
     HttpCode,
     HttpStatus,
+    Delete,
 } from '@nestjs/common';
 import { ReviewService } from './review.service';
 import { AtJwtGuard } from 'src/auth/guards';
 import { SuccessResponse } from 'src/common/response';
-import { GetUserId, Permission } from 'src/common/decorators';
-import { Role } from '@prisma/client';
-import { RoleGuard } from 'src/common/guards';
+import { GetUserId } from 'src/common/decorators';
 import { CreateReplyReviewDto, CreateReviewDto } from './dto';
 
 @Controller('api/v1/reviews')
@@ -39,10 +38,9 @@ export class ReviewController {
     }
 
     @Post(':id/reply')
-    @Permission(Role.ADMIN)
-    @UseGuards(AtJwtGuard, RoleGuard)
+    @UseGuards(AtJwtGuard)
     @HttpCode(HttpStatus.CREATED)
-    async reply(
+    async createReply(
         @GetUserId() userId: string,
         @Param('id') reviewId: string,
         @Body() createReplyReviewDto: CreateReplyReviewDto,
@@ -65,10 +63,38 @@ export class ReviewController {
         @Param('id') id: string,
     ): Promise<SuccessResponse> {
         return {
-            code: 201,
+            code: 200,
             status: 'Success',
             message: 'Get reviews by product option success',
             data: await this.reviewService.findByProductOptionId(id),
+        };
+    }
+
+    @Get('parents/:id')
+    @HttpCode(HttpStatus.OK)
+    async findByParentId(
+        @Param('id') parentId: string,
+    ): Promise<SuccessResponse> {
+        return {
+            code: 200,
+            status: 'Success',
+            message: 'Get reviews success',
+            data: await this.reviewService.findByParentId(parentId),
+        };
+    }
+
+    @Delete(':id')
+    @UseGuards(AtJwtGuard)
+    @HttpCode(HttpStatus.OK)
+    async remove(
+        @GetUserId() userId: string,
+        @Param('id') reviewId: string,
+    ): Promise<SuccessResponse> {
+        return {
+            code: 200,
+            status: 'Success',
+            message: 'Remove review success',
+            data: await this.reviewService.remove(reviewId, userId),
         };
     }
 }
