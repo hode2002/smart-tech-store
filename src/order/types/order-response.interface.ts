@@ -19,6 +19,7 @@ export interface OrderResponse {
     payment_method: string;
     transaction_id: string;
     order_details: {
+        id: string;
         product: {
             id: string;
             sku: string;
@@ -38,6 +39,7 @@ export interface OrderResponse {
                 id: string;
                 content: string;
             }[];
+            weight: number;
             label: string;
             price: number;
             promotions: JsonValue;

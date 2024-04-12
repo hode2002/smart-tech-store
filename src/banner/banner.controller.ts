@@ -36,8 +36,7 @@ export class BannerController {
         @UploadedFile() fileUploadDto: FileUploadDto,
     ): Promise<SuccessResponse> {
         return {
-            code: 201,
-            status: 'Success',
+            statusCode: HttpStatus.OK,
             message: 'Create success',
             data: await this.bannerService.create(
                 createBannerDto,
@@ -50,8 +49,7 @@ export class BannerController {
     @HttpCode(HttpStatus.OK)
     async findAll(): Promise<SuccessResponse> {
         return {
-            code: 200,
-            status: 'Success',
+            statusCode: HttpStatus.OK,
             message: 'Get all banners success',
             data: await this.bannerService.findAll(),
         };
@@ -63,8 +61,7 @@ export class BannerController {
     @HttpCode(HttpStatus.OK)
     async AdminFindAll(): Promise<SuccessResponse> {
         return {
-            code: 200,
-            status: 'Success',
+            statusCode: HttpStatus.OK,
             message: 'Get all banners success',
             data: await this.bannerService.AdminFindAll(),
         };
@@ -72,10 +69,9 @@ export class BannerController {
 
     @Get(':id')
     @HttpCode(HttpStatus.OK)
-    async findById(@Param('id') id: string) {
+    async findById(@Param('id') id: string): Promise<SuccessResponse> {
         return {
-            code: 200,
-            status: 'Success',
+            statusCode: HttpStatus.OK,
             message: 'Get banner success',
             data: await this.bannerService.findById(id),
         };
@@ -90,10 +86,9 @@ export class BannerController {
         @Param('id') id: string,
         @Body() updateBannerDto: UpdateBannerDto,
         @UploadedFile() fileUploadDto: FileUploadDto,
-    ) {
+    ): Promise<SuccessResponse> {
         return {
-            code: 200,
-            status: 'Success',
+            statusCode: HttpStatus.OK,
             message: 'Update success',
             data: await this.bannerService.update(
                 id,
@@ -107,10 +102,9 @@ export class BannerController {
     @Permission(Role.ADMIN)
     @UseGuards(AtJwtGuard, RoleGuard)
     @HttpCode(HttpStatus.OK)
-    async remove(@Param('id') id: string) {
+    async remove(@Param('id') id: string): Promise<SuccessResponse> {
         return {
-            code: 200,
-            status: 'Success',
+            statusCode: HttpStatus.OK,
             message: 'Remove success',
             data: await this.bannerService.remove(id),
         };

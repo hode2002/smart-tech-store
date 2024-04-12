@@ -27,8 +27,7 @@ export class ReviewController {
         @Body() createReviewDto: CreateReviewDto,
     ): Promise<SuccessResponse> {
         return {
-            code: 201,
-            status: 'Success',
+            statusCode: HttpStatus.CREATED,
             message: 'Create new review success',
             data: await this.reviewService.upsertReview(
                 userId,
@@ -46,8 +45,7 @@ export class ReviewController {
         @Body() createReplyReviewDto: CreateReplyReviewDto,
     ): Promise<SuccessResponse> {
         return {
-            code: 201,
-            status: 'Success',
+            statusCode: HttpStatus.CREATED,
             message: 'Reply success',
             data: await this.reviewService.reply(
                 reviewId,
@@ -63,8 +61,7 @@ export class ReviewController {
         @Param('id') id: string,
     ): Promise<SuccessResponse> {
         return {
-            code: 200,
-            status: 'Success',
+            statusCode: HttpStatus.OK,
             message: 'Get reviews by product option success',
             data: await this.reviewService.findByProductOptionId(id),
         };
@@ -76,8 +73,7 @@ export class ReviewController {
         @Param('id') parentId: string,
     ): Promise<SuccessResponse> {
         return {
-            code: 200,
-            status: 'Success',
+            statusCode: HttpStatus.OK,
             message: 'Get reviews success',
             data: await this.reviewService.findByParentId(parentId),
         };
@@ -91,8 +87,7 @@ export class ReviewController {
         @Param('id') reviewId: string,
     ): Promise<SuccessResponse> {
         return {
-            code: 200,
-            status: 'Success',
+            statusCode: HttpStatus.OK,
             message: 'Remove review success',
             data: await this.reviewService.remove(reviewId, userId),
         };

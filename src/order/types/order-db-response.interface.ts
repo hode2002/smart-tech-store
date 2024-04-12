@@ -26,9 +26,13 @@ export interface OrderDBResponse {
         transaction_id: string;
     };
     order_details: {
+        id: string;
         product_option: {
             id: string;
             sku: string;
+            technical_specs: {
+                weight: string;
+            };
             product: {
                 id: string;
                 name: string;

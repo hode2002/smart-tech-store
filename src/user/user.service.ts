@@ -78,7 +78,6 @@ export class UserService {
                 password,
             },
             select: {
-                id: true,
                 email: true,
                 name: true,
                 avatar: true,
@@ -91,7 +90,6 @@ export class UserService {
         return await this.prismaService.user.findUnique({
             where: { email },
             select: {
-                id: true,
                 email: true,
                 name: true,
                 avatar: true,
@@ -100,8 +98,25 @@ export class UserService {
         });
     }
 
-    async changePassword(changePasswordDto: ChangePasswordDto) {
-        const { email, newPass, oldPass } = changePasswordDto;
+    async getAddress(email: string) {
+        const userAddress = await this.prismaService.user.findUnique({
+            where: { email },
+            select: {
+                address: {
+                    select: {
+                        address: true,
+                        province: true,
+                        district: true,
+                        ward: true,
+                    },
+                },
+            },
+        });
+        return { ...userAddress.address };
+    }
+
+    async changePassword(email: string, changePasswordDto: ChangePasswordDto) {
+        const { newPass, oldPass } = changePasswordDto;
 
         const user = await this.findByEmail(email);
         if (!user) {
@@ -157,10 +172,7 @@ export class UserService {
             },
         });
 
-        return {
-            is_success: true,
-            ...upsertData,
-        };
+        return upsertData;
     }
 
     async updateAvatar(email: string, fileUploadDto: FileUploadDto) {
@@ -263,7 +275,6 @@ export class UserService {
             where: { email },
             data: { ...updateUserDto },
             select: {
-                id: true,
                 email: true,
                 name: true,
                 avatar: true,

@@ -8,6 +8,8 @@ import {
     UseGuards,
     HttpStatus,
     HttpCode,
+    Req,
+    Res,
 } from '@nestjs/common';
 import { OrderService } from './order.service';
 import { AtJwtGuard } from 'src/auth/guards';
@@ -18,7 +20,10 @@ import {
     CalculateShippingFeeDto,
     CreateOrderDto,
     UpdateOrderStatusDto,
+    UpdatePaymentStatusDto,
 } from './dto';
+import { Request, Response } from 'express';
+import { Throttle } from '@nestjs/throttler';
 
 @Controller('api/v1/orders')
 export class OrderController {
@@ -26,16 +31,46 @@ export class OrderController {
 
     @Post()
     @UseGuards(AtJwtGuard)
-    @HttpCode(HttpStatus.OK)
+    @HttpCode(HttpStatus.CREATED)
     async create(
         @GetUserId() userId: string,
         @Body() createOrderDto: CreateOrderDto,
     ): Promise<SuccessResponse> {
         return {
-            code: 201,
-            status: 'Success',
+            statusCode: HttpStatus.CREATED,
             message: 'Create order success',
             data: await this.orderService.create(userId, createOrderDto),
+        };
+    }
+
+    @Post('vnpay')
+    @UseGuards(AtJwtGuard)
+    @HttpCode(HttpStatus.OK)
+    async vnpayPayment(
+        @Req() req: Request,
+        @Res() res: Response,
+    ): Promise<SuccessResponse> {
+        return {
+            statusCode: HttpStatus.OK,
+            message: 'Payment url',
+            data: await this.orderService.vnpayCreatePayment(req, res),
+        };
+    }
+
+    @Patch('payment/:id')
+    @UseGuards(AtJwtGuard)
+    @HttpCode(HttpStatus.OK)
+    async updatePaymentStatus(
+        @Param('id') id: string,
+        @Body() updatePaymentStatusDto: UpdatePaymentStatusDto,
+    ): Promise<SuccessResponse> {
+        return {
+            statusCode: HttpStatus.OK,
+            message: 'Payment url',
+            data: await this.orderService.updatePaymentStatus(
+                id,
+                updatePaymentStatusDto,
+            ),
         };
     }
 
@@ -47,8 +82,7 @@ export class OrderController {
         @Param('id') id: string,
     ): Promise<SuccessResponse> {
         return {
-            code: 200,
-            status: 'Success',
+            statusCode: HttpStatus.OK,
             message: 'Cancel order success',
             data: await this.orderService.cancel(userId, id),
         };
@@ -61,8 +95,7 @@ export class OrderController {
         @Body() calculateShippingFeeDto: CalculateShippingFeeDto,
     ): Promise<SuccessResponse> {
         return {
-            code: 201,
-            status: 'Success',
+            statusCode: HttpStatus.OK,
             message: 'Get shipping fee success',
             data: await this.orderService.calculateShippingFee(
                 calculateShippingFeeDto,
@@ -78,8 +111,7 @@ export class OrderController {
         @GetUserId() userId: string,
     ): Promise<SuccessResponse> {
         return {
-            code: 200,
-            status: 'Success',
+            statusCode: HttpStatus.OK,
             message: 'Get order by id success',
             data: (await this.orderService.findById(
                 userId,
@@ -91,13 +123,13 @@ export class OrderController {
     @Get('status/:status')
     @UseGuards(AtJwtGuard)
     @HttpCode(HttpStatus.OK)
+    @Throttle({ default: { limit: 50, ttl: 60000 } })
     async findByStatus(
         @Param('status') status: string,
         @GetUserId() userId: string,
     ): Promise<SuccessResponse> {
         return {
-            code: 200,
-            status: 'Success',
+            statusCode: HttpStatus.OK,
             message: 'Get order by status success',
             data: await this.orderService.findByStatus(userId, +status),
         };
@@ -112,8 +144,7 @@ export class OrderController {
         @Body() updateOrderStatusDto: UpdateOrderStatusDto,
     ): Promise<SuccessResponse> {
         return {
-            code: 200,
-            status: 'Success',
+            statusCode: HttpStatus.OK,
             message: 'Update order status success',
             data: await this.orderService.updateStatus(
                 id,

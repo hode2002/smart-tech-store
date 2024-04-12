@@ -1,5 +1,10 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { CreateCartDto, DeleteCartDto, UpdateCartDto } from './dto';
+import {
+    ChangeProductOptionDto,
+    CreateCartDto,
+    DeleteCartDto,
+    UpdateCartDto,
+} from './dto';
 import { PrismaService } from './../prisma/prisma.service';
 import { UserService } from './../user/user.service';
 import { ProductCartDB, ProductCartResponse } from './types';
@@ -24,77 +29,125 @@ export class CartService {
         });
 
         if (!userCart) {
-            return await this.prismaService.cart.create({
-                data: {
-                    user_id: userId,
-                    product_option_id: productOptionId,
-                    quantity,
-                },
-                select: {
-                    product_option: {
-                        select: {
-                            product: {
-                                select: {
-                                    name: true,
-                                },
-                            },
-                            product_option_value: {
-                                select: {
-                                    option: {
-                                        select: {
-                                            name: true,
-                                        },
+            const cartItem: ProductCartDB =
+                await this.prismaService.cart.create({
+                    data: {
+                        user_id: userId,
+                        product_option_id: productOptionId,
+                        quantity,
+                    },
+                    select: {
+                        product_option: {
+                            select: {
+                                id: true,
+                                is_sale: true,
+                                price_modifier: true,
+                                stock: true,
+                                thumbnail: true,
+                                sku: true,
+                                slug: true,
+                                discount: true,
+                                label_image: true,
+                                technical_specs: {
+                                    select: {
+                                        weight: true,
                                     },
-                                    value: true,
+                                },
+                                product_images: {
+                                    select: {
+                                        id: true,
+                                        image_url: true,
+                                        image_alt_text: true,
+                                    },
+                                },
+                                product: {
+                                    select: {
+                                        id: true,
+                                        name: true,
+                                        price: true,
+                                        brand: {
+                                            select: {
+                                                id: true,
+                                                name: true,
+                                                logo_url: true,
+                                                slug: true,
+                                            },
+                                        },
+                                        category: {
+                                            select: {
+                                                id: true,
+                                                name: true,
+                                                slug: true,
+                                            },
+                                        },
+                                        product_options: {
+                                            where: {
+                                                cart: {
+                                                    none: { user_id: userId },
+                                                },
+                                            },
+                                            select: {
+                                                id: true,
+                                                price_modifier: true,
+                                                label_image: true,
+                                                is_sale: true,
+                                                discount: true,
+                                                technical_specs: {
+                                                    select: {
+                                                        weight: true,
+                                                    },
+                                                },
+                                                product_option_value: {
+                                                    select: {
+                                                        option: {
+                                                            select: {
+                                                                name: true,
+                                                            },
+                                                        },
+                                                        value: true,
+                                                        adjust_price: true,
+                                                    },
+                                                },
+                                                product_images: {
+                                                    select: {
+                                                        id: true,
+                                                        image_url: true,
+                                                        image_alt_text: true,
+                                                    },
+                                                },
+                                                slug: true,
+                                                sku: true,
+                                                stock: true,
+                                                thumbnail: true,
+                                            },
+                                        },
+                                        warranties: true,
+                                    },
+                                },
+                                product_option_value: {
+                                    select: {
+                                        option: {
+                                            select: {
+                                                name: true,
+                                            },
+                                        },
+                                        value: true,
+                                        adjust_price: true,
+                                    },
                                 },
                             },
                         },
+                        quantity: true,
                     },
-                    quantity: true,
-                },
-            });
+                });
+            return this.convertResponse(cartItem);
         }
 
-        const isUpdated = await this.prismaService.cart.update({
+        const cartItem: ProductCartDB = await this.prismaService.cart.update({
             where: { id: userCart.id, product_option_id: productOptionId },
             data: {
                 quantity: userCart.quantity + quantity,
             },
-            select: {
-                product_option: {
-                    select: {
-                        product: {
-                            select: {
-                                name: true,
-                            },
-                        },
-                        product_option_value: {
-                            select: {
-                                option: {
-                                    select: {
-                                        name: true,
-                                    },
-                                },
-                                value: true,
-                            },
-                        },
-                    },
-                },
-                quantity: true,
-            },
-        });
-
-        return isUpdated;
-    }
-
-    async findProductsByUserId(userId: string) {
-        const user = await this.userService.findById(userId);
-        if (!user) {
-            throw new NotFoundException('User not found');
-        }
-
-        const products = await this.prismaService.cart.findMany({
-            where: { user_id: userId },
             select: {
                 product_option: {
                     select: {
@@ -107,6 +160,11 @@ export class CartService {
                         slug: true,
                         discount: true,
                         label_image: true,
+                        technical_specs: {
+                            select: {
+                                weight: true,
+                            },
+                        },
                         product_images: {
                             select: {
                                 id: true,
@@ -116,6 +174,7 @@ export class CartService {
                         },
                         product: {
                             select: {
+                                id: true,
                                 name: true,
                                 price: true,
                                 brand: {
@@ -131,6 +190,47 @@ export class CartService {
                                         id: true,
                                         name: true,
                                         slug: true,
+                                    },
+                                },
+                                product_options: {
+                                    where: {
+                                        cart: {
+                                            none: { user_id: userId },
+                                        },
+                                    },
+                                    select: {
+                                        id: true,
+                                        price_modifier: true,
+                                        label_image: true,
+                                        is_sale: true,
+                                        discount: true,
+                                        technical_specs: {
+                                            select: {
+                                                weight: true,
+                                            },
+                                        },
+                                        product_option_value: {
+                                            select: {
+                                                option: {
+                                                    select: {
+                                                        name: true,
+                                                    },
+                                                },
+                                                value: true,
+                                                adjust_price: true,
+                                            },
+                                        },
+                                        product_images: {
+                                            select: {
+                                                id: true,
+                                                image_url: true,
+                                                image_alt_text: true,
+                                            },
+                                        },
+                                        slug: true,
+                                        sku: true,
+                                        stock: true,
+                                        thumbnail: true,
                                     },
                                 },
                                 warranties: true,
@@ -152,32 +252,74 @@ export class CartService {
                 quantity: true,
             },
         });
-
-        return this.flatData(products);
+        return this.convertResponse(cartItem);
     }
 
-    async updateProductQuantity(userId: string, updateCartDto: UpdateCartDto) {
-        const { productOptionId, quantity } = updateCartDto;
+    async changeProductOption(
+        userId: string,
+        changeProductOptionDto: ChangeProductOptionDto,
+    ) {
+        const { oldOptionId, newOptionId } = changeProductOptionDto;
 
         const user = await this.userService.findById(userId);
         if (!user) {
             throw new NotFoundException('User not found');
         }
 
-        const userCart = await this.prismaService.cart.findUnique({
-            where: { user_id: userId },
+        const userCart = await this.prismaService.cart.findFirst({
+            where: {
+                user_id: userId,
+                product_option_id: oldOptionId,
+            },
         });
 
-        const isUpdated = await this.prismaService.cart.update({
-            where: { id: userCart.id, product_option_id: productOptionId },
+        if (!userCart) {
+            throw new NotFoundException('Product does not exist in cart');
+        }
+
+        const productOption = await this.prismaService.productOption.findFirst({
+            where: { id: newOptionId },
+        });
+
+        if (!productOption) {
+            throw new NotFoundException('Product not found');
+        }
+
+        const cartItem: ProductCartDB = await this.prismaService.cart.update({
+            where: {
+                id: userCart.id,
+                product_option_id: oldOptionId,
+            },
             data: {
-                quantity,
+                product_option_id: newOptionId,
             },
             select: {
                 product_option: {
                     select: {
+                        id: true,
+                        is_sale: true,
+                        price_modifier: true,
+                        stock: true,
+                        thumbnail: true,
+                        sku: true,
+                        slug: true,
+                        discount: true,
+                        label_image: true,
+                        technical_specs: {
+                            select: {
+                                weight: true,
+                            },
+                        },
+                        product_images: {
+                            select: {
+                                id: true,
+                                image_url: true,
+                                image_alt_text: true,
+                            },
+                        },
                         product: {
                             select: {
+                                id: true,
                                 name: true,
                                 price: true,
                                 brand: {
@@ -195,6 +337,47 @@ export class CartService {
                                         slug: true,
                                     },
                                 },
+                                product_options: {
+                                    where: {
+                                        cart: {
+                                            none: { user_id: userId },
+                                        },
+                                    },
+                                    select: {
+                                        id: true,
+                                        price_modifier: true,
+                                        label_image: true,
+                                        is_sale: true,
+                                        discount: true,
+                                        technical_specs: {
+                                            select: {
+                                                weight: true,
+                                            },
+                                        },
+                                        product_option_value: {
+                                            select: {
+                                                option: {
+                                                    select: {
+                                                        name: true,
+                                                    },
+                                                },
+                                                value: true,
+                                                adjust_price: true,
+                                            },
+                                        },
+                                        product_images: {
+                                            select: {
+                                                id: true,
+                                                image_url: true,
+                                                image_alt_text: true,
+                                            },
+                                        },
+                                        slug: true,
+                                        sku: true,
+                                        stock: true,
+                                        thumbnail: true,
+                                    },
+                                },
                                 warranties: true,
                             },
                         },
@@ -206,6 +389,7 @@ export class CartService {
                                     },
                                 },
                                 value: true,
+                                adjust_price: true,
                             },
                         },
                     },
@@ -213,8 +397,268 @@ export class CartService {
                 quantity: true,
             },
         });
+        return this.convertResponse(cartItem);
+    }
 
-        return isUpdated;
+    async findProductsByUserId(userId: string) {
+        const user = await this.userService.findById(userId);
+        if (!user) {
+            throw new NotFoundException('User not found');
+        }
+
+        const products: ProductCartDB[] =
+            await this.prismaService.cart.findMany({
+                where: { user_id: userId },
+                select: {
+                    product_option: {
+                        select: {
+                            id: true,
+                            is_sale: true,
+                            price_modifier: true,
+                            stock: true,
+                            thumbnail: true,
+                            sku: true,
+                            slug: true,
+                            discount: true,
+                            label_image: true,
+                            technical_specs: {
+                                select: {
+                                    weight: true,
+                                },
+                            },
+                            product_images: {
+                                select: {
+                                    id: true,
+                                    image_url: true,
+                                    image_alt_text: true,
+                                },
+                            },
+                            product: {
+                                select: {
+                                    id: true,
+                                    name: true,
+                                    price: true,
+                                    brand: {
+                                        select: {
+                                            id: true,
+                                            name: true,
+                                            logo_url: true,
+                                            slug: true,
+                                        },
+                                    },
+                                    category: {
+                                        select: {
+                                            id: true,
+                                            name: true,
+                                            slug: true,
+                                        },
+                                    },
+                                    product_options: {
+                                        where: {
+                                            cart: {
+                                                none: { user_id: userId },
+                                            },
+                                        },
+                                        select: {
+                                            id: true,
+                                            price_modifier: true,
+                                            label_image: true,
+                                            is_sale: true,
+                                            discount: true,
+                                            technical_specs: {
+                                                select: {
+                                                    weight: true,
+                                                },
+                                            },
+                                            product_option_value: {
+                                                select: {
+                                                    option: {
+                                                        select: {
+                                                            name: true,
+                                                        },
+                                                    },
+                                                    value: true,
+                                                    adjust_price: true,
+                                                },
+                                            },
+                                            product_images: {
+                                                select: {
+                                                    id: true,
+                                                    image_url: true,
+                                                    image_alt_text: true,
+                                                },
+                                            },
+                                            slug: true,
+                                            sku: true,
+                                            stock: true,
+                                            thumbnail: true,
+                                        },
+                                    },
+                                    warranties: true,
+                                },
+                            },
+                            product_option_value: {
+                                select: {
+                                    option: {
+                                        select: {
+                                            name: true,
+                                        },
+                                    },
+                                    value: true,
+                                    adjust_price: true,
+                                },
+                            },
+                        },
+                    },
+                    quantity: true,
+                },
+            });
+
+        return products.map((product) => this.convertResponse(product));
+    }
+
+    async updateProductQuantity(userId: string, updateCartDto: UpdateCartDto) {
+        const { productOptionId, quantity } = updateCartDto;
+
+        const user = await this.userService.findById(userId);
+        if (!user) {
+            throw new NotFoundException('User not found');
+        }
+
+        const userCart = await this.prismaService.cart.findFirst({
+            where: {
+                user_id: userId,
+                product_option_id: productOptionId,
+            },
+        });
+
+        if (!userCart) {
+            throw new NotFoundException('Product does not exist in cart');
+        }
+
+        const productOption = await this.prismaService.productOption.findFirst({
+            where: { id: productOptionId },
+        });
+
+        if (!productOption) {
+            throw new NotFoundException('Product not found');
+        }
+
+        const cartItemUpdated: ProductCartDB =
+            await this.prismaService.cart.update({
+                where: {
+                    id: userCart.id,
+                    product_option_id: productOptionId,
+                },
+                data: {
+                    quantity,
+                },
+                select: {
+                    product_option: {
+                        select: {
+                            id: true,
+                            is_sale: true,
+                            price_modifier: true,
+                            stock: true,
+                            thumbnail: true,
+                            sku: true,
+                            slug: true,
+                            discount: true,
+                            label_image: true,
+                            technical_specs: {
+                                select: {
+                                    weight: true,
+                                },
+                            },
+                            product_images: {
+                                select: {
+                                    id: true,
+                                    image_url: true,
+                                    image_alt_text: true,
+                                },
+                            },
+                            product: {
+                                select: {
+                                    id: true,
+                                    name: true,
+                                    price: true,
+                                    brand: {
+                                        select: {
+                                            id: true,
+                                            name: true,
+                                            logo_url: true,
+                                            slug: true,
+                                        },
+                                    },
+                                    category: {
+                                        select: {
+                                            id: true,
+                                            name: true,
+                                            slug: true,
+                                        },
+                                    },
+                                    product_options: {
+                                        where: {
+                                            cart: {
+                                                none: { user_id: userId },
+                                            },
+                                        },
+                                        select: {
+                                            id: true,
+                                            price_modifier: true,
+                                            label_image: true,
+                                            is_sale: true,
+                                            discount: true,
+                                            technical_specs: {
+                                                select: {
+                                                    weight: true,
+                                                },
+                                            },
+                                            product_option_value: {
+                                                select: {
+                                                    option: {
+                                                        select: {
+                                                            name: true,
+                                                        },
+                                                    },
+                                                    value: true,
+                                                    adjust_price: true,
+                                                },
+                                            },
+                                            product_images: {
+                                                select: {
+                                                    id: true,
+                                                    image_url: true,
+                                                    image_alt_text: true,
+                                                },
+                                            },
+                                            slug: true,
+                                            sku: true,
+                                            stock: true,
+                                            thumbnail: true,
+                                        },
+                                    },
+                                    warranties: true,
+                                },
+                            },
+                            product_option_value: {
+                                select: {
+                                    option: {
+                                        select: {
+                                            name: true,
+                                        },
+                                    },
+                                    value: true,
+                                    adjust_price: true,
+                                },
+                            },
+                        },
+                    },
+                    quantity: true,
+                },
+            });
+
+        return this.convertResponse(cartItemUpdated);
     }
 
     async deleteProduct(userId: string, deleteCartDto: DeleteCartDto) {
@@ -223,42 +667,94 @@ export class CartService {
         if (!user) {
             throw new NotFoundException('User not found');
         }
+        const userCart = await this.prismaService.cart.findFirst({
+            where: {
+                user_id: userId,
+                product_option_id: productOptionId,
+            },
+        });
+
+        if (!userCart) {
+            throw new NotFoundException('Product does not exist in cart');
+        }
+
+        const productOption = await this.prismaService.productOption.findFirst({
+            where: { id: productOptionId },
+        });
+
+        if (!productOption) {
+            throw new NotFoundException('Product not found');
+        }
 
         const isDeleted = await this.prismaService.cart.delete({
-            where: { user_id: userId, product_option_id: productOptionId },
+            where: {
+                user_id: userId,
+                product_option_id: productOptionId,
+            },
         });
 
         return {
-            is_success: isDeleted ? 'true' : 'false',
+            is_success: isDeleted ? true : false,
         };
     }
 
-    private flatData = (
-        productCartDB: ProductCartDB[],
-    ): ProductCartResponse[] => {
-        return productCartDB.map((item) => ({
-            id: item.product_option.id,
-            name: item.product_option.product.name,
-            product_images: item.product_option.product_images,
-            is_sale: item.product_option.is_sale,
-            price:
-                item.product_option.product.price +
-                item.product_option.price_modifier,
-            brand: item.product_option.product.brand,
-            category: item.product_option.product.category,
-            stock: item.product_option.stock,
-            thumbnail: item.product_option.thumbnail,
-            sku: item.product_option.sku,
-            slug: item.product_option.slug,
-            discount: item.product_option.discount,
-            label_image: item.product_option.label_image,
-            options: item.product_option.product_option_value.map((el) => ({
-                name: el.option.name,
-                value: el.value,
-                adjust_price: el.adjust_price,
-            })),
-            warranties: item.product_option.product.warranties,
-            quantity: item.quantity,
-        }));
+    private convertResponse = (
+        productCartDB: ProductCartDB,
+    ): ProductCartResponse => {
+        const selectedOption = productCartDB.product_option;
+        return {
+            id: selectedOption.product.id,
+            name: selectedOption.product.name,
+            price: selectedOption.product.price,
+            brand: selectedOption.product.brand,
+            category: selectedOption.product.category,
+            warranties: selectedOption.product.warranties,
+            selected_option: {
+                id: selectedOption.id,
+                price_modifier: selectedOption.price_modifier,
+                label_image: selectedOption.label_image,
+                is_sale: selectedOption.is_sale,
+                discount: selectedOption.discount,
+                options: selectedOption.product_option_value.map((el) => ({
+                    name: el.option.name,
+                    value: el.value,
+                    adjust_price: el.adjust_price,
+                })),
+                product_images: selectedOption.product_images,
+                slug: selectedOption.slug,
+                sku: selectedOption.sku,
+                stock: selectedOption.stock,
+                thumbnail: selectedOption.thumbnail,
+                weight: Number(
+                    selectedOption.technical_specs.weight?.split(' ')[0], // 188 g
+                ),
+            },
+            other_product_options: selectedOption.product.product_options
+                .filter(
+                    (productOption) => productOption.id !== selectedOption.id,
+                )
+                .map((productOption) => ({
+                    id: productOption.id,
+                    price_modifier: productOption.price_modifier,
+                    label_image: productOption.label_image,
+                    is_sale: productOption.is_sale,
+                    discount: productOption.discount,
+                    options: productOption.product_option_value.map((el) => ({
+                        name: el.option.name,
+                        value: el.value,
+                        adjust_price: el.adjust_price,
+                    })),
+                    product_images: productOption.product_images,
+                    slug: productOption.slug,
+                    sku: productOption.sku,
+                    stock: productOption.stock,
+                    thumbnail: productOption.thumbnail,
+                    weight: Number(
+                        selectedOption.technical_specs.weight?.split(' ')[0], // 188 g
+                    ),
+                })),
+
+            quantity: productCartDB.quantity,
+        };
     };
 }

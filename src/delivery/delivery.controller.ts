@@ -27,13 +27,12 @@ export class DeliveryController {
     @Post()
     @Permission(Role.ADMIN)
     @UseGuards(AtJwtGuard, RoleGuard)
-    @HttpCode(HttpStatus.OK)
+    @HttpCode(HttpStatus.CREATED)
     async create(
         @Body() createDeliveryDto: CreateDeliveryDto,
     ): Promise<SuccessResponse> {
         return {
-            code: 201,
-            status: 'Success',
+            statusCode: HttpStatus.CREATED,
             message: 'Create success',
             data: await this.deliveryService.create(createDeliveryDto),
         };
@@ -43,8 +42,7 @@ export class DeliveryController {
     @HttpCode(HttpStatus.OK)
     async findAll(): Promise<SuccessResponse> {
         return {
-            code: 200,
-            status: 'Success',
+            statusCode: HttpStatus.OK,
             message: 'Get all delivery success',
             data: await this.deliveryService.findAll(),
         };
@@ -54,8 +52,7 @@ export class DeliveryController {
     @HttpCode(HttpStatus.OK)
     async adminFindAll(): Promise<SuccessResponse> {
         return {
-            code: 200,
-            status: 'Success',
+            statusCode: HttpStatus.OK,
             message: 'Get all delivery success',
             data: await this.deliveryService.adminFindAll(),
         };
@@ -65,8 +62,7 @@ export class DeliveryController {
     @HttpCode(HttpStatus.OK)
     async findById(@Param('id') id: string): Promise<SuccessResponse> {
         return {
-            code: 200,
-            status: 'Success',
+            statusCode: HttpStatus.OK,
             message: 'Get delivery by id success',
             data: await this.deliveryService.findById(id),
         };
@@ -81,8 +77,7 @@ export class DeliveryController {
         @Body() updateDeliveryDto: UpdateDeliveryDto,
     ): Promise<SuccessResponse> {
         return {
-            code: 200,
-            status: 'Success',
+            statusCode: HttpStatus.OK,
             message: 'Get all delivery success',
             data: await this.deliveryService.update(id, updateDeliveryDto),
         };
@@ -94,8 +89,7 @@ export class DeliveryController {
     @HttpCode(HttpStatus.OK)
     async remove(@Param('id') id: string): Promise<SuccessResponse> {
         return {
-            code: 200,
-            status: 'Success',
+            statusCode: HttpStatus.OK,
             message: 'Remove delivery success',
             data: await this.deliveryService.remove(id),
         };
