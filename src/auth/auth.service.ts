@@ -22,6 +22,7 @@ import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { JwtPayload } from 'src/common/types';
 import { AuthType } from '@prisma/client';
+import { Request, Response } from 'express';
 
 @Injectable()
 export class AuthService {
@@ -36,6 +37,8 @@ export class AuthService {
     ) {}
 
     async thirdPartyLogin(
+        req: Request,
+        res: Response,
         thirdPartyLoginDto: ThirdPartyLoginDto,
         authType: AuthType,
     ) {
@@ -59,13 +62,38 @@ export class AuthService {
         });
 
         const isUpdated = await this.userService.updateByEmail(email, {
-            refresh_token: await bcrypt.hash(tokens.refresh_Token, 10),
+            refresh_token: await bcrypt.hash(tokens.refreshToken, 10),
         });
         if (!isUpdated) {
             throw new InternalServerErrorException('Internal Server Error');
         }
 
-        return tokens;
+        // return {
+        //     profile: {
+        //         email: user.email,
+        //         name: user.name,
+        //         avatar: user.avatar,
+        //         phone: user.phone,
+        //     },
+        //     tokens,
+        // };
+
+        res.cookie('accessToken', tokens.accessToken, {
+            // path: '/',
+            // httpOnly: true,
+            // sameSite: 'strict',
+            // secure: false,
+        });
+        res.cookie('refreshToken', tokens.refreshToken, {
+            // path: '/',
+            // httpOnly: true,
+            // sameSite: 'strict',
+            // secure: false,
+        });
+
+        return res.redirect(
+            this.configService.get<string>('FRONTEND_REDIRECT_URL'),
+        );
     }
 
     async emailVerification(createUserEmailDto: CreateUserEmailDto) {
@@ -213,20 +241,28 @@ export class AuthService {
         });
 
         const isUpdated = await this.userService.updateByEmail(email, {
-            refresh_token: await bcrypt.hash(tokens.refresh_Token, 10),
+            refresh_token: await bcrypt.hash(tokens.refreshToken, 10),
         });
         if (!isUpdated) {
             throw new InternalServerErrorException('Internal Server Error');
         }
 
-        return tokens;
+        return {
+            profile: {
+                email: user.email,
+                name: user.name,
+                avatar: user.avatar,
+                phone: user.phone,
+            },
+            tokens,
+        };
     }
 
     async refreshToken({ email, userId, role }: JwtPayload) {
         const tokens = this.createTokenPairs({ email, userId, role });
 
         const isUpdated = await this.userService.updateByEmail(email, {
-            refresh_token: await bcrypt.hash(tokens.refresh_Token, 10),
+            refresh_token: await bcrypt.hash(tokens.refreshToken, 10),
         });
         if (!isUpdated) {
             throw new InternalServerErrorException('Internal Server Error');
@@ -257,7 +293,7 @@ export class AuthService {
             },
         );
 
-        const refresh_Token = this.jwtService.sign(
+        const refreshToken = this.jwtService.sign(
             { email, role, userId },
             {
                 secret: this.configService.get('REFRESH_TOKEN_SECRET'),
@@ -265,6 +301,6 @@ export class AuthService {
             },
         );
 
-        return { accessToken, refresh_Token };
+        return { accessToken, refreshToken };
     }
 }

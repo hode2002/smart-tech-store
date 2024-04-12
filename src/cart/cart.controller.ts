@@ -16,6 +16,7 @@ import { AtJwtGuard } from 'src/auth/guards';
 import { SuccessResponse } from 'src/common/response';
 import { GetUserId } from 'src/common/decorators';
 import { DeleteCartDto } from './dto/delete-cart.dto';
+import { ChangeProductOptionDto } from 'src/cart/dto';
 
 @Controller('api/v1/cart')
 export class CartController {
@@ -23,18 +24,34 @@ export class CartController {
 
     @Post()
     @UseGuards(AtJwtGuard)
-    @HttpCode(HttpStatus.OK)
+    @HttpCode(HttpStatus.CREATED)
     async addProductToCart(
         @GetUserId() userId: string,
         @Body() createCartDto: CreateCartDto,
     ): Promise<SuccessResponse> {
         return {
-            code: 201,
-            status: 'Success',
+            statusCode: HttpStatus.CREATED,
             message: 'Add to cart success',
             data: await this.cartService.addProductToCart(
                 userId,
                 createCartDto,
+            ),
+        };
+    }
+
+    @Post('change-product-option')
+    @UseGuards(AtJwtGuard)
+    @HttpCode(HttpStatus.OK)
+    async changeProductOption(
+        @GetUserId() userId: string,
+        @Body() changeProductOptionDto: ChangeProductOptionDto,
+    ): Promise<SuccessResponse> {
+        return {
+            statusCode: HttpStatus.OK,
+            message: 'Add to cart success',
+            data: await this.cartService.changeProductOption(
+                userId,
+                changeProductOptionDto,
             ),
         };
     }
@@ -46,8 +63,7 @@ export class CartController {
         @GetUserId() userId: string,
     ): Promise<SuccessResponse> {
         return {
-            code: 200,
-            status: 'Success',
+            statusCode: HttpStatus.OK,
             message: 'Get products from cart success',
             data: await this.cartService.findProductsByUserId(userId),
         };
@@ -61,8 +77,7 @@ export class CartController {
         @Body() updateCartDto: UpdateCartDto,
     ): Promise<SuccessResponse> {
         return {
-            code: 200,
-            status: 'Success',
+            statusCode: HttpStatus.OK,
             message: 'Update quantity success',
             data: await this.cartService.updateProductQuantity(
                 userId,
@@ -79,8 +94,7 @@ export class CartController {
         @Body() deleteCartDto: DeleteCartDto,
     ): Promise<SuccessResponse> {
         return {
-            code: 200,
-            status: 'Success',
+            statusCode: HttpStatus.OK,
             message: 'Remove success',
             data: await this.cartService.deleteProduct(userId, deleteCartDto),
         };

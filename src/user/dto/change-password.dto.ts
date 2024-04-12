@@ -1,10 +1,6 @@
-import { IsEmail, IsNotEmpty, Matches } from 'class-validator';
+import { IsNotEmpty, Matches } from 'class-validator';
 
 export class ChangePasswordDto {
-    @IsNotEmpty()
-    @IsEmail()
-    email: string;
-
     @IsNotEmpty()
     @Matches(/^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?!.* ).{6,}$/, {
         message:

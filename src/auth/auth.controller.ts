@@ -7,13 +7,16 @@ import {
     HttpStatus,
     HttpCode,
     Get,
+    Res,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { CreateUserDto } from 'src/user/dto';
-import { CreateUserEmailDto, VerifyOtpDto } from './dto';
+import { CreateUserEmailDto, ThirdPartyLoginDto, VerifyOtpDto } from './dto';
 import { Throttle } from '@nestjs/throttler';
 import { AtJwtGuard, FacebookGuard, GoogleGuard, RfJwtGuard } from './guards';
 import { SuccessResponse } from 'src/common/response';
+import { Request, Response } from 'express';
+import { JwtPayload } from 'src/common/types';
 
 @Controller('api/v1/auth')
 export class AuthController {
@@ -24,9 +27,8 @@ export class AuthController {
         @Body() createUserEmailDto: CreateUserEmailDto,
     ): Promise<SuccessResponse> {
         return {
-            code: 200,
-            status: 'Success',
-            message: 'Email verification',
+            statusCode: HttpStatus.OK,
+            message: 'Email verify Success',
             data: await this.authService.emailVerification(createUserEmailDto),
         };
     }
@@ -35,21 +37,24 @@ export class AuthController {
     @UseGuards(FacebookGuard)
     async facebookLogin(): Promise<SuccessResponse> {
         return {
-            code: 201,
-            status: 'Success',
+            statusCode: HttpStatus.CREATED,
             message: 'Redirect to facebook login',
         };
     }
 
     @Get('facebook/redirect')
     @UseGuards(FacebookGuard)
-    async facebookLoginRedirect(@Req() req: Request): Promise<SuccessResponse> {
+    async facebookLoginRedirect(
+        @Req() req: Request,
+        @Res() res: Response,
+    ): Promise<SuccessResponse> {
         return {
-            code: 200,
-            status: 'Success',
+            statusCode: HttpStatus.OK,
             message: 'Login successfully',
             data: await this.authService.thirdPartyLogin(
-                req['user'],
+                req,
+                res,
+                req['user'] as ThirdPartyLoginDto,
                 'FACEBOOK',
             ),
         };
@@ -59,20 +64,26 @@ export class AuthController {
     @UseGuards(GoogleGuard)
     async googleLogin(): Promise<SuccessResponse> {
         return {
-            code: 201,
-            status: 'Success',
+            statusCode: HttpStatus.CREATED,
             message: 'Redirect to google login',
         };
     }
 
     @Get('google/redirect')
     @UseGuards(GoogleGuard)
-    async googleLoginRedirect(@Req() req: Request): Promise<SuccessResponse> {
+    async googleLoginRedirect(
+        @Req() req: Request,
+        @Res() res: Response,
+    ): Promise<SuccessResponse> {
         return {
-            code: 200,
-            status: 'Success',
+            statusCode: HttpStatus.OK,
             message: 'Login successfully',
-            data: await this.authService.thirdPartyLogin(req['user'], 'GOOGLE'),
+            data: await this.authService.thirdPartyLogin(
+                req,
+                res,
+                req['user'] as ThirdPartyLoginDto,
+                'GOOGLE',
+            ),
         };
     }
 
@@ -82,8 +93,7 @@ export class AuthController {
         @Body() createUserEmailDto: CreateUserEmailDto,
     ): Promise<SuccessResponse> {
         return {
-            code: 201,
-            status: 'Success',
+            statusCode: HttpStatus.OK,
             message: 'Send otp successfully',
             data: await this.authService.register(createUserEmailDto),
         };
@@ -96,8 +106,7 @@ export class AuthController {
         @Body() createUserEmailDto: CreateUserEmailDto,
     ): Promise<SuccessResponse> {
         return {
-            code: 201,
-            status: 'Success',
+            statusCode: HttpStatus.OK,
             message: 'Send otp successfully',
             data: await this.authService.resendOtp(createUserEmailDto.email),
         };
@@ -110,8 +119,7 @@ export class AuthController {
         @Body() verifyOtpDto: VerifyOtpDto,
     ): Promise<SuccessResponse> {
         return {
-            code: 200,
-            status: 'Success',
+            statusCode: HttpStatus.OK,
             message: 'Active User Email Success',
             data: await this.authService.activeUserEmail(
                 verifyOtpDto.email,
@@ -126,8 +134,7 @@ export class AuthController {
         @Body() createUserDto: CreateUserDto,
     ): Promise<SuccessResponse> {
         return {
-            code: 200,
-            status: 'Success',
+            statusCode: HttpStatus.OK,
             message: 'Create Password Success',
             data: await this.authService.createPassword(createUserDto),
         };
@@ -139,8 +146,7 @@ export class AuthController {
         @Body() createUserDto: CreateUserDto,
     ): Promise<SuccessResponse> {
         return {
-            code: 200,
-            status: 'Success',
+            statusCode: HttpStatus.OK,
             message: 'Login Success',
             data: await this.authService.login(createUserDto),
         };
@@ -151,10 +157,11 @@ export class AuthController {
     @HttpCode(HttpStatus.OK)
     async refreshToken(@Req() req: Request): Promise<SuccessResponse> {
         return {
-            code: 200,
-            status: 'Success',
+            statusCode: HttpStatus.OK,
             message: 'Refresh Token Success',
-            data: await this.authService.refreshToken(req['user']),
+            data: await this.authService.refreshToken(
+                req['user'] as JwtPayload,
+            ),
         };
     }
 
@@ -163,10 +170,9 @@ export class AuthController {
     @HttpCode(HttpStatus.OK)
     async logout(@Req() req: Request): Promise<SuccessResponse> {
         return {
-            code: 200,
-            status: 'Success',
+            statusCode: HttpStatus.OK,
             message: 'Logout Success',
-            data: await this.authService.logout(req['user']),
+            data: await this.authService.logout(req['user'] as JwtPayload),
         };
     }
 }

@@ -13,7 +13,7 @@ import { HistorySearchService } from './history-search.service';
 import { AtJwtGuard } from 'src/auth/guards';
 import { GetUserId } from 'src/common/decorators';
 import { SuccessResponse } from 'src/common/response';
-import { CreateHistorySearchDto } from './dto';
+import { CreateHistorySearchDto, CreateHistorySearchListDto } from './dto';
 
 @Controller('/api/v1/history-search')
 export class HistorySearchController {
@@ -26,8 +26,7 @@ export class HistorySearchController {
         @GetUserId() userId: string,
     ): Promise<SuccessResponse> {
         return {
-            code: 200,
-            status: 'Success',
+            statusCode: HttpStatus.OK,
             message: 'Get history search success',
             data: await this.historySearchService.getHistorySearch(userId),
         };
@@ -35,18 +34,34 @@ export class HistorySearchController {
 
     @Post()
     @UseGuards(AtJwtGuard)
-    @HttpCode(HttpStatus.OK)
+    @HttpCode(HttpStatus.CREATED)
     async createHistorySearch(
         @GetUserId() userId: string,
         @Body() createHistorySearchDto: CreateHistorySearchDto,
     ): Promise<SuccessResponse> {
         return {
-            code: 201,
-            status: 'Success',
+            statusCode: HttpStatus.CREATED,
             message: 'Create history search success',
             data: await this.historySearchService.createHistorySearch(
                 userId,
                 createHistorySearchDto,
+            ),
+        };
+    }
+
+    @Post('/list')
+    @UseGuards(AtJwtGuard)
+    @HttpCode(HttpStatus.CREATED)
+    async createFormLocalStorage(
+        @GetUserId() userId: string,
+        @Body() historySearchList: CreateHistorySearchListDto[],
+    ): Promise<SuccessResponse> {
+        return {
+            statusCode: HttpStatus.CREATED,
+            message: 'Create history search list success',
+            data: await this.historySearchService.createHistorySearchList(
+                userId,
+                historySearchList,
             ),
         };
     }
@@ -59,8 +74,7 @@ export class HistorySearchController {
         @Param('id') searchId: string,
     ): Promise<SuccessResponse> {
         return {
-            code: 2010,
-            status: 'Success',
+            statusCode: HttpStatus.OK,
             message: 'Delete history search success',
             data: await this.historySearchService.deleteHistorySearch(
                 searchId,

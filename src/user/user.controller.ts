@@ -30,10 +30,20 @@ export class UserController {
     @HttpCode(HttpStatus.OK)
     async getProfile(@GetEmail() email: string): Promise<SuccessResponse> {
         return {
-            code: 200,
-            status: 'Success',
+            statusCode: HttpStatus.OK,
             message: 'Get user profile success',
             data: await this.userService.getProfile(email),
+        };
+    }
+
+    @Get('address')
+    @UseGuards(AtJwtGuard)
+    @HttpCode(HttpStatus.OK)
+    async getAddress(@GetEmail() email: string): Promise<SuccessResponse> {
+        return {
+            statusCode: HttpStatus.OK,
+            message: 'Get user address success',
+            data: await this.userService.getAddress(email),
         };
     }
 
@@ -41,13 +51,16 @@ export class UserController {
     @UseGuards(AtJwtGuard)
     @HttpCode(HttpStatus.OK)
     async changePass(
+        @GetEmail() email: string,
         @Body() changePasswordDto: ChangePasswordDto,
     ): Promise<SuccessResponse> {
         return {
-            code: 200,
-            status: 'Success',
+            statusCode: HttpStatus.OK,
             message: 'Change password success',
-            data: await this.userService.changePassword(changePasswordDto),
+            data: await this.userService.changePassword(
+                email,
+                changePasswordDto,
+            ),
         };
     }
 
@@ -57,8 +70,7 @@ export class UserController {
         @Body() createUserEmailDto: CreateUserEmailDto,
     ): Promise<SuccessResponse> {
         return {
-            code: 200,
-            status: 'Success',
+            statusCode: HttpStatus.OK,
             message: 'Send new password success',
             data: await this.userService.resetPassword(createUserEmailDto),
         };
@@ -72,8 +84,7 @@ export class UserController {
         @Body() updateUserDto: UpdateUserDto,
     ): Promise<SuccessResponse> {
         return {
-            code: 200,
-            status: 'Success',
+            statusCode: HttpStatus.OK,
             message: 'Update user profile success',
             data: await this.userService.updateByEmail(
                 req.user['email'],
@@ -90,8 +101,7 @@ export class UserController {
         @Body() updateUserAddressDto: UpdateUserAddressDto,
     ): Promise<SuccessResponse> {
         return {
-            code: 200,
-            status: 'Success',
+            statusCode: HttpStatus.OK,
             message: 'Update address success',
             data: await this.userService.updatedAddress(
                 userId,
@@ -109,8 +119,7 @@ export class UserController {
         @UploadedFile() file: FileUploadDto,
     ): Promise<SuccessResponse> {
         return {
-            code: 200,
-            status: 'Success',
+            statusCode: HttpStatus.OK,
             message: 'Update avatar success',
             data: await this.userService.updateAvatar(email, file),
         };

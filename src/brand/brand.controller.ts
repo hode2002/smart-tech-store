@@ -36,8 +36,7 @@ export class BrandController {
         @UploadedFile() fileUploadDto: FileUploadDto,
     ): Promise<SuccessResponse> {
         return {
-            code: 201,
-            status: 'Success',
+            statusCode: HttpStatus.CREATED,
             message: 'Create success',
             data: await this.brandService.create(createBrandDto, fileUploadDto),
         };
@@ -47,8 +46,7 @@ export class BrandController {
     @HttpCode(HttpStatus.OK)
     async findAll(): Promise<SuccessResponse> {
         return {
-            code: 200,
-            status: 'Success',
+            statusCode: HttpStatus.OK,
             message: 'Get all brands success',
             data: await this.brandService.findAll(),
         };
@@ -60,8 +58,7 @@ export class BrandController {
     @HttpCode(HttpStatus.OK)
     async adminFindAll(): Promise<SuccessResponse> {
         return {
-            code: 200,
-            status: 'Success',
+            statusCode: HttpStatus.OK,
             message: 'Get all brands success',
             data: await this.brandService.adminFindAll(),
         };
@@ -71,8 +68,7 @@ export class BrandController {
     @HttpCode(HttpStatus.OK)
     async findById(@Param('id') id: string): Promise<SuccessResponse> {
         return {
-            code: 200,
-            status: 'Success',
+            statusCode: HttpStatus.OK,
             message: 'Get brand success',
             data: await this.brandService.findById(id),
         };
@@ -89,8 +85,7 @@ export class BrandController {
         @UploadedFile() fileUploadDto: FileUploadDto,
     ): Promise<SuccessResponse> {
         return {
-            code: 200,
-            status: 'Success',
+            statusCode: HttpStatus.OK,
             message: 'Update success',
             data: await this.brandService.update(
                 id,
@@ -106,8 +101,7 @@ export class BrandController {
     @HttpCode(HttpStatus.OK)
     async remove(@Param('id') id: string): Promise<SuccessResponse> {
         return {
-            code: 200,
-            status: 'Success',
+            statusCode: HttpStatus.OK,
             message: 'Delete success',
             data: await this.brandService.remove(id),
         };

@@ -33,10 +33,49 @@ export class ProductController {
     @HttpCode(HttpStatus.OK)
     async findAll(@Req() request: Request): Promise<SuccessResponse> {
         return {
-            code: 200,
-            status: 'Success',
+            statusCode: HttpStatus.OK,
             message: 'Get products success',
             data: await this.productService.findAll(request),
+        };
+    }
+
+    @Get('/management')
+    @HttpCode(HttpStatus.OK)
+    async findAllManagement(@Req() request: Request): Promise<SuccessResponse> {
+        return {
+            statusCode: HttpStatus.OK,
+            message: 'Get products success',
+            data: await this.productService.findAllManagement(request),
+        };
+    }
+
+    @Get('sale')
+    @HttpCode(HttpStatus.OK)
+    async getProductSale(): Promise<SuccessResponse> {
+        return {
+            statusCode: HttpStatus.OK,
+            message: 'Get product sale success',
+            data: await this.productService.getProductSale(),
+        };
+    }
+
+    @Get('brand/:slug')
+    @HttpCode(HttpStatus.OK)
+    async getByBrand(@Param('slug') slug: string): Promise<SuccessResponse> {
+        return {
+            statusCode: HttpStatus.OK,
+            message: 'Get products by brand success',
+            data: await this.productService.getByBrand(slug),
+        };
+    }
+
+    @Get('category/:slug')
+    @HttpCode(HttpStatus.OK)
+    async getByCategory(@Param('slug') slug: string): Promise<SuccessResponse> {
+        return {
+            statusCode: HttpStatus.OK,
+            message: 'Get products by category success',
+            data: await this.productService.getByCategory(slug),
         };
     }
 
@@ -44,8 +83,7 @@ export class ProductController {
     @HttpCode(HttpStatus.OK)
     async getByParameters(@Req() request: Request): Promise<SuccessResponse> {
         return {
-            code: 200,
-            status: 'Success',
+            statusCode: HttpStatus.OK,
             message: 'Get products success',
             data: await this.productService.getByParameters(request),
         };
@@ -55,8 +93,7 @@ export class ProductController {
     @HttpCode(HttpStatus.OK)
     async findById(@Param('id') id: string): Promise<SuccessResponse> {
         return {
-            code: 200,
-            status: 'Success',
+            statusCode: HttpStatus.OK,
             message: 'Get product detail success',
             data: await this.productService.findById(id),
         };
@@ -70,8 +107,7 @@ export class ProductController {
         @Body() createProductDto: CreateProductDto,
     ): Promise<SuccessResponse> {
         return {
-            code: 201,
-            status: 'Success',
+            statusCode: HttpStatus.CREATED,
             message: 'Create new product success',
             data: await this.productService.create(createProductDto),
         };
@@ -85,14 +121,14 @@ export class ProductController {
         @Body() createProductOptionDto: CreateProductOptionDto,
     ): Promise<SuccessResponse> {
         return {
-            code: 201,
-            status: 'Success',
+            statusCode: HttpStatus.CREATED,
             message: 'Create new product option success',
             data: await this.productService.createProductOption(
                 createProductOptionDto,
             ),
         };
     }
+
     @Patch(':id')
     @Permission(Role.ADMIN)
     @UseGuards(AtJwtGuard, RoleGuard)
@@ -102,8 +138,7 @@ export class ProductController {
         @Body() updateProductDto: UpdateProductDto,
     ): Promise<SuccessResponse> {
         return {
-            code: 200,
-            status: 'Success',
+            statusCode: HttpStatus.OK,
             message: 'Update product success',
             data: await this.productService.update(id, updateProductDto),
         };
@@ -118,8 +153,7 @@ export class ProductController {
         @Body() updateProductOptionDto: UpdateProductOptionDto,
     ): Promise<SuccessResponse> {
         return {
-            code: 200,
-            status: 'Success',
+            statusCode: HttpStatus.OK,
             message: 'Update product option success',
             data: await this.productService.updateProductOption(
                 id,
@@ -136,8 +170,7 @@ export class ProductController {
         @Param('id') id: string,
     ): Promise<SuccessResponse> {
         return {
-            code: 200,
-            status: 'Success',
+            statusCode: HttpStatus.OK,
             message: 'Restore product option success',
             data: await this.productService.restoreProductOption(id),
         };
@@ -151,8 +184,7 @@ export class ProductController {
         @Param('id') id: string,
     ): Promise<SuccessResponse> {
         return {
-            code: 200,
-            status: 'Success',
+            statusCode: HttpStatus.OK,
             message: 'Remove product option success',
             data: await this.productService.removeProductOption(id),
         };

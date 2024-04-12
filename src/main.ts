@@ -5,10 +5,11 @@ import helmet from 'helmet';
 import * as compression from 'compression';
 import { ForbiddenException } from '@nestjs/common';
 import { ValidationConfig } from './configs/validation.config';
+import { CorsOptions } from '@nestjs/common/interfaces/external/cors-options.interface';
 
 const allowedOrigins = ['http://localhost:3000'];
 
-const corsOptions = {
+const corsOptions: CorsOptions = {
     origin: (
         origin: string,
         callback: (error: ForbiddenException, isAllow?: boolean) => void,
@@ -20,12 +21,19 @@ const corsOptions = {
         }
     },
     methods: 'GET,POST,PUT,PATCH,DELETE',
+    credentials: true,
 };
 
 async function bootstrap() {
     const app = await NestFactory.create(AppModule);
-    app.enableCors({ ...corsOptions });
-    app.use(helmet());
+    app.enableCors(corsOptions);
+
+    // app.use(helmet());
+    app.use(
+        helmet({
+            crossOriginResourcePolicy: false,
+        }),
+    );
     app.use(compression());
 
     ValidationConfig(app);

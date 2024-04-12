@@ -1,7 +1,7 @@
 import { IsNotEmpty, IsString } from 'class-validator';
 
-export class CreateHistorySearchDto {
+export class UpdatePaymentStatusDto {
     @IsString()
     @IsNotEmpty()
-    search_content: string;
+    transaction_id: string;
 }

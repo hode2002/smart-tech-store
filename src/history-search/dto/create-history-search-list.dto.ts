@@ -1,6 +1,10 @@
 import { IsNotEmpty, IsString } from 'class-validator';
 
-export class CreateHistorySearchDto {
+export class CreateHistorySearchListDto {
+    @IsString()
+    @IsNotEmpty()
+    id: string;
+
     @IsString()
     @IsNotEmpty()
     search_content: string;

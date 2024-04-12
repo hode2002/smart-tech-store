@@ -1,4 +1,4 @@
-import { Controller, Delete, Body } from '@nestjs/common';
+import { Controller, Delete, Body, HttpStatus, HttpCode } from '@nestjs/common';
 import { MediaService } from './media.service';
 import { SuccessResponse } from 'src/common/response';
 
@@ -7,10 +7,10 @@ export class MediaController {
     constructor(private readonly mediaService: MediaService) {}
 
     @Delete()
+    @HttpCode(HttpStatus.OK)
     async remove(@Body('media-key') key: string): Promise<SuccessResponse> {
         return {
-            code: 200,
-            status: 'Success',
+            statusCode: HttpStatus.OK,
             message: 'Delete file success',
             data: await this.mediaService.deleteFileS3(key),
         };

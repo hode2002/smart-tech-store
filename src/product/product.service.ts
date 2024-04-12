@@ -163,6 +163,149 @@ export class ProductService {
         const products = await this.prismaService.product.findMany({
             skip,
             take: limit,
+            where: {
+                product_options: {
+                    none: {
+                        stock: { equals: 0 },
+                    },
+                },
+            },
+            orderBy: {
+                created_at: 'desc',
+            },
+            select: {
+                id: true,
+                name: true,
+                price: true,
+                promotions: true,
+                warranties: true,
+                label: true,
+                descriptions: {
+                    select: {
+                        id: true,
+                        content: true,
+                    },
+                },
+                brand: {
+                    select: {
+                        id: true,
+                        name: true,
+                        logo_url: true,
+                        slug: true,
+                    },
+                },
+                category: {
+                    select: {
+                        id: true,
+                        name: true,
+                        slug: true,
+                    },
+                },
+                product_options: {
+                    where: { is_deleted: false, stock: { gte: 1 } },
+                    select: {
+                        id: true,
+                        sku: true,
+                        thumbnail: true,
+                        price_modifier: true,
+                        stock: true,
+                        discount: true,
+                        is_sale: true,
+                        slug: true,
+                        label_image: true,
+                        product_images: {
+                            select: {
+                                id: true,
+                                image_url: true,
+                                image_alt_text: true,
+                            },
+                        },
+                        technical_specs: {
+                            select: {
+                                screen: true,
+                                screen_size: true,
+                                os: true,
+                                front_camera: true,
+                                rear_camera: true,
+                                chip: true,
+                                ram: true,
+                                rom: true,
+                                sim: true,
+                                battery: true,
+                                weight: true,
+                                connection: true,
+                            },
+                        },
+                        product_option_value: {
+                            select: {
+                                option: {
+                                    select: { name: true },
+                                },
+                                value: true,
+                                adjust_price: true,
+                            },
+                        },
+                        reviews: {
+                            where: { parent_id: null },
+                            select: {
+                                id: true,
+                                user: {
+                                    select: {
+                                        id: true,
+                                        email: true,
+                                        name: true,
+                                        avatar: true,
+                                    },
+                                },
+                                star: true,
+                                comment: true,
+                                _count: true,
+                                children: {
+                                    select: {
+                                        user: {
+                                            select: {
+                                                id: true,
+                                                email: true,
+                                                name: true,
+                                                avatar: true,
+                                            },
+                                        },
+                                        comment: true,
+                                        created_at: true,
+                                    },
+                                },
+                                created_at: true,
+                            },
+                        },
+                    },
+                },
+            },
+        });
+
+        return {
+            totalPages,
+            ...(page < totalPages && { nextPage: page + 1 }),
+            ...(page > 1 && page <= totalPages && { previousPage: page - 1 }),
+            products: products.map((product) =>
+                this.convertProductResponse(product),
+            ),
+        };
+    }
+
+    async findAllManagement(request: Request) {
+        const countRecords = await this.prismaService.product.count();
+        const { limit, page, skip, totalPages } = pagination(
+            request,
+            countRecords,
+        );
+
+        if (page > totalPages) {
+            return [];
+        }
+
+        const products = await this.prismaService.product.findMany({
+            skip,
+            take: limit,
             orderBy: {
                 created_at: 'desc',
             },
@@ -285,13 +428,21 @@ export class ProductService {
         };
     }
 
-    async findById(id: string): Promise<ProductDetailResponse> {
-        if (!id) {
-            throw new ForbiddenException('Missing product id');
-        }
-
-        const product = await this.prismaService.product.findFirst({
-            where: { id },
+    async getProductSale() {
+        const products = await this.prismaService.product.findMany({
+            where: {
+                product_options: {
+                    some: {
+                        is_sale: true,
+                    },
+                    none: {
+                        stock: { equals: 0 },
+                    },
+                },
+            },
+            orderBy: {
+                created_at: 'desc',
+            },
             select: {
                 id: true,
                 name: true,
@@ -321,7 +472,396 @@ export class ProductService {
                     },
                 },
                 product_options: {
-                    where: { is_deleted: false },
+                    where: {
+                        is_deleted: false,
+                        is_sale: true,
+                        stock: { gte: 1 },
+                    },
+                    select: {
+                        id: true,
+                        sku: true,
+                        thumbnail: true,
+                        price_modifier: true,
+                        stock: true,
+                        discount: true,
+                        is_sale: true,
+                        slug: true,
+                        label_image: true,
+                        product_images: {
+                            select: {
+                                id: true,
+                                image_url: true,
+                                image_alt_text: true,
+                            },
+                        },
+                        technical_specs: {
+                            select: {
+                                screen: true,
+                                screen_size: true,
+                                os: true,
+                                front_camera: true,
+                                rear_camera: true,
+                                chip: true,
+                                ram: true,
+                                rom: true,
+                                sim: true,
+                                battery: true,
+                                weight: true,
+                                connection: true,
+                            },
+                        },
+                        product_option_value: {
+                            select: {
+                                option: {
+                                    select: { name: true },
+                                },
+                                value: true,
+                                adjust_price: true,
+                            },
+                        },
+                        reviews: {
+                            where: { parent_id: null },
+                            select: {
+                                id: true,
+                                user: {
+                                    select: {
+                                        id: true,
+                                        email: true,
+                                        name: true,
+                                        avatar: true,
+                                    },
+                                },
+                                star: true,
+                                comment: true,
+                                _count: true,
+                                children: {
+                                    select: {
+                                        user: {
+                                            select: {
+                                                id: true,
+                                                email: true,
+                                                name: true,
+                                                avatar: true,
+                                            },
+                                        },
+                                        comment: true,
+                                        created_at: true,
+                                    },
+                                },
+                                created_at: true,
+                            },
+                        },
+                    },
+                },
+            },
+        });
+
+        return products.map((product) => this.convertProductResponse(product));
+    }
+
+    async getByBrand(slug: string) {
+        const products = await this.prismaService.product.findMany({
+            where: {
+                brand: { slug },
+                product_options: {
+                    none: {
+                        stock: { equals: 0 },
+                    },
+                },
+            },
+            orderBy: {
+                created_at: 'desc',
+            },
+            select: {
+                id: true,
+                name: true,
+                price: true,
+                promotions: true,
+                warranties: true,
+                label: true,
+                descriptions: {
+                    select: {
+                        id: true,
+                        content: true,
+                    },
+                },
+                brand: {
+                    select: {
+                        id: true,
+                        name: true,
+                        logo_url: true,
+                        slug: true,
+                    },
+                },
+                category: {
+                    select: {
+                        id: true,
+                        name: true,
+                        slug: true,
+                    },
+                },
+                product_options: {
+                    where: {
+                        is_deleted: false,
+                        is_sale: true,
+                        stock: { gte: 1 },
+                    },
+                    select: {
+                        id: true,
+                        sku: true,
+                        thumbnail: true,
+                        price_modifier: true,
+                        stock: true,
+                        discount: true,
+                        is_sale: true,
+                        slug: true,
+                        label_image: true,
+                        product_images: {
+                            select: {
+                                id: true,
+                                image_url: true,
+                                image_alt_text: true,
+                            },
+                        },
+                        technical_specs: {
+                            select: {
+                                screen: true,
+                                screen_size: true,
+                                os: true,
+                                front_camera: true,
+                                rear_camera: true,
+                                chip: true,
+                                ram: true,
+                                rom: true,
+                                sim: true,
+                                battery: true,
+                                weight: true,
+                                connection: true,
+                            },
+                        },
+                        product_option_value: {
+                            select: {
+                                option: {
+                                    select: { name: true },
+                                },
+                                value: true,
+                                adjust_price: true,
+                            },
+                        },
+                        reviews: {
+                            where: { parent_id: null },
+                            select: {
+                                id: true,
+                                user: {
+                                    select: {
+                                        id: true,
+                                        email: true,
+                                        name: true,
+                                        avatar: true,
+                                    },
+                                },
+                                star: true,
+                                comment: true,
+                                _count: true,
+                                children: {
+                                    select: {
+                                        user: {
+                                            select: {
+                                                id: true,
+                                                email: true,
+                                                name: true,
+                                                avatar: true,
+                                            },
+                                        },
+                                        comment: true,
+                                        created_at: true,
+                                    },
+                                },
+                                created_at: true,
+                            },
+                        },
+                    },
+                },
+            },
+        });
+
+        return products.map((product) => this.convertProductResponse(product));
+    }
+
+    async getByCategory(slug: string) {
+        const products = await this.prismaService.product.findMany({
+            where: {
+                category: { slug },
+                product_options: {
+                    none: {
+                        stock: { equals: 0 },
+                    },
+                },
+            },
+            orderBy: {
+                created_at: 'desc',
+            },
+            select: {
+                id: true,
+                name: true,
+                price: true,
+                promotions: true,
+                warranties: true,
+                label: true,
+                descriptions: {
+                    select: {
+                        id: true,
+                        content: true,
+                    },
+                },
+                brand: {
+                    select: {
+                        id: true,
+                        name: true,
+                        logo_url: true,
+                        slug: true,
+                    },
+                },
+                category: {
+                    select: {
+                        id: true,
+                        name: true,
+                        slug: true,
+                    },
+                },
+                product_options: {
+                    where: {
+                        is_deleted: false,
+                        is_sale: true,
+                        stock: { gte: 1 },
+                    },
+                    select: {
+                        id: true,
+                        sku: true,
+                        thumbnail: true,
+                        price_modifier: true,
+                        stock: true,
+                        discount: true,
+                        is_sale: true,
+                        slug: true,
+                        label_image: true,
+                        product_images: {
+                            select: {
+                                id: true,
+                                image_url: true,
+                                image_alt_text: true,
+                            },
+                        },
+                        technical_specs: {
+                            select: {
+                                screen: true,
+                                screen_size: true,
+                                os: true,
+                                front_camera: true,
+                                rear_camera: true,
+                                chip: true,
+                                ram: true,
+                                rom: true,
+                                sim: true,
+                                battery: true,
+                                weight: true,
+                                connection: true,
+                            },
+                        },
+                        product_option_value: {
+                            select: {
+                                option: {
+                                    select: { name: true },
+                                },
+                                value: true,
+                                adjust_price: true,
+                            },
+                        },
+                        reviews: {
+                            where: { parent_id: null },
+                            select: {
+                                id: true,
+                                user: {
+                                    select: {
+                                        id: true,
+                                        email: true,
+                                        name: true,
+                                        avatar: true,
+                                    },
+                                },
+                                star: true,
+                                comment: true,
+                                _count: true,
+                                children: {
+                                    select: {
+                                        user: {
+                                            select: {
+                                                id: true,
+                                                email: true,
+                                                name: true,
+                                                avatar: true,
+                                            },
+                                        },
+                                        comment: true,
+                                        created_at: true,
+                                    },
+                                },
+                                created_at: true,
+                            },
+                        },
+                    },
+                },
+            },
+        });
+        return products.map((product) => this.convertProductResponse(product));
+    }
+
+    async findById(id: string): Promise<ProductDetailResponse> {
+        if (!id) {
+            throw new ForbiddenException('Missing product id');
+        }
+
+        const product = await this.prismaService.product.findFirst({
+            where: {
+                id,
+                product_options: {
+                    none: {
+                        stock: {
+                            equals: 0,
+                        },
+                    },
+                },
+            },
+            select: {
+                id: true,
+                name: true,
+                price: true,
+                promotions: true,
+                warranties: true,
+                label: true,
+                descriptions: {
+                    select: {
+                        id: true,
+                        content: true,
+                    },
+                },
+                brand: {
+                    select: {
+                        id: true,
+                        name: true,
+                        logo_url: true,
+                        slug: true,
+                    },
+                },
+                category: {
+                    select: {
+                        id: true,
+                        name: true,
+                        slug: true,
+                    },
+                },
+                product_options: {
+                    where: { is_deleted: false, stock: { gte: 1 } },
                     select: {
                         id: true,
                         sku: true,
@@ -421,6 +961,7 @@ export class ProductService {
             where: {
                 id,
                 is_deleted: false,
+                stock: { equals: 1 },
             },
             select: {
                 id: true,
@@ -463,6 +1004,7 @@ export class ProductService {
         const products = await this.prismaService.technicalSpecs.findMany({
             where: {
                 product_option: {
+                    stock: { gte: 1 },
                     product: {
                         AND: [
                             {

@@ -31,8 +31,7 @@ export class CategoryController {
         @Body() createCategoryDto: CreateCategoryDto,
     ): Promise<SuccessResponse> {
         return {
-            code: 201,
-            status: 'Success',
+            statusCode: HttpStatus.CREATED,
             message: 'Create category success',
             data: await this.categoryService.create(createCategoryDto),
         };
@@ -40,10 +39,9 @@ export class CategoryController {
 
     @Get()
     @HttpCode(HttpStatus.OK)
-    async findAll() {
+    async findAll(): Promise<SuccessResponse> {
         return {
-            code: 200,
-            status: 'Success',
+            statusCode: HttpStatus.OK,
             message: 'Get all categories success',
             data: await this.categoryService.findAll(),
         };
@@ -53,10 +51,9 @@ export class CategoryController {
     @Permission(Role.ADMIN)
     @UseGuards(AtJwtGuard, RoleGuard)
     @HttpCode(HttpStatus.OK)
-    async adminFindAll() {
+    async adminFindAll(): Promise<SuccessResponse> {
         return {
-            code: 200,
-            status: 'Success',
+            statusCode: HttpStatus.OK,
             message: 'Get all categories success',
             data: await this.categoryService.adminFindAll(),
         };
@@ -66,8 +63,7 @@ export class CategoryController {
     @HttpCode(HttpStatus.OK)
     async findById(@Param('id') id: string): Promise<SuccessResponse> {
         return {
-            code: 200,
-            status: 'Success',
+            statusCode: HttpStatus.OK,
             message: 'Get category success',
             data: await this.categoryService.findById(id),
         };
@@ -81,8 +77,7 @@ export class CategoryController {
         @Body() updateCategoryDto: UpdateCategoryDto,
     ): Promise<SuccessResponse> {
         return {
-            code: 200,
-            status: 'Success',
+            statusCode: HttpStatus.OK,
             message: 'Update success',
             data: await this.categoryService.update(id, updateCategoryDto),
         };
@@ -93,8 +88,7 @@ export class CategoryController {
     @HttpCode(HttpStatus.OK)
     async remove(@Param('id') id: string): Promise<SuccessResponse> {
         return {
-            code: 200,
-            status: 'Success',
+            statusCode: HttpStatus.OK,
             message: 'Remove success',
             data: await this.categoryService.remove(id),
         };

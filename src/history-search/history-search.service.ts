@@ -4,7 +4,7 @@ import {
     NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { CreateHistorySearchDto } from './dto';
+import { CreateHistorySearchDto, CreateHistorySearchListDto } from './dto';
 import { UserService } from 'src/user/user.service';
 
 @Injectable()
@@ -34,25 +34,24 @@ export class HistorySearchService {
         userId: string,
         createHistorySearchDto: CreateHistorySearchDto,
     ) {
-        const { content } = createHistorySearchDto;
+        const { search_content } = createHistorySearchDto;
 
         const user = await this.userService.findById(userId);
         if (!user) {
             throw new BadRequestException('User does not exist');
         }
 
-        const isExist = await this.findByContent(content);
+        const isExist = await this.findByContent(search_content);
         if (!isExist) {
-            const isCreated = await this.prismaService.historySearch.create({
+            await this.prismaService.historySearch.create({
                 data: {
                     user_id: userId,
-                    search_content: content,
+                    search_content,
                 },
             });
 
             return {
-                is_success: isCreated ? true : false,
-                content: createHistorySearchDto.content,
+                search_content: createHistorySearchDto.search_content,
             };
         }
 
@@ -67,9 +66,35 @@ export class HistorySearchService {
         });
 
         return {
-            is_success: true,
-            content: createHistorySearchDto.content,
+            search_content: createHistorySearchDto.search_content,
         };
+    }
+
+    async createHistorySearchList(
+        userId: string,
+        createHistorySearchListDto: CreateHistorySearchListDto[],
+    ) {
+        const user = await this.userService.findById(userId);
+        if (!user) {
+            throw new BadRequestException('User does not exist');
+        }
+
+        const promises = createHistorySearchListDto.map(async (searchItem) => {
+            return await this.prismaService.historySearch.create({
+                data: {
+                    user_id: userId,
+                    search_content: searchItem.search_content,
+                },
+                select: {
+                    id: true,
+                    search_content: true,
+                },
+            });
+        });
+
+        await Promise.all(promises);
+
+        return await this.getHistorySearch(userId);
     }
 
     async deleteHistorySearch(searchId: string, userId: string) {
