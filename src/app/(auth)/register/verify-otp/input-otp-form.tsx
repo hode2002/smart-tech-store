@@ -19,13 +19,30 @@ import {
     FormMessage,
 } from '@/components/ui/form';
 
-import { InputOtp, InputOtpType } from '@/schemaValidations/auth.schema';
+import {
+    InputOtp,
+    InputOtpType,
+    RegisterResType,
+} from '@/schemaValidations/auth.schema';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { timeConvert } from '@/lib/utils';
+import { useAppSelector } from '@/lib/store';
+import authApiRequest, {
+    ActiveUserEmailResponseType,
+} from '@/apiRequests/auth';
 
 export default function InputOtpForm() {
     const router = useRouter();
+    const registerEmail = useAppSelector((state) => state.auth.registerEmail);
+
+    useEffect(() => {
+        if (!registerEmail) {
+            return router.push('/login');
+        }
+    }, [router, registerEmail]);
+
+    const [loading, setLoading] = useState(false);
     const { toast } = useToast();
 
     const [timeCounter, setTimeCounter] = useState<number>(300);
@@ -51,23 +68,30 @@ export default function InputOtpForm() {
         },
     });
 
-    const onSubmit = (data: InputOtpType) => {
-        toast({
-            title: 'You submitted the following values:',
-            description: (
-                <pre className="mt-2 w-[340px] rounded-md bg-slate-950 p-4">
-                    <code className="text-white">
-                        {JSON.stringify(data, null, 2)}
-                    </code>
-                </pre>
-            ),
-        });
-
-        router.push('/register/create-password');
+    const onSubmit = async (data: InputOtpType) => {
+        if (loading) return;
+        setLoading(true);
+        const response: ActiveUserEmailResponseType =
+            await authApiRequest.activeUserEmail({
+                email: registerEmail,
+                otpCode: data.pin,
+            });
+        setLoading(false);
+        if (response.statusCode === 200) {
+            router.push('/register/create-password');
+        }
     };
 
-    const resendOtp = () => {
-        console.log('resendOtp');
+    const resendOtp = async () => {
+        const response: RegisterResType = await authApiRequest.resendOtp({
+            email: registerEmail,
+        });
+        if (response.statusCode === 200) {
+            setTimeCounter(300);
+            toast({
+                description: response.message,
+            });
+        }
     };
 
     return (

@@ -74,7 +74,7 @@ export function ForgotPasswordForm() {
                         </Button>
                     ) : (
                         <Button type="submit" className="w-full">
-                            Gửi OTP
+                            Gửi
                         </Button>
                     )}
                 </div>

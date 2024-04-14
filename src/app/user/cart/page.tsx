@@ -5,7 +5,7 @@ import { ShoppingBag } from 'lucide-react';
 import CartTable from '@/app/user/cart/cart-table';
 import ProductBox from '@/components/home/product-box';
 import productApiRequest from '@/apiRequests/product';
-import { ProductResponseType } from '@/schemaValidations/product.schema';
+import { GetProductsResponseType } from '@/schemaValidations/product.schema';
 import { ProductType, setAddress } from '@/lib/store/slices';
 import accountApiRequest from '@/apiRequests/account';
 import { UpdateAddressResponseType } from '@/schemaValidations/account.schema';
@@ -23,7 +23,7 @@ export default function CartPage() {
 
         productApiRequest
             .getProductsSale()
-            .then((response: ProductResponseType) =>
+            .then((response: GetProductsResponseType) =>
                 setProductSale(response?.data),
             );
 

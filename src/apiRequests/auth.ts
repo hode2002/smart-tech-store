@@ -1,6 +1,8 @@
 import { toast } from '@/components/ui/use-toast';
 import http from '@/lib/http';
 import {
+    CreatePasswordBodyType,
+    CreatePasswordResponseType,
     ForgotPasswordResponseType,
     ForgotPasswordType,
     LoginBodyType,
@@ -9,6 +11,19 @@ import {
     RegisterBodyType,
     RegisterResType,
 } from '@/schemaValidations/auth.schema';
+
+export type ActiveUserEmailType = {
+    email: string;
+    otpCode: string;
+};
+
+export type ActiveUserEmailResponseType = {
+    statusCode: number;
+    message: string;
+    data: {
+        is_success: boolean;
+    };
+};
 
 class AuthApiRequest {
     async login(body: LoginBodyType) {
@@ -58,8 +73,92 @@ class AuthApiRequest {
         }
     }
 
-    register(body: RegisterBodyType) {
-        http.post<RegisterResType>('/auth/register', body);
+    async register(body: RegisterBodyType) {
+        try {
+            const response: RegisterResType = await http.post<RegisterResType>(
+                '/auth/register',
+                body,
+            );
+
+            toast({
+                title: 'Success',
+                description: response.message,
+            });
+            return response;
+        } catch (error: any) {
+            toast({
+                title: 'Error',
+                description: error?.payload?.message ?? 'Lỗi không xác định',
+                variant: 'destructive',
+            });
+            return error;
+        }
+    }
+
+    async activeUserEmail(body: ActiveUserEmailType) {
+        try {
+            const response: ActiveUserEmailResponseType =
+                await http.post<RegisterResType>(
+                    '/auth/active-user-email',
+                    body,
+                );
+
+            toast({
+                title: 'Success',
+                description: response.message,
+            });
+            return response;
+        } catch (error: any) {
+            toast({
+                title: 'Error',
+                description: error?.payload?.message ?? 'Lỗi không xác định',
+                variant: 'destructive',
+            });
+            return error;
+        }
+    }
+
+    async resendOtp(body: RegisterBodyType) {
+        try {
+            const response: RegisterResType = await http.post<RegisterResType>(
+                '/auth/otp/resend',
+                body,
+            );
+
+            toast({
+                title: 'Success',
+                description: response.message,
+            });
+            return response;
+        } catch (error: any) {
+            toast({
+                title: 'Error',
+                description: error?.payload?.message ?? 'Lỗi không xác định',
+                variant: 'destructive',
+            });
+            return error;
+        }
+    }
+
+    async createPassword(body: CreatePasswordBodyType) {
+        try {
+            const response: CreatePasswordResponseType = await http.post(
+                '/auth/create-password',
+                body,
+            );
+            toast({
+                title: 'Success',
+                description: response.message,
+            });
+            return response;
+        } catch (error: any) {
+            toast({
+                title: 'Error',
+                description: error?.payload?.message ?? 'Lỗi không xác định',
+                variant: 'destructive',
+            });
+            return error;
+        }
     }
 
     async forgotPassword(body: ForgotPasswordType) {

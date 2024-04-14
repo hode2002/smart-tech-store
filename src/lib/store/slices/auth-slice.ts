@@ -3,16 +3,21 @@ import type { PayloadAction } from '@reduxjs/toolkit';
 
 export interface IAuthState {
     accessToken: string;
+    registerEmail: string;
 }
 
 const initialState: IAuthState = {
     accessToken: '',
+    registerEmail: '',
 };
 
 export const authSlice = createSlice({
     name: 'auth',
     initialState,
     reducers: {
+        setRegisterEmail: (state, action: PayloadAction<string>) => {
+            state.registerEmail = action.payload;
+        },
         setAccessToken: (state, action: PayloadAction<string>) => {
             state.accessToken = action.payload;
         },
@@ -27,6 +32,6 @@ export const authSlice = createSlice({
     },
 });
 
-export const { setAccessToken, setRefreshToken, userLogout } =
+export const { setRegisterEmail, setAccessToken, setRefreshToken, userLogout } =
     authSlice.actions;
 export const authReducer = authSlice.reducer;

@@ -17,8 +17,6 @@ export type UserAddress = {
 
 export type HistorySearchItem = { id: string; search_content: string };
 
-export type updateQuantityForCartItem = { productId: string; quantity: number };
-
 export type ProductOption = {
     id: string;
     product_images: {
@@ -166,25 +164,6 @@ export const userSlice = createSlice({
         setCartProducts: (state, action: PayloadAction<CartItem[] | []>) => {
             state.cart = action.payload;
         },
-        addToCart: (state, action: PayloadAction<CartItem>) => {
-            const isExist = state.cart.find(
-                (cartItem) => cartItem.id === action.payload.id,
-            );
-            if (isExist) {
-                isExist.quantity = action.payload.quantity;
-            } else {
-                state.cart.push(action.payload);
-            }
-        },
-        updateQuantityForCartItem: (
-            state,
-            action: PayloadAction<updateQuantityForCartItem>,
-        ) => {
-            const isExist = state.cart.find(
-                (cartItem) => cartItem.id === action.payload.productId,
-            );
-            if (isExist) isExist.quantity = action.payload.quantity;
-        },
         removeCartItem: (
             state,
             action: PayloadAction<{ productId: string }>,
@@ -192,31 +171,6 @@ export const userSlice = createSlice({
             state.cart = state.cart.filter(
                 (cartItem) => cartItem.id !== action.payload.productId,
             );
-        },
-        changeSelectedProductOption: (
-            state,
-            action: PayloadAction<{ productId: string; option: ProductOption }>,
-        ) => {
-            const targetProduct = state.cart.find(
-                (cartItem) => cartItem.id === action.payload.productId,
-            ) as CartItem;
-            const currentProductOption = targetProduct?.selected_option;
-            const selectedProductOption = action?.payload.option;
-            const otherOptions = targetProduct?.other_product_options.filter(
-                (option) => option.id !== selectedProductOption.id,
-            );
-            otherOptions?.push(currentProductOption!);
-
-            const newItem = {
-                ...targetProduct,
-                selected_option: selectedProductOption,
-                other_product_options: otherOptions,
-            };
-
-            state.cart = state.cart.filter(
-                (cartItem) => cartItem.id !== targetProduct?.id,
-            );
-            state.cart.push(newItem);
         },
         setProductCheckout: (
             state,
@@ -246,10 +200,7 @@ export const {
     setLocalSearchItem,
     removeLocalSearch,
     setCartProducts,
-    addToCart,
     removeCartItem,
-    changeSelectedProductOption,
-    updateQuantityForCartItem,
     setProductCheckout,
     removeProductCheckout,
     setPaymentId,

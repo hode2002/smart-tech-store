@@ -14,12 +14,19 @@ import { useForm } from 'react-hook-form';
 import {
     RegisterBody,
     RegisterBodyType,
+    RegisterResType,
 } from '@/schemaValidations/auth.schema';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useRouter } from 'next/navigation';
+import { useState } from 'react';
+import authApiRequest from '@/apiRequests/auth';
+import { setRegisterEmail } from '@/lib/store/slices';
+import { useAppDispatch } from '@/lib/store';
 
 export function RegisterForm() {
     const router = useRouter();
+    const [loading, setLoading] = useState(false);
+    const dispatch = useAppDispatch();
 
     const form = useForm<RegisterBodyType>({
         resolver: zodResolver(RegisterBody),
@@ -28,10 +35,19 @@ export function RegisterForm() {
         },
     });
 
-    function onSubmit(values: RegisterBodyType) {
-        console.log(values);
-        router.push('/register/verify-otp');
-    }
+    const onSubmit = async ({ email }: RegisterBodyType) => {
+        if (loading) return;
+        setLoading(true);
+        const response: RegisterResType = await authApiRequest.register({
+            email,
+        });
+        setLoading(false);
+        if (response.statusCode === 200) {
+            const { email } = response.data;
+            router.push('/register/verify-otp');
+            dispatch(setRegisterEmail(email));
+        }
+    };
 
     return (
         <Form {...form}>

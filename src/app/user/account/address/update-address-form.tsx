@@ -126,7 +126,7 @@ export default function UpdateAddressForm() {
                     title="Tỉnh - Thành phố"
                     items={provinceOptions}
                     value={
-                        userAddress?.province.length > 0
+                        userAddress?.province
                             ? userAddress?.province
                             : province?.value
                     }
@@ -136,7 +136,7 @@ export default function UpdateAddressForm() {
                     title="Quận - Huyện"
                     items={districtOptions}
                     value={
-                        userAddress?.district.length > 0
+                        userAddress?.district
                             ? userAddress?.district
                             : district?.value
                     }
@@ -146,11 +146,7 @@ export default function UpdateAddressForm() {
                 <AddressCombobox
                     title="Phường - Xã"
                     items={wardOptions}
-                    value={
-                        userAddress?.ward.length > 0
-                            ? userAddress?.ward
-                            : ward?.value
-                    }
+                    value={userAddress?.ward ? userAddress?.ward : ward?.value}
                     setValue={setWard}
                     isDisabled={!district || !province ? true : false}
                 />

@@ -9,16 +9,11 @@ export const RegisterBody = z
 export type RegisterBodyType = z.TypeOf<typeof RegisterBody>;
 
 export const RegisterRes = z.object({
-    data: z.object({
-        token: z.string(),
-        expiresAt: z.string(),
-        account: z.object({
-            id: z.number(),
-            name: z.string(),
-            email: z.string(),
-        }),
-    }),
+    statusCode: z.number(),
     message: z.string(),
+    data: z.object({
+        email: z.string(),
+    }),
 });
 
 export type RegisterResType = z.TypeOf<typeof RegisterRes>;
@@ -54,6 +49,9 @@ export const LoginResponse = z.object({
 });
 export type LoginResponseType = z.TypeOf<typeof LoginResponse>;
 
+export type CreatePasswordBodyType = z.TypeOf<typeof LoginBody>;
+export type CreatePasswordResponseType = z.TypeOf<typeof LoginResponse>;
+
 export const LogoutResponse = z.object({
     statusCode: z.number(),
     message: z.string(),
@@ -73,8 +71,18 @@ export type InputOtpType = z.TypeOf<typeof InputOtp>;
 
 export const CreatePassword = z
     .object({
-        password: z.string().min(6),
-        confirmPassword: z.string().min(6),
+        password: z
+            .string()
+            .regex(
+                /^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?!.* ).{6,}$/,
+                'Mật khẩu phải chứa một chữ hoa, một chữ thường, một số từ 1 - 9 và có ít nhất 6 ký tự.',
+            ),
+        confirmPassword: z
+            .string()
+            .regex(
+                /^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?!.* ).{6,}$/,
+                'Mật khẩu phải chứa một chữ hoa, một chữ thường, một số từ 1 - 9 và có ít nhất 6 ký tự.',
+            ),
     })
     .strict()
     .superRefine(({ password, confirmPassword }, ctx) => {

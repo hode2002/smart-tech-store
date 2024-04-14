@@ -48,12 +48,11 @@ import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { useAppDispatch, useAppSelector } from '@/lib/store';
 import Link from 'next/link';
 import {
-    changeSelectedProductOption,
     ProductCheckout,
     ProductOption,
     removeCartItem,
+    setCartProducts,
     setProductCheckout,
-    updateQuantityForCartItem,
 } from '@/lib/store/slices';
 import { formatPrice } from '@/lib/utils';
 import accountApiRequest, {
@@ -79,6 +78,10 @@ export type Column = {
 
 export default function CartTable() {
     const [isClient, setIsClient] = useState(false);
+
+    useEffect(() => {
+        setIsClient(true);
+    }, [setIsClient]);
 
     const dispatch = useAppDispatch();
     const router = useRouter();
@@ -147,367 +150,354 @@ export default function CartTable() {
         [cartProducts],
     );
 
-    const columns: ColumnDef<Column>[] = useMemo(
-        () => [
-            {
-                id: 'select',
-                header: ({ table }) => (
-                    <Checkbox
-                        checked={
-                            table.getIsAllPageRowsSelected() ||
-                            (table.getIsSomePageRowsSelected() &&
-                                'indeterminate')
-                        }
-                        onCheckedChange={(value) =>
-                            table.toggleAllPageRowsSelected(!!value)
-                        }
-                        aria-label="Select all"
-                    />
-                ),
-                cell: ({ row }) => (
-                    <Checkbox
-                        checked={row.getIsSelected()}
-                        onCheckedChange={(value) => row.toggleSelected(!!value)}
-                        aria-label="Select row"
-                    />
-                ),
-                enableSorting: false,
-                enableHiding: false,
+    const columns: ColumnDef<Column>[] = [
+        {
+            id: 'select',
+            header: ({ table }) => (
+                <Checkbox
+                    checked={
+                        table.getIsAllPageRowsSelected() ||
+                        (table.getIsSomePageRowsSelected() && 'indeterminate')
+                    }
+                    onCheckedChange={(value) =>
+                        table.toggleAllPageRowsSelected(!!value)
+                    }
+                    aria-label="Select all"
+                />
+            ),
+            cell: ({ row }) => (
+                <Checkbox
+                    checked={row.getIsSelected()}
+                    onCheckedChange={(value) => row.toggleSelected(!!value)}
+                    aria-label="Select row"
+                />
+            ),
+            enableSorting: false,
+            enableHiding: false,
+        },
+        {
+            accessorKey: 'product',
+            header: () => <div>Sản phẩm</div>,
+            cell: ({ row }) => {
+                const product = row.getValue<{
+                    thumbnail: string;
+                    name: string;
+                }>('product');
+                return (
+                    <div className="text-right font-medium flex gap-2 items-center">
+                        <Image
+                            src={product.thumbnail}
+                            alt={product.name}
+                            width={80}
+                            height={80}
+                        />
+                        <p>{product.name}</p>
+                    </div>
+                );
             },
-            {
-                accessorKey: 'product',
-                header: () => <div>Sản phẩm</div>,
-                cell: ({ row }) => {
-                    const product = row.getValue<{
-                        thumbnail: string;
-                        name: string;
-                    }>('product');
-                    return (
-                        <div className="text-right font-medium flex gap-2 items-center">
-                            <Image
-                                src={product.thumbnail}
-                                alt={product.name}
-                                width={80}
-                                height={80}
-                            />
-                            <p>{product.name}</p>
-                        </div>
-                    );
-                },
-            },
-            {
-                id: 'otherOptions',
-                accessorKey: 'otherOptions',
-                header: () => <></>,
-                cell: ({ row }) => {
-                    const productId = row.original.id;
-                    let currOption = row.original?.selectedOption;
-                    const otherOptions =
-                        row.getValue<ProductOption[]>('otherOptions');
+        },
+        {
+            id: 'otherOptions',
+            accessorKey: 'otherOptions',
+            header: () => <></>,
+            cell: ({ row }) => {
+                let currOption = row.original?.selectedOption;
+                const otherOptions =
+                    row.getValue<ProductOption[]>('otherOptions');
 
-                    const handleSelectedOption = async (
-                        option: ProductOption,
-                    ) => {
-                        const response =
-                            (await accountApiRequest.changeProductOption(
-                                token,
-                                {
-                                    oldOptionId: currOption.id,
-                                    newOptionId: option.id,
-                                },
-                            )) as ChangeProductOptionResponseType;
-                        if (response.statusCode === 200) {
-                            dispatch(
-                                changeSelectedProductOption({
-                                    productId,
-                                    option,
-                                }),
-                            );
-                            currOption = option;
-                        }
-                    };
-                    return (
-                        <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <div>
-                                    <Button
-                                        className={
-                                            otherOptions?.length > 0
-                                                ? ''
-                                                : 'hidden'
-                                        }
-                                        variant="ghost"
-                                    >
-                                        <p className="flex gap-1 items-center">
-                                            <span>Phân loại</span>
-                                            <ChevronDownIcon className="top-[1px] ml-1 h-3 w-3" />
-                                        </p>
-                                    </Button>
-                                    <p>
-                                        {currOption?.sku} ({currOption?.stock})
-                                    </p>
-                                </div>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent>
-                                <ul className="left-0 w-[200px]">
-                                    {otherOptions?.length > 0 &&
-                                        otherOptions.map((option, index) => {
-                                            if (option.stock > 0) {
-                                                return (
-                                                    <li
-                                                        key={index}
-                                                        onClick={() =>
-                                                            handleSelectedOption(
-                                                                option,
-                                                            )
-                                                        }
-                                                    >
-                                                        <DropdownMenuItem>
-                                                            <div className="flex p-2 gap-3 items-center rounded-md cursor-pointer bg-popover hover:text-popover hover:bg-popover-foreground">
-                                                                <Image
-                                                                    src={
-                                                                        option.thumbnail
-                                                                    }
-                                                                    width={30}
-                                                                    height={30}
-                                                                    alt={
-                                                                        option.sku
-                                                                    }
-                                                                />
-                                                                <div className="items-start">
-                                                                    <div className="text-sm leading-none">
-                                                                        {
-                                                                            option.sku
-                                                                        }
-                                                                    </div>
-                                                                </div>
-                                                                <p>
-                                                                    (
-                                                                    {
-                                                                        option?.stock
-                                                                    }
-                                                                    )
-                                                                </p>
-                                                            </div>
-                                                        </DropdownMenuItem>
-                                                    </li>
-                                                );
-                                            }
-                                        })}
-                                </ul>
-                            </DropdownMenuContent>
-                        </DropdownMenu>
-                    );
-                },
-            },
-            {
-                accessorKey: 'unitPrice',
-                header: () => <div className="text-right">Đơn giá</div>,
-                cell: ({ row }) => {
-                    const selectedOption = row.original?.selectedOption;
-                    const unitPrice = parseFloat(row.getValue('unitPrice'));
-                    const priceModifier =
-                        unitPrice - (unitPrice * selectedOption.discount) / 100;
-                    return (
-                        <div className="text-right font-medium">
-                            {formatPrice(priceModifier)}
-                        </div>
-                    );
-                },
-            },
-            {
-                accessorKey: 'quantity',
-                header: () => <div className="text-right">Số lượng</div>,
-                cell: ({ row }) => {
-                    const productOption = row.original?.selectedOption;
-                    const unitPrice = row.original.unitPrice;
-                    const quantity = row.getValue<number>('quantity');
-                    const productId = row.original.id;
+                const handleSelectedOption = async (option: ProductOption) => {
+                    const response =
+                        (await accountApiRequest.changeProductOption(token, {
+                            oldOptionId: currOption.id,
+                            newOptionId: option.id,
+                        })) as ChangeProductOptionResponseType;
 
-                    const handleUpdateQuantity = async (
-                        type: 'DECREASE' | 'INCREASE',
-                    ) => {
-                        let newQuantity = quantity;
-
-                        if (type === 'DECREASE') {
-                            if (newQuantity - 1 < 1) {
-                                const isConfirm =
-                                    window.confirm('Xóa sản phẩm?');
-                                if (!isConfirm) return;
-
-                                const productOptionId =
-                                    row.original.selectedOption.id;
-                                const response =
-                                    (await accountApiRequest.removeProductFromCart(
-                                        token,
-                                        { productOptionId },
-                                    )) as RemoveCartProductResponseType;
-                                if (response.statusCode === 200) {
-                                    dispatch(removeCartItem({ productId }));
-                                    toast({ description: 'Xóa thành công' });
-                                    return;
+                    if (response.statusCode === 200) {
+                        accountApiRequest
+                            .getProductsFromCart(token)
+                            .then((response) => {
+                                if (response?.statusCode === 200) {
+                                    dispatch(setCartProducts(response?.data));
                                 }
-                            }
-                            newQuantity--;
-                        } else if (type === 'INCREASE') {
-                            if (newQuantity + 1 > productOption.stock) {
-                                toast({
-                                    description: 'Không đủ số lượng.',
-                                });
-                                return;
-                            }
-                            newQuantity++;
-                        }
-
-                        const response =
-                            (await accountApiRequest.updateProductQuantityFromCart(
-                                token,
-                                {
-                                    productOptionId: productOption.id,
-                                    quantity: newQuantity,
-                                },
-                            )) as AddToCartResponseType;
-                        if (response.statusCode === 200) {
-                            dispatch(
-                                updateQuantityForCartItem({
-                                    productId,
-                                    quantity: newQuantity,
-                                }),
-                            );
-                            if (row.getIsSelected()) {
-                                setTotalPrice(newQuantity * unitPrice);
-                            }
-                        }
-                    };
-
-                    return (
-                        <div className="flex justify-end mr-[-21px]">
-                            <div className="bg-popover text-popover-foreground dark:bg-popover-foreground dark:text-popover h-10 w-32 flex flex-row rounded-lg relative mt-1">
-                                <button
-                                    onClick={() =>
-                                        handleUpdateQuantity('DECREASE')
+                            });
+                        currOption = option;
+                    }
+                };
+                return (
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <div>
+                                <Button
+                                    className={
+                                        otherOptions?.length > 0 ? '' : 'hidden'
                                     }
-                                    className="h-full w-20 rounded-l cursor-pointer outline-none"
+                                    variant="ghost"
                                 >
-                                    <span className="m-auto text-2xl font-thin">
-                                        −
-                                    </span>
-                                </button>
-                                <input
-                                    readOnly={true}
-                                    type="text"
-                                    className="border-x bg-popover dark:bg-popover-foreground outline-none focus:outline-none text-center w-full font-semibold text-md flex items-center"
-                                    value={quantity}
-                                />
-                                <button
-                                    onClick={() =>
-                                        handleUpdateQuantity('INCREASE')
-                                    }
-                                    className="h-full w-20 rounded-r cursor-pointer outline-none"
-                                >
-                                    <span className="m-auto text-2xl font-thin">
-                                        +
-                                    </span>
-                                </button>
-                            </div>
-                        </div>
-                    );
-                },
-            },
-            {
-                accessorKey: 'total',
-                header: () => <div className="text-right">Thành tiền</div>,
-                cell: ({ row }) => {
-                    const quantity = row.getValue<number>('quantity');
-                    const unitPrice = row.getValue<number>('unitPrice');
-                    const total = quantity * unitPrice;
-
-                    return (
-                        <div className="text-right font-extrabold text-popover-foreground">
-                            {formatPrice(total)}
-                        </div>
-                    );
-                },
-            },
-            {
-                id: 'actions',
-                enableHiding: false,
-                cell: ({ row }) => {
-                    const handleDeleteProduct = async () => {
-                        const productId = row.original.id;
-                        const productOptionId = row.original.selectedOption.id;
-                        const response =
-                            (await accountApiRequest.removeProductFromCart(
-                                token,
-                                { productOptionId },
-                            )) as RemoveCartProductResponseType;
-                        if (response.statusCode === 200) {
-                            dispatch(removeCartItem({ productId }));
-                            toast({ description: 'Xóa thành công' });
-                        }
-                    };
-
-                    return (
-                        <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" className="h-8 w-8 p-0">
-                                    <span className="sr-only">Open menu</span>
-                                    <DotsHorizontalIcon className="h-4 w-4" />
+                                    <p className="flex gap-1 items-center">
+                                        <span>Phân loại</span>
+                                        <ChevronDownIcon className="top-[1px] ml-1 h-3 w-3" />
+                                    </p>
                                 </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                                <DropdownMenuLabel>Thao tác</DropdownMenuLabel>
-
-                                <DropdownMenuItem asChild>
-                                    <Link
-                                        href={'/'}
-                                        className="block cursor-default select-none rounded-sm px-2 text-start py-1.5 text-sm outline-none"
-                                    >
-                                        Xem thông tin chi tiết
-                                    </Link>
-                                </DropdownMenuItem>
-                                <DropdownMenuSeparator />
-                                <DropdownMenuItem asChild className="w-full">
-                                    <AlertDialog>
-                                        <AlertDialogTrigger>
-                                            <Button
-                                                variant={'ghost'}
-                                                className="block select-none rounded-sm px-2 text-start py-1.5 text-sm outline-none"
-                                            >
-                                                Xóa sản phẩm
-                                            </Button>
-                                        </AlertDialogTrigger>
-                                        <AlertDialogContent>
-                                            <AlertDialogHeader>
-                                                <AlertDialogTitle>
-                                                    Bạn chắc chắn xóa sản phẩm
-                                                    này khỏi giỏ hàng?
-                                                </AlertDialogTitle>
-                                            </AlertDialogHeader>
-                                            <AlertDialogFooter>
-                                                <AlertDialogCancel>
-                                                    Hủy
-                                                </AlertDialogCancel>
-                                                <Button
-                                                    variant={'outline'}
-                                                    onClick={
-                                                        handleDeleteProduct
+                                <p>
+                                    {currOption?.sku} ({currOption?.stock})
+                                </p>
+                            </div>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent>
+                            <ul className="left-0 w-[200px]">
+                                {otherOptions?.length > 0 &&
+                                    otherOptions.map((option, index) => {
+                                        if (option.stock > 0) {
+                                            return (
+                                                <li
+                                                    key={index}
+                                                    onClick={() =>
+                                                        handleSelectedOption(
+                                                            option,
+                                                        )
                                                     }
                                                 >
-                                                    Xác nhận
-                                                </Button>
-                                            </AlertDialogFooter>
-                                        </AlertDialogContent>
-                                    </AlertDialog>
-                                </DropdownMenuItem>
-                            </DropdownMenuContent>
-                        </DropdownMenu>
-                    );
-                },
+                                                    <DropdownMenuItem>
+                                                        <div className="flex p-2 gap-3 items-center rounded-md cursor-pointer bg-popover hover:text-popover hover:bg-popover-foreground">
+                                                            <Image
+                                                                src={
+                                                                    option.thumbnail
+                                                                }
+                                                                width={30}
+                                                                height={30}
+                                                                alt={option.sku}
+                                                            />
+                                                            <div className="items-start">
+                                                                <div className="text-sm leading-none">
+                                                                    {option.sku}
+                                                                </div>
+                                                            </div>
+                                                            <p>
+                                                                ({option?.stock}
+                                                                )
+                                                            </p>
+                                                        </div>
+                                                    </DropdownMenuItem>
+                                                </li>
+                                            );
+                                        }
+                                    })}
+                            </ul>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                );
             },
-        ],
-        [token, dispatch],
-    );
+        },
+        {
+            accessorKey: 'unitPrice',
+            header: () => <div className="text-center">Đơn giá</div>,
+            cell: ({ row }) => {
+                const selectedOption = row.original?.selectedOption;
+                const unitPrice = parseFloat(row.getValue('unitPrice'));
+                const priceModifier =
+                    unitPrice - (unitPrice * selectedOption.discount) / 100;
+                return (
+                    <>
+                        <div className="text-center font-medium">
+                            {formatPrice(priceModifier)}
+                        </div>
+                        {selectedOption.discount !== 0 && (
+                            <div className="text-center line-through font-medium">
+                                {formatPrice(unitPrice)} -{' '}
+                                {selectedOption.discount} %
+                            </div>
+                        )}
+                    </>
+                );
+            },
+        },
+        {
+            accessorKey: 'quantity',
+            header: () => <div className="text-right">Số lượng</div>,
+            cell: ({ row }) => {
+                const productOption = row.original?.selectedOption;
+                const unitPrice = row.original.unitPrice;
+                const quantity = row.getValue<number>('quantity');
+                const productId = row.original.id;
+
+                const handleUpdateQuantity = async (
+                    type: 'DECREASE' | 'INCREASE',
+                ) => {
+                    let newQuantity = quantity;
+
+                    if (type === 'DECREASE') {
+                        if (newQuantity - 1 < 1) {
+                            const isConfirm = window.confirm('Xóa sản phẩm?');
+                            if (!isConfirm) return;
+
+                            const productOptionId =
+                                row.original.selectedOption.id;
+                            const response =
+                                (await accountApiRequest.removeProductFromCart(
+                                    token,
+                                    { productOptionId },
+                                )) as RemoveCartProductResponseType;
+                            if (response.statusCode === 200) {
+                                dispatch(removeCartItem({ productId }));
+                                toast({ description: 'Xóa thành công' });
+                                return;
+                            }
+                        }
+                        newQuantity--;
+                    } else if (type === 'INCREASE') {
+                        if (newQuantity + 1 > productOption.stock) {
+                            toast({
+                                description: 'Không đủ số lượng.',
+                            });
+                            return;
+                        }
+                        newQuantity++;
+                    }
+
+                    const response =
+                        (await accountApiRequest.updateProductQuantityFromCart(
+                            token,
+                            {
+                                productOptionId: productOption.id,
+                                quantity: newQuantity,
+                            },
+                        )) as AddToCartResponseType;
+                    if (response.statusCode === 200) {
+                        const cartItems = cartProducts.filter(
+                            (p) =>
+                                p.selected_option.id !==
+                                response.data.selected_option.id,
+                        );
+                        dispatch(
+                            setCartProducts([...cartItems, response.data]),
+                        );
+                        if (row.getIsSelected()) {
+                            setTotalPrice(newQuantity * unitPrice);
+                        }
+                    }
+                };
+
+                return (
+                    <div className="flex justify-end mr-[-21px]">
+                        <div className="bg-popover text-popover-foreground dark:bg-popover-foreground dark:text-popover h-10 w-32 flex flex-row rounded-lg relative mt-1">
+                            <button
+                                onClick={() => handleUpdateQuantity('DECREASE')}
+                                className="h-full w-20 rounded-l cursor-pointer outline-none"
+                            >
+                                <span className="m-auto text-2xl font-thin">
+                                    −
+                                </span>
+                            </button>
+                            <input
+                                readOnly={true}
+                                type="text"
+                                className="border-x bg-popover dark:bg-popover-foreground outline-none focus:outline-none text-center w-full font-semibold text-md flex items-center"
+                                value={quantity}
+                            />
+                            <button
+                                onClick={() => handleUpdateQuantity('INCREASE')}
+                                className="h-full w-20 rounded-r cursor-pointer outline-none"
+                            >
+                                <span className="m-auto text-2xl font-thin">
+                                    +
+                                </span>
+                            </button>
+                        </div>
+                    </div>
+                );
+            },
+        },
+        {
+            accessorKey: 'total',
+            header: () => <div className="text-right">Thành tiền</div>,
+            cell: ({ row }) => {
+                const quantity = row.getValue<number>('quantity');
+                const unitPrice = row.getValue<number>('unitPrice');
+                const total = quantity * unitPrice;
+                const discount = row.original.selectedOption.discount;
+                const priceModifier = total - (total * discount) / 100;
+
+                return (
+                    <div className="text-right font-extrabold text-popover-foreground">
+                        {formatPrice(priceModifier)}
+                    </div>
+                );
+            },
+        },
+        {
+            id: 'actions',
+            enableHiding: false,
+            cell: ({ row }) => {
+                const handleDeleteProduct = async () => {
+                    const productId = row.original.id;
+                    const productOptionId = row.original.selectedOption.id;
+                    const response =
+                        (await accountApiRequest.removeProductFromCart(token, {
+                            productOptionId,
+                        })) as RemoveCartProductResponseType;
+                    if (response.statusCode === 200) {
+                        dispatch(removeCartItem({ productId }));
+                        toast({ description: 'Xóa thành công' });
+                    }
+                };
+
+                return (
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" className="h-8 w-8 p-0">
+                                <span className="sr-only">Open menu</span>
+                                <DotsHorizontalIcon className="h-4 w-4" />
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                            <DropdownMenuLabel>Thao tác</DropdownMenuLabel>
+
+                            <DropdownMenuItem asChild>
+                                <Link
+                                    href={'/'}
+                                    className="block cursor-default select-none rounded-sm px-2 text-start py-1.5 text-sm outline-none"
+                                >
+                                    Xem thông tin chi tiết
+                                </Link>
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem asChild className="w-full">
+                                <AlertDialog>
+                                    <AlertDialogTrigger>
+                                        <Button
+                                            variant={'ghost'}
+                                            className="block select-none rounded-sm px-2 text-start py-1.5 text-sm outline-none"
+                                        >
+                                            Xóa sản phẩm
+                                        </Button>
+                                    </AlertDialogTrigger>
+                                    <AlertDialogContent>
+                                        <AlertDialogHeader>
+                                            <AlertDialogTitle>
+                                                Bạn chắc chắn xóa sản phẩm này
+                                                khỏi giỏ hàng?
+                                            </AlertDialogTitle>
+                                        </AlertDialogHeader>
+                                        <AlertDialogFooter>
+                                            <AlertDialogCancel>
+                                                Hủy
+                                            </AlertDialogCancel>
+                                            <Button
+                                                variant={'outline'}
+                                                onClick={handleDeleteProduct}
+                                            >
+                                                Xác nhận
+                                            </Button>
+                                        </AlertDialogFooter>
+                                    </AlertDialogContent>
+                                </AlertDialog>
+                            </DropdownMenuItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                );
+            },
+        },
+    ];
 
     const table = useReactTable({
         data,
@@ -529,13 +519,12 @@ export default function CartTable() {
     const [totalPrice, setTotalPrice] = useState(0);
 
     useEffect(() => {
-        setIsClient(true);
-    }, [setIsClient]);
-
-    useEffect(() => {
         let totalPrice = 0;
         table.getSelectedRowModel().rows.forEach((row) => {
-            totalPrice += row.original.quantity * row.original.unitPrice;
+            const total = row.original.quantity * row.original.unitPrice;
+            const discount = row.original.selectedOption.discount;
+            const priceModifier = total - (total * discount) / 100;
+            totalPrice += priceModifier;
         });
         setTotalPrice(totalPrice);
     });
@@ -558,13 +547,19 @@ export default function CartTable() {
 
         const productCheckout: ProductCheckout[] = selectedRows.map((row) => {
             const data = row.original;
+            const quantity = data.quantity;
+            const unitPrice = data.unitPrice;
+            const total = quantity * unitPrice;
+            const discount = data.selectedOption.discount;
+            const priceModifier = total - (total * discount) / 100;
+
             return {
                 id: data.selectedOption.id,
                 name: data.product.name,
                 thumbnail: data.selectedOption.thumbnail,
                 unitPrice: data.unitPrice,
                 quantity: data.quantity,
-                total: data.total,
+                total: priceModifier,
                 weight: data.selectedOption.weight,
             };
         });

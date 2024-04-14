@@ -3,12 +3,16 @@
 import React, { useEffect, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
-import { Card, CardHeader, CardContent } from '@/components/ui/card';
+import {
+    Card,
+    CardHeader,
+    CardContent,
+    CardFooter,
+} from '@/components/ui/card';
 import Image from 'next/image';
 import Link from 'next/link';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import orderApiRequest, {
-    OrderDetailResponseType,
     OrderResponseType,
     UpdateOrderResponseType,
 } from '@/apiRequests/order';
@@ -16,8 +20,9 @@ import { useAppDispatch, useAppSelector } from '@/lib/store';
 import { formatPrice } from '@/lib/utils';
 import { toast } from '@/components/ui/use-toast';
 import {
-    addToCart,
+    CartItem,
     ProductCheckout,
+    setCartProducts,
     setProductCheckout,
 } from '@/lib/store/slices';
 import { useRouter } from 'next/navigation';
@@ -28,6 +33,7 @@ import accountApiRequest, {
 export default function PurchasePage() {
     const dispatch = useAppDispatch();
     const token = useAppSelector((state) => state.auth.accessToken);
+    const cartProducts = useAppSelector((state) => state.user.cart);
     const router = useRouter();
 
     const [currStatus, setCurrStatus] = useState<number>(5);
@@ -96,37 +102,42 @@ export default function PurchasePage() {
         }
     };
 
-    const handleRepurchase = async (orderDetail: OrderDetailResponseType) => {
-        const productOptionId = orderDetail.product.id;
+    const handleRepurchase = async (order: OrderResponseType) => {
+        let cartItemsCheckout: CartItem[] = [];
+        const productsCheckout: ProductCheckout[] = [];
 
-        const response = (await accountApiRequest.addToCart(token, {
-            productOptionId,
-            quantity: 1,
-        })) as AddToCartResponseType;
+        for (const o of order.order_details) {
+            const productOptionId = o.product.id;
 
-        if (response?.statusCode === 201) {
-            dispatch(addToCart(response.data));
+            const response = (await accountApiRequest.addToCart(token, {
+                productOptionId,
+                quantity: o.quantity,
+            })) as AddToCartResponseType;
 
-            const productCheckout: ProductCheckout = {
-                id: productOptionId,
-                name: orderDetail.product.name,
-                thumbnail: orderDetail.product.thumbnail,
-                unitPrice: orderDetail.product.price,
-                quantity: 1,
-                total:
-                    orderDetail.product.price +
-                    orderDetail.product.price_modifier,
-                weight: orderDetail.product.weight,
-            };
-            dispatch(setProductCheckout([productCheckout]));
-            router.push('/user/checkout');
-        } else {
-            toast({
-                description:
-                    'Có lỗi trong quá trình xử lý, vui lòng thử lại sau it phút',
-                variant: 'destructive',
-            });
+            if (response?.statusCode === 201) {
+                cartItemsCheckout = cartProducts.filter(
+                    (p) =>
+                        p.selected_option.id !==
+                        response.data.selected_option.id,
+                );
+
+                const productCheckout: ProductCheckout = {
+                    id: productOptionId,
+                    name: o.product.name,
+                    thumbnail: o.product.thumbnail,
+                    unitPrice: o.product.price,
+                    quantity: 1,
+                    total: o.product.price + o.product.price_modifier,
+                    weight: o.product.weight,
+                };
+
+                productsCheckout.push(productCheckout);
+            }
         }
+
+        dispatch(setCartProducts([...cartItemsCheckout, ...cartProducts]));
+        dispatch(setProductCheckout(productsCheckout));
+        router.push('/user/checkout');
     };
 
     return (
@@ -272,47 +283,45 @@ export default function PurchasePage() {
                                                     </div>
                                                 </div>
                                             </Link>
-                                            <div className="pt-6 text-right">
-                                                {(order.status === 0 ||
-                                                    order.status === 5) && (
-                                                        <Button
-                                                            onClick={() =>
-                                                                handleCancelOrder(
-                                                                    order.id,
-                                                                )
-                                                            }
-                                                        >
-                                                            Hủy
-                                                        </Button>
-                                                    )}
-                                                {order.status === 1 && (
-                                                    <Button
-                                                        onClick={() =>
-                                                            handleUpdateOrderStatus(
-                                                                order.id,
-                                                                2,
-                                                            )
-                                                        }
-                                                    >
-                                                        Đã nhận hàng
-                                                    </Button>
-                                                )}
-                                                {(order.status === 2 ||
-                                                    order.status === 3) && (
-                                                        <Button
-                                                            onClick={() =>
-                                                                handleRepurchase(
-                                                                    orderDetail,
-                                                                )
-                                                            }
-                                                        >
-                                                            Mua lại
-                                                        </Button>
-                                                    )}
-                                            </div>
                                         </CardContent>
                                     );
                                 })}
+                            <CardFooter>
+                                <div className="pt-6 text-right w-full">
+                                    {(order.status === 0 ||
+                                        order.status === 5) && (
+                                            <Button
+                                                onClick={() =>
+                                                    handleCancelOrder(order.id)
+                                                }
+                                            >
+                                                Hủy
+                                            </Button>
+                                        )}
+                                    {order.status === 1 && (
+                                        <Button
+                                            onClick={() =>
+                                                handleUpdateOrderStatus(
+                                                    order.id,
+                                                    2,
+                                                )
+                                            }
+                                        >
+                                            Đã nhận hàng
+                                        </Button>
+                                    )}
+                                    {(order.status === 2 ||
+                                        order.status === 3) && (
+                                            <Button
+                                                onClick={() =>
+                                                    handleRepurchase(order)
+                                                }
+                                            >
+                                                Mua lại
+                                            </Button>
+                                        )}
+                                </div>
+                            </CardFooter>
                         </Card>
                     );
                 })

@@ -9,7 +9,12 @@ import {
     ContextMenuItem,
     ContextMenuTrigger,
 } from '@/components/ui/context-menu';
-import { addToCart, ProductType } from '@/lib/store/slices';
+import {
+    CurrentProductType,
+    ProductType,
+    setCartProducts,
+    setCurrentProduct,
+} from '@/lib/store/slices';
 import { ShieldCheck } from 'lucide-react';
 import { formatPrice } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -30,15 +35,12 @@ export default function HomeProductCard(props: Props) {
     const dispatch = useAppDispatch();
     const router = useRouter();
     const token = useAppSelector((state) => state.auth.accessToken);
+    const cartProducts = useAppSelector((state) => state.user.cart);
 
     const { product, option = 0 } = props;
     const productOption = product.product_options[option];
     const productName =
-        product.name +
-        ' ' +
-        productOption.technical_specs?.find(
-            (item) => item.name === 'Dung lượng lưu trữ',
-        )?.value;
+        product.name + ' ' + productOption.sku.replaceAll('-', ' ');
     const price = formatPrice(
         Number(product.price + productOption.price_modifier),
     );
@@ -46,7 +48,7 @@ export default function HomeProductCard(props: Props) {
     const salePrice = formatPrice(
         Number(
             product.price -
-            product.price * productOption.discount +
+            (product.price * productOption.discount) / 100 +
             productOption.price_modifier,
         ),
     );
@@ -66,12 +68,26 @@ export default function HomeProductCard(props: Props) {
         })) as AddToCartResponseType;
 
         if (response?.statusCode === 201) {
-            dispatch(addToCart(response.data));
+            const cartItems = cartProducts.filter(
+                (p) =>
+                    p.selected_option.id !== response.data.selected_option.id,
+            );
+            dispatch(setCartProducts([...cartItems, response.data]));
+
             toast({
                 description: 'Thêm thành công',
                 variant: 'default',
             });
         }
+    };
+
+    const handleRedirectToDetailPage = () => {
+        const currentProductId: CurrentProductType = {
+            id: product.id,
+            cateId: product.category.id,
+            productOptionId: productOption.id,
+        };
+        dispatch(setCurrentProduct(currentProductId));
     };
 
     return (
@@ -88,6 +104,7 @@ export default function HomeProductCard(props: Props) {
                         )}
                         <Link
                             href={'/smartphone/' + productOption.slug}
+                            onClick={handleRedirectToDetailPage}
                             className="relative flex flex-col justify-center items-center gap-2"
                         >
                             <Image
@@ -103,7 +120,7 @@ export default function HomeProductCard(props: Props) {
                                     height={500}
                                     width={200}
                                     src={productOption.thumbnail}
-                                    alt={product.name}
+                                    alt={productName}
                                     className="hover:scale-[1.1] transition-all duration-300"
                                 />
                             </div>
@@ -113,7 +130,11 @@ export default function HomeProductCard(props: Props) {
                                     {productName}
                                 </p>
                                 <div className="flex gap-3 mt-2 justify-center items-center">
-                                    {productOption.discount > 0 ? (
+                                    {productOption.discount === 0 ? (
+                                        <p className="text-[#E83A45] font-semibold text-[18px]">
+                                            {price}
+                                        </p>
+                                    ) : (
                                         <>
                                             <p className="text-[#d0021c] font-bold text-[18px]">
                                                 {salePrice}
@@ -122,10 +143,6 @@ export default function HomeProductCard(props: Props) {
                                                 {price}
                                             </p>
                                         </>
-                                    ) : (
-                                        <p className="text-[#E83A45] font-semibold text-[18px]">
-                                            {price}
-                                        </p>
                                     )}
                                 </div>
                             </div>

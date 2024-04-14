@@ -2,7 +2,8 @@ import { toast } from '@/components/ui/use-toast';
 import http from '@/lib/http';
 import {
     ProductPaginationResponseType,
-    ProductResponseType,
+    GetProductsResponseType,
+    GetProductDetailResponseType,
 } from '@/schemaValidations/product.schema';
 
 class ProductApiRequest {
@@ -23,7 +24,7 @@ class ProductApiRequest {
 
     async getProductsSale() {
         try {
-            const response: ProductResponseType =
+            const response: GetProductsResponseType =
                 await http.get('/products/sale');
             return response;
         } catch (error: any) {
@@ -38,7 +39,7 @@ class ProductApiRequest {
 
     async getProductsByBrand(slug: string) {
         try {
-            const response: ProductResponseType = await http.get(
+            const response: GetProductsResponseType = await http.get(
                 '/products/brand/' + slug,
             );
             return response;
@@ -54,8 +55,24 @@ class ProductApiRequest {
 
     async getProductsByCategory(slug: string) {
         try {
-            const response: ProductResponseType = await http.get(
+            const response: GetProductsResponseType = await http.get(
                 '/products/category/' + slug,
+            );
+            return response;
+        } catch (error: any) {
+            toast({
+                title: 'Error',
+                description: error?.payload?.message ?? 'Lỗi không xác định',
+                variant: 'destructive',
+            });
+            return error;
+        }
+    }
+
+    async getProductsById(id: string) {
+        try {
+            const response: GetProductDetailResponseType = await http.get(
+                '/products/' + id,
             );
             return response;
         } catch (error: any) {

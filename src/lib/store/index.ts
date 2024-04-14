@@ -15,7 +15,7 @@ import { deliveryReducer } from '@/lib/store/slices/delivery-slice';
 const authPersistConfig = {
     key: 'auth',
     storage: storage,
-    whitelist: ['accessToken'],
+    whitelist: ['accessToken', 'registerEmail'],
 };
 
 const userPersistConfig = {
@@ -49,10 +49,10 @@ const brandPersistConfig = {
     whitelist: ['brands'],
 };
 
-const productImagesPersistConfig = {
+const productPersistConfig = {
     key: 'product',
     storage: storage,
-    whitelist: ['products'],
+    whitelist: ['products', 'currentProduct'],
 };
 
 const rootReducer = combineReducers({
@@ -61,7 +61,7 @@ const rootReducer = combineReducers({
     delivery: persistReducer(deliveryPersistConfig, deliveryReducer),
     category: persistReducer(categoryPersistConfig, categoryReducer),
     brand: persistReducer(brandPersistConfig, brandReducer),
-    products: persistReducer(productImagesPersistConfig, productReducer),
+    products: persistReducer(productPersistConfig, productReducer),
 });
 
 export const store = configureStore({
