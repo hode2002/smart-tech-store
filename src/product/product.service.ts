@@ -176,6 +176,7 @@ export class ProductService {
             select: {
                 id: true,
                 name: true,
+                main_image: true,
                 price: true,
                 promotions: true,
                 warranties: true,
@@ -312,6 +313,7 @@ export class ProductService {
             select: {
                 id: true,
                 name: true,
+                main_image: true,
                 price: true,
                 promotions: true,
                 warranties: true,
@@ -447,6 +449,7 @@ export class ProductService {
                 id: true,
                 name: true,
                 price: true,
+                main_image: true,
                 promotions: true,
                 warranties: true,
                 label: true,
@@ -575,6 +578,7 @@ export class ProductService {
             select: {
                 id: true,
                 name: true,
+                main_image: true,
                 price: true,
                 promotions: true,
                 warranties: true,
@@ -705,6 +709,7 @@ export class ProductService {
                 id: true,
                 name: true,
                 price: true,
+                main_image: true,
                 promotions: true,
                 warranties: true,
                 label: true,
@@ -836,6 +841,146 @@ export class ProductService {
                 id: true,
                 name: true,
                 price: true,
+                main_image: true,
+                promotions: true,
+                warranties: true,
+                label: true,
+                descriptions: {
+                    select: {
+                        id: true,
+                        content: true,
+                    },
+                },
+                brand: {
+                    select: {
+                        id: true,
+                        name: true,
+                        logo_url: true,
+                        slug: true,
+                    },
+                },
+                category: {
+                    select: {
+                        id: true,
+                        name: true,
+                        slug: true,
+                    },
+                },
+                product_options: {
+                    where: { is_deleted: false, stock: { gte: 1 } },
+                    select: {
+                        id: true,
+                        sku: true,
+                        thumbnail: true,
+                        price_modifier: true,
+                        stock: true,
+                        discount: true,
+                        is_sale: true,
+                        slug: true,
+                        label_image: true,
+                        product_images: {
+                            select: {
+                                id: true,
+                                image_url: true,
+                                image_alt_text: true,
+                            },
+                        },
+                        technical_specs: {
+                            select: {
+                                screen: true,
+                                screen_size: true,
+                                os: true,
+                                front_camera: true,
+                                rear_camera: true,
+                                chip: true,
+                                ram: true,
+                                rom: true,
+                                sim: true,
+                                battery: true,
+                                weight: true,
+                                connection: true,
+                            },
+                        },
+                        product_option_value: {
+                            select: {
+                                option: {
+                                    select: {
+                                        name: true,
+                                    },
+                                },
+                                value: true,
+                                adjust_price: true,
+                            },
+                        },
+                        reviews: {
+                            where: {
+                                parent_id: null,
+                            },
+                            select: {
+                                id: true,
+                                user: {
+                                    select: {
+                                        id: true,
+                                        email: true,
+                                        name: true,
+                                        avatar: true,
+                                    },
+                                },
+                                star: true,
+                                comment: true,
+                                _count: true,
+                                children: {
+                                    select: {
+                                        user: {
+                                            select: {
+                                                id: true,
+                                                email: true,
+                                                name: true,
+                                                avatar: true,
+                                            },
+                                        },
+                                        comment: true,
+                                        created_at: true,
+                                    },
+                                },
+                                created_at: true,
+                            },
+                        },
+                    },
+                },
+            },
+        });
+
+        if (!product) {
+            throw new NotFoundException('Product not found');
+        }
+
+        return this.convertProductResponse(product);
+    }
+
+    async findBySlug(slug: string): Promise<ProductDetailResponse> {
+        if (!slug) {
+            throw new ForbiddenException('Missing slug');
+        }
+
+        const product = await this.prismaService.product.findFirst({
+            where: {
+                product_options: {
+                    every: {
+                        slug,
+                    },
+                    none: {
+                        stock: {
+                            equals: 0,
+                        },
+                    },
+                },
+            },
+            select: {
+                id: true,
+                name: true,
+                price: true,
+                main_image: true,
                 promotions: true,
                 warranties: true,
                 label: true,

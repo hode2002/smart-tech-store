@@ -3,6 +3,7 @@ import { JsonValue } from '@prisma/client/runtime/library';
 export interface ProductDetailResponse {
     id: string;
     name: string;
+    main_image: string;
     price: number;
     promotions: JsonValue;
     warranties: JsonValue;

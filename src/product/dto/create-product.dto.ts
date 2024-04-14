@@ -14,6 +14,10 @@ export class CreateProductDto {
     name: string;
 
     @IsNotEmpty()
+    @IsString()
+    main_image: string;
+
+    @IsNotEmpty()
     @IsArray()
     descriptions: Array<ProductDescriptionDto>;
 

@@ -129,6 +129,7 @@ export class AuthController {
     }
 
     @Post('create-password')
+    @HttpCode(HttpStatus.OK)
     @Throttle({ default: { limit: 3, ttl: 60000 } })
     async createPassword(
         @Body() createUserDto: CreateUserDto,

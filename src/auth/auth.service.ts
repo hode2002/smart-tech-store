@@ -149,8 +149,8 @@ export class AuthService {
         const otpCode = otpGenerator.generate(6, {
             specialChars: false,
             digits: true,
-            upperCaseAlphabets: true,
-            lowerCaseAlphabets: true,
+            upperCaseAlphabets: false,
+            lowerCaseAlphabets: false,
         });
 
         if (!otpCode) {
