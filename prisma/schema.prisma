@@ -70,7 +70,7 @@ model User {
   avatar         String?         @default("https://ct466-project.s3.ap-southeast-2.amazonaws.com/default.jpg")
   phone          String?
   address        UserAddress?
-  cart           Cart?
+  cart           Cart[]
   orders         Order[]
   history_search HistorySearch[]
   review         Review[]
@@ -103,7 +103,7 @@ model UserAddress {
 model Cart {
   id                String        @id @default(uuid())
   user              User          @relation(fields: [user_id], references: [id])
-  user_id           String        @unique
+  user_id           String
   product_option    ProductOption @relation(fields: [product_option_id], references: [id])
   product_option_id String
   quantity          Int           @default(1)
@@ -118,6 +118,7 @@ model Product {
   id                String               @id @default(uuid())
   name              String
   descriptions      ProductDescription[]
+  main_image        String
   brand             Brand                @relation(fields: [brand_id], references: [id])
   brand_id          String
   category          Category             @relation(fields: [category_id], references: [id])

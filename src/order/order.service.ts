@@ -122,15 +122,13 @@ export class OrderService {
                     if (userCart.quantity - quantity === 0) {
                         await prisma.cart.delete({
                             where: {
-                                user_id: userId,
-                                product_option_id,
+                                id: userCart.id,
                             },
                         });
                     } else {
                         await prisma.cart.update({
                             where: {
-                                user_id: userId,
-                                product_option_id,
+                                id: userCart.id,
                             },
                             data: {
                                 quantity: userCart.quantity - quantity,

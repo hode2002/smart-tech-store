@@ -24,7 +24,7 @@ export class CartService {
             throw new NotFoundException('User not found');
         }
 
-        const userCart = await this.prismaService.cart.findUnique({
+        const userCart = await this.prismaService.cart.findFirst({
             where: { user_id: userId, product_option_id: productOptionId },
         });
 
@@ -688,8 +688,7 @@ export class CartService {
 
         const isDeleted = await this.prismaService.cart.delete({
             where: {
-                user_id: userId,
-                product_option_id: productOptionId,
+                id: userCart.id,
             },
         });
 

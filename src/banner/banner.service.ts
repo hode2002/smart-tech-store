@@ -59,6 +59,9 @@ export class BannerService {
             where: {
                 status: 'show',
             },
+            orderBy: {
+                created_at: 'asc',
+            },
             select: {
                 id: true,
                 title: true,

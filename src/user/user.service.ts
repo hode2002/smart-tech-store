@@ -217,6 +217,7 @@ export class UserService {
             lowercase: true,
             uppercase: true,
             numbers: true,
+            strict: true,
         });
         if (!newPass) {
             throw new InternalServerErrorException('Internal Server Error');

@@ -4,6 +4,7 @@ import { technicalSpecs } from './technical-specs.interface';
 export interface ProductDetailDB {
     id: string;
     name: string;
+    main_image: string;
     price: number;
     promotions: JsonValue;
     warranties: JsonValue;
