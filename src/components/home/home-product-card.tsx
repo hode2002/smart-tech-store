@@ -136,7 +136,7 @@ export default function HomeProductCard(props: Props) {
                                         </p>
                                     ) : (
                                         <>
-                                            <p className="text-[#d0021c] font-bold text-[18px]">
+                                            <p className="text-[#E83A45] font-bold text-[18px]">
                                                 {salePrice}
                                             </p>
                                             <p className="line-through text-[14px]">

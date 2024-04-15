@@ -1,3 +1,4 @@
+import { ProductFilterType } from '@/schemaValidations/product.schema';
 import { type ClassValue, clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
@@ -24,4 +25,45 @@ export const formatPrice = (price: number) => {
 
 export const randomElement = (arr: string[]) => {
     return arr[Math.floor(Math.random() * arr.length)];
+};
+
+const convertOptionName = (name: string) => {
+    const data = {
+        brands: 'b',
+        operatingSystems: 'o',
+        rams: 'ra',
+        roms: 'ro',
+        specialFeatures: 'co',
+        charger: 'c',
+        pin: 'p',
+    };
+
+    return data[name as keyof typeof data];
+};
+
+export const convertFilterOptionToQueryString = (filter: ProductFilterType) => {
+    let querystring = '&';
+    const keys = Object.keys(filter);
+
+    keys.forEach((key: string) => {
+        let values = filter[key as keyof typeof filter];
+        const target = values[values.length - 1] ?? 'all';
+        if (target !== 'all') {
+            const keyName = convertOptionName(key);
+            if (key !== 'prices') {
+                querystring +=
+                    (querystring.length === 1 ? '' : '&') +
+                    keyName +
+                    '=' +
+                    values;
+            } else {
+                querystring += (querystring.length === 1 ? '' : '&') + values;
+            }
+            values = values.filter((value) => value !== 'all');
+        } else {
+            values = ['all'];
+        }
+    });
+
+    return querystring;
 };

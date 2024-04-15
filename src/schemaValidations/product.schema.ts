@@ -1,36 +1,16 @@
 import { z } from 'zod';
 
 export const ProductFilter = z.object({
-    brands: z.array(z.string()).refine((value) => value.some((item) => item), {
-        message: 'You have to select at least one item.',
-    }),
-    prices: z.array(z.string()).refine((value) => value.some((item) => item), {
-        message: 'You have to select at least one item.',
-    }),
-    operatingSystems: z
-        .array(z.string())
-        .refine((value) => value.some((item) => item), {
-            message: 'You have to select at least one item.',
-        }),
-    screenSize: z
-        .array(z.string())
-        .refine((value) => value.some((item) => item), {
-            message: 'You have to select at least one item.',
-        }),
-    cpu: z.array(z.string()).refine((value) => value.some((item) => item), {
-        message: 'You have to select at least one item.',
-    }),
-    rams: z.array(z.string()).refine((value) => value.some((item) => item), {
-        message: 'You have to select at least one item.',
-    }),
-    roms: z.array(z.string()).refine((value) => value.some((item) => item), {
-        message: 'You have to select at least one item.',
-    }),
-    specialFeatures: z
-        .array(z.string())
-        .refine((value) => value.some((item) => item), {
-            message: 'You have to select at least one item.',
-        }),
+    brands: z.array(z.string()),
+    prices: z.array(z.string()),
+    operatingSystems: z.array(z.string()),
+    screenSize: z.array(z.string()),
+    cpu: z.array(z.string()),
+    rams: z.array(z.string()),
+    roms: z.array(z.string()),
+    specialFeatures: z.array(z.string()),
+    charger: z.array(z.string()),
+    pin: z.array(z.string()),
 });
 
 export type ProductFilterType = z.TypeOf<typeof ProductFilter>;

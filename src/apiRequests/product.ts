@@ -1,10 +1,12 @@
 import { toast } from '@/components/ui/use-toast';
 import http from '@/lib/http';
+import { ProductFilterType } from '../schemaValidations/product.schema';
 import {
     ProductPaginationResponseType,
     GetProductsResponseType,
     GetProductDetailResponseType,
 } from '@/schemaValidations/product.schema';
+import { convertFilterOptionToQueryString } from '@/lib/utils';
 
 class ProductApiRequest {
     async getProducts() {
@@ -73,6 +75,24 @@ class ProductApiRequest {
         try {
             const response: GetProductDetailResponseType = await http.get(
                 '/products/' + id,
+            );
+            return response;
+        } catch (error: any) {
+            toast({
+                title: 'Error',
+                description: error?.payload?.message ?? 'Lỗi không xác định',
+                variant: 'destructive',
+            });
+            return error;
+        }
+    }
+
+    async getProductsByUserFilter(category: string, filter: ProductFilterType) {
+        try {
+            const response: GetProductsResponseType = await http.get(
+                '/products/parameters?ca=' +
+                    category +
+                    convertFilterOptionToQueryString(filter),
             );
             return response;
         } catch (error: any) {

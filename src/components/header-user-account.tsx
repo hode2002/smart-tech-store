@@ -4,7 +4,12 @@ import SideBar from './side-bar';
 import { useState } from 'react';
 
 import { useAppSelector, useAppDispatch } from '@/lib/store';
-import { userLogout, removeUserProfile } from '@/lib/store/slices';
+import {
+    userLogout,
+    removeUserProfile,
+    setBrands,
+    setCategories,
+} from '@/lib/store/slices';
 import {
     NavigationMenu,
     NavigationMenuContent,
@@ -22,6 +27,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 
 import { Avatar } from '@/components/ui/avatar';
+import { setDeliveryList } from '@/lib/store/slices/delivery-slice';
 
 export default function HeaderUserAccount() {
     const router = useRouter();
@@ -39,6 +45,9 @@ export default function HeaderUserAccount() {
         if (response.statusCode === 200) {
             dispatch(userLogout());
             dispatch(removeUserProfile());
+            dispatch(setDeliveryList([]));
+            dispatch(setCategories([]));
+            dispatch(setBrands([]));
             return router.push('/login');
         }
     };

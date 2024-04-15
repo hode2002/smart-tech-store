@@ -12,10 +12,11 @@ type CheckboxFieldProps = {
     name: string;
     label: string;
     items: Array<{ id: string; label: string }>;
+    handleFilterProduct: () => void;
 };
 
 export default function CheckBoxFormField(props: CheckboxFieldProps) {
-    const { form, name, label, items } = props;
+    const { form, name, label, items, handleFilterProduct } = props;
 
     return (
         <FormField
@@ -33,10 +34,7 @@ export default function CheckBoxFormField(props: CheckboxFieldProps) {
                             name={name}
                             render={({ field }) => {
                                 return (
-                                    <FormItem
-                                        key={item.id}
-                                        className="flex flex-row items-start space-x-3 space-y-0"
-                                    >
+                                    <FormItem className="flex flex-row items-start space-x-3 space-y-0">
                                         <FormControl>
                                             <Checkbox
                                                 checked={field.value?.includes(
@@ -45,20 +43,21 @@ export default function CheckBoxFormField(props: CheckboxFieldProps) {
                                                 onCheckedChange={(
                                                     checked: boolean,
                                                 ) => {
-                                                    return checked
+                                                    checked
                                                         ? field.onChange([
-                                                              ...field.value,
-                                                              item.id,
-                                                          ])
+                                                            ...field.value,
+                                                            item.id,
+                                                        ])
                                                         : field.onChange(
-                                                              field.value?.filter(
-                                                                  (
-                                                                      value: string,
-                                                                  ) =>
-                                                                      value !==
-                                                                      item.id,
-                                                              ),
-                                                          );
+                                                            field.value?.filter(
+                                                                (
+                                                                    value: string,
+                                                                ) =>
+                                                                    value !==
+                                                                    item.id,
+                                                            ),
+                                                        );
+                                                    return handleFilterProduct();
                                                 }}
                                             />
                                         </FormControl>

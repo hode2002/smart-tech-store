@@ -8,7 +8,7 @@ import { DeliveryResponseType } from '@/schemaValidations/delivery.schema';
 import { useEffect, useState } from 'react';
 import Banner from '@/components/banner';
 import productApiRequest from '@/apiRequests/product';
-import { ProductResponseType } from '@/schemaValidations/product.schema';
+import { GetProductsResponseType } from '@/schemaValidations/product.schema';
 import {
     ProductType,
     setBrands,
@@ -69,33 +69,37 @@ export default function Home() {
 
         // productApiRequest
         //     .getProductsSale()
-        //     .then((response: ProductResponseType) =>
+        //     .then((response: GetProductsResponseType) =>
         //         setProductSale(response.data.products),
         //     );
 
         productApiRequest
             .getProductsByCategory('smartphone')
-            .then((response: ProductResponseType) => {
+            .then((response: GetProductsResponseType) => {
                 setSmartphone(response.data);
             });
 
         productApiRequest
             .getProductsByCategory('tablet')
-            .then((response: ProductResponseType) => setTablet(response.data));
+            .then((response: GetProductsResponseType) =>
+                setTablet(response.data),
+            );
 
         productApiRequest
             .getProductsByCategory('laptop')
-            .then((response: ProductResponseType) => setLaptop(response.data));
+            .then((response: GetProductsResponseType) =>
+                setLaptop(response.data),
+            );
 
         productApiRequest
             .getProductsSale()
-            .then((response: ProductResponseType) =>
+            .then((response: GetProductsResponseType) =>
                 setProductSale(response.data),
             );
 
         // productApiRequest
         //     .getProductsByBrand('iphone')
-        //     .then((response: ProductResponseType) =>
+        //     .then((response: GetProductsResponseType) =>
         //         setProductBrand(response.data),
         //     );
     }, []);
