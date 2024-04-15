@@ -14,12 +14,7 @@ import {
 import { PrismaService } from './../prisma/prisma.service';
 import { Request } from 'express';
 import { generateSlug, pagination, translateSpecs } from 'src/utils';
-import {
-    ProductDetailDB,
-    ProductDetailResponse,
-    ProductParameterDB,
-    ProductParameterResponse,
-} from './types';
+import { ProductDetailDB, ProductDetailResponse } from './types';
 
 @Injectable()
 export class ProductService {
@@ -1143,119 +1138,318 @@ export class ProductService {
         return product;
     }
 
-    async getByParameters(
-        request: Request,
-    ): Promise<ProductParameterResponse[]> {
-        const products = await this.prismaService.technicalSpecs.findMany({
+    async getByParameters(request: Request) {
+        const products = await this.prismaService.product.findMany({
             where: {
-                product_option: {
-                    stock: { gte: 1 },
-                    product: {
-                        AND: [
-                            {
-                                ...(request.query['ca'] && {
-                                    category_id: <string>request.query['ca'],
-                                }),
-                            },
-                            {
-                                ...(request.query['b'] && {
-                                    brand_id: <string>request.query['b'],
-                                }),
-                            },
-                            {
-                                price: {
-                                    ...(request.query['pf'] && {
-                                        gte:
-                                            Number(request.query['pf']) *
-                                            1000000,
-                                    }),
-                                    ...(request.query['pt'] && {
-                                        lte:
-                                            Number(request.query['pt']) *
-                                            1000000,
-                                    }),
+                product_options: {
+                    some: {
+                        technical_specs: {
+                            product_option: {
+                                stock: { gte: 1 },
+                                product: {
+                                    AND: [
+                                        {
+                                            ...(request.query['ca'] && {
+                                                category: {
+                                                    name: {
+                                                        contains: <string>(
+                                                            request.query['ca']
+                                                        ),
+                                                    },
+                                                },
+                                            }),
+                                        },
+                                        {
+                                            ...(request.query['b'] && {
+                                                brand: {
+                                                    OR: (
+                                                        request.query[
+                                                            'b'
+                                                        ] as string
+                                                    )
+                                                        .split(',')
+                                                        .map((item) => ({
+                                                            name: {
+                                                                contains: item,
+                                                            },
+                                                        })),
+                                                },
+                                            }),
+                                        },
+                                        {
+                                            price: {
+                                                ...(request.query['pf'] && {
+                                                    gte:
+                                                        Number(
+                                                            request.query['pf'],
+                                                        ) * 1000000,
+                                                }),
+                                                ...(request.query['pt'] && {
+                                                    lte:
+                                                        Number(
+                                                            request.query['pt'],
+                                                        ) * 1000000,
+                                                }),
+                                            },
+                                        },
+                                    ],
                                 },
                             },
-                        ],
+                            AND: [
+                                {
+                                    ...(request.query['ro'] && {
+                                        OR: (request.query['ro'] as string)
+                                            .split(',')
+                                            .map((item) => ({
+                                                rom: {
+                                                    contains: item,
+                                                },
+                                            })),
+                                    }),
+                                },
+                                {
+                                    ...(request.query['co'] && {
+                                        connection: {
+                                            equals: <string>request.query['co'],
+                                        },
+                                    }),
+                                },
+                                {
+                                    ...(request.query['ra'] && {
+                                        OR: (request.query['ra'] as string)
+                                            .split(',')
+                                            .map((item) => ({
+                                                ram: {
+                                                    contains: item,
+                                                },
+                                            })),
+                                    }),
+                                },
+                                {
+                                    ...(request.query['c'] && {
+                                        OR: (request.query['c'] as string)
+                                            .split(',')
+                                            .map((item) => ({
+                                                battery: {
+                                                    contains: item,
+                                                },
+                                            })),
+                                    }),
+                                },
+                                {
+                                    ...(request.query['p'] && {
+                                        OR: (request.query['p'] as string)
+                                            .split(',')
+                                            .map((item) => ({
+                                                battery: {
+                                                    gte: item,
+                                                },
+                                            })),
+                                    }),
+                                },
+                                {
+                                    ...(request.query['o'] && {
+                                        OR: (request.query['o'] as string)
+                                            .split(',')
+                                            .map((item) => ({
+                                                os: {
+                                                    contains: item,
+                                                },
+                                            })),
+                                    }),
+                                },
+                            ],
+                        },
+                    },
+                    none: {
+                        stock: {
+                            equals: 0,
+                        },
                     },
                 },
-                AND: [
-                    {
-                        ...(request.query['ro'] && {
-                            rom: {
-                                equals: <string>request.query['ro'],
-                            },
-                        }),
-                    },
-                    {
-                        ...(request.query['co'] && {
-                            connection: {
-                                contains: <string>request.query['co'],
-                            },
-                        }),
-                    },
-                    {
-                        ...(request.query['ra'] && {
-                            ram: {
-                                contains: <string>request.query['ra'],
-                            },
-                        }),
-                    },
-                    {
-                        ...(request.query['c'] && {
-                            battery: {
-                                contains: <string>request.query['c'],
-                            },
-                        }),
-                    },
-                    {
-                        ...(request.query['p'] && {
-                            battery: {
-                                gte: <string>request.query['p'],
-                            },
-                        }),
-                    },
-                    {
-                        ...(request.query['o'] && {
-                            os: {
-                                contains: <string>request.query['o'],
-                            },
-                        }),
-                    },
-                ],
             },
-            include: {
-                product_option: {
-                    include: {
-                        product: {
+            select: {
+                id: true,
+                name: true,
+                price: true,
+                main_image: true,
+                promotions: true,
+                warranties: true,
+                label: true,
+                descriptions: {
+                    select: {
+                        id: true,
+                        content: true,
+                    },
+                },
+                brand: {
+                    select: {
+                        id: true,
+                        name: true,
+                        logo_url: true,
+                        slug: true,
+                    },
+                },
+                category: {
+                    select: {
+                        id: true,
+                        name: true,
+                        slug: true,
+                    },
+                },
+                product_options: {
+                    where: {
+                        technical_specs: {
+                            product_option: {
+                                stock: { gte: 1 },
+                                product: {
+                                    AND: [
+                                        {
+                                            ...(request.query['ca'] && {
+                                                category: {
+                                                    name: {
+                                                        contains: <string>(
+                                                            request.query['ca']
+                                                        ),
+                                                    },
+                                                },
+                                            }),
+                                        },
+                                        {
+                                            ...(request.query['b'] && {
+                                                brand: {
+                                                    OR: (
+                                                        request.query[
+                                                            'b'
+                                                        ] as string
+                                                    )
+                                                        .split(',')
+                                                        .map((item) => ({
+                                                            name: {
+                                                                contains: item,
+                                                            },
+                                                        })),
+                                                },
+                                            }),
+                                        },
+                                        {
+                                            price: {
+                                                ...(request.query['pf'] && {
+                                                    gte:
+                                                        Number(
+                                                            request.query['pf'],
+                                                        ) * 1000000,
+                                                }),
+                                                ...(request.query['pt'] && {
+                                                    lte:
+                                                        Number(
+                                                            request.query['pt'],
+                                                        ) * 1000000,
+                                                }),
+                                            },
+                                        },
+                                    ],
+                                },
+                            },
+                            AND: [
+                                {
+                                    ...(request.query['ro'] && {
+                                        OR: (request.query['ro'] as string)
+                                            .split(',')
+                                            .map((item) => ({
+                                                rom: {
+                                                    contains: item,
+                                                },
+                                            })),
+                                    }),
+                                },
+                                {
+                                    ...(request.query['co'] && {
+                                        connection: {
+                                            equals: <string>request.query['co'],
+                                        },
+                                    }),
+                                },
+                                {
+                                    ...(request.query['ra'] && {
+                                        OR: (request.query['ra'] as string)
+                                            .split(',')
+                                            .map((item) => ({
+                                                ram: {
+                                                    contains: item,
+                                                },
+                                            })),
+                                    }),
+                                },
+                                {
+                                    ...(request.query['c'] && {
+                                        OR: (request.query['c'] as string)
+                                            .split(',')
+                                            .map((item) => ({
+                                                battery: {
+                                                    contains: item,
+                                                },
+                                            })),
+                                    }),
+                                },
+                                {
+                                    ...(request.query['p'] && {
+                                        OR: (request.query['p'] as string)
+                                            .split(',')
+                                            .map((item) => ({
+                                                battery: {
+                                                    gte: item,
+                                                },
+                                            })),
+                                    }),
+                                },
+                                {
+                                    ...(request.query['o'] && {
+                                        OR: (request.query['o'] as string)
+                                            .split(',')
+                                            .map((item) => ({
+                                                os: {
+                                                    contains: item,
+                                                },
+                                            })),
+                                    }),
+                                },
+                            ],
+                        },
+                        is_deleted: false,
+                        stock: { gte: 1 },
+                    },
+                    select: {
+                        id: true,
+                        sku: true,
+                        thumbnail: true,
+                        price_modifier: true,
+                        stock: true,
+                        discount: true,
+                        is_sale: true,
+                        slug: true,
+                        label_image: true,
+                        product_images: {
                             select: {
                                 id: true,
-                                name: true,
-                                price: true,
-                                promotions: true,
-                                warranties: true,
-                                label: true,
-                                descriptions: {
-                                    select: {
-                                        id: true,
-                                        content: true,
-                                    },
-                                },
-                                brand: {
-                                    select: {
-                                        id: true,
-                                        name: true,
-                                        logo_url: true,
-                                        slug: true,
-                                    },
-                                },
-                                category: {
-                                    select: {
-                                        id: true,
-                                        name: true,
-                                        slug: true,
-                                    },
-                                },
+                                image_url: true,
+                                image_alt_text: true,
+                            },
+                        },
+                        technical_specs: {
+                            select: {
+                                screen: true,
+                                screen_size: true,
+                                os: true,
+                                front_camera: true,
+                                rear_camera: true,
+                                chip: true,
+                                ram: true,
+                                rom: true,
+                                sim: true,
+                                battery: true,
+                                weight: true,
+                                connection: true,
                             },
                         },
                         product_option_value: {
@@ -1267,13 +1461,6 @@ export class ProductService {
                                 },
                                 value: true,
                                 adjust_price: true,
-                            },
-                        },
-                        product_images: {
-                            select: {
-                                id: true,
-                                image_url: true,
-                                image_alt_text: true,
                             },
                         },
                         reviews: {
@@ -1315,9 +1502,7 @@ export class ProductService {
             },
         });
 
-        return products.map((product) =>
-            this.convertProductParameterResponse(product),
-        );
+        return products.map((product) => this.convertProductResponse(product));
     }
 
     async update(id: string, updateProductDto: UpdateProductDto) {
@@ -1469,7 +1654,7 @@ export class ProductService {
     ): ProductDetailResponse {
         return {
             ...product,
-            product_options: product.product_options.map((productOption) => {
+            product_options: product?.product_options.map((productOption) => {
                 const rating = <number[]>Array(6).fill(0);
                 let overall = 0;
 
@@ -1506,55 +1691,6 @@ export class ProductService {
                     reviews: productOption.reviews,
                 };
             }),
-        };
-    }
-
-    private convertProductParameterResponse(
-        productParameter: ProductParameterDB,
-    ): ProductParameterResponse {
-        const { product_option } = productParameter;
-        const { product, product_option_value, id } = product_option;
-
-        delete product_option.product_option_value;
-        delete productParameter.product_option;
-        delete product_option.product_id;
-        delete product_option.created_at;
-        delete product_option.updated_at;
-        delete product_option.is_deleted;
-        delete product_option.product;
-        delete product_option.id;
-
-        const rating = <number[]>Array(6).fill(0);
-        let overall = 0;
-
-        product_option.reviews.forEach((review) => {
-            rating[review.star]++;
-        });
-
-        rating.forEach((item, idx) => {
-            if (item >= 1) {
-                overall += idx;
-            }
-        });
-
-        overall /= product_option.reviews.length;
-
-        return {
-            product_option_id: id,
-            ...product,
-            ...product_option,
-            technical_specs: translateSpecs(productParameter),
-            options: product_option_value.map((el) => ({
-                name: el.option.name,
-                value: el.value,
-                adjust_price: el.adjust_price,
-            })),
-            rating: {
-                total_reviews: product_option.reviews.length,
-                details: rating,
-                overall: overall ? overall : 0,
-            },
-            reviews: product_option.reviews,
         };
     }
 }
