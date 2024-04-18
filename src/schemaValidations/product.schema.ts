@@ -20,7 +20,7 @@ export const ProductDescription = z.object({
     content: z.string(),
 });
 
-export type Rating = {
+export type RatingType = {
     total_reviews: number;
     details: Array<number>;
     overall: number;
@@ -36,6 +36,7 @@ export type ReviewItem = {
     star: number;
     comment: string;
     children: {
+        id: string;
         user: {
             id: string;
             email: string;

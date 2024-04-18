@@ -83,6 +83,20 @@ export default function HeaderUserAccount() {
                                 <div className="left-0 p-4">
                                     <div>
                                         <NavigationMenuLink asChild>
+                                            <Link href={'/admin/dashboard'}>
+                                                <Button
+                                                    className="w-full"
+                                                    variant={'ghost'}
+                                                >
+                                                    <span className="text-popover-foreground">
+                                                        Admin Dashboard
+                                                    </span>
+                                                </Button>
+                                            </Link>
+                                        </NavigationMenuLink>
+                                    </div>
+                                    <div>
+                                        <NavigationMenuLink asChild>
                                             <Button
                                                 className="w-full"
                                                 variant={'ghost'}

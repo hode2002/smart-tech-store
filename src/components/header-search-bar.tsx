@@ -27,13 +27,33 @@ import accountApiRequest from '@/apiRequests/account';
 import { v4 as uuidv4 } from 'uuid';
 import { useEffect, useState } from 'react';
 import HeaderSearchList from '@/components/header-search-list';
+import { createFuseInstance } from '@/lib/fuse';
 
 export default function HeaderSearchBar() {
     const dispatch = useAppDispatch();
     const token = useAppSelector((state) => state.auth.accessToken);
+    const products = useAppSelector((state) => state.products.products);
+    const fuse = createFuseInstance(products?.length > 0 ? products : []);
+
     const historySearch = useAppSelector((state) => state.user.historySearch);
     const localSearch = useAppSelector((state) => state.user.localSearch);
     const [isOpen, setIsOpen] = useState<boolean>(false);
+    const [searchPattern, setSearchPattern] = useState<string>('');
+    const [searchSuggestions, setSearchSuggestions] = useState<
+        HistorySearchItem[]
+    >([]);
+
+    useEffect(() => {
+        const results = fuse.search(searchPattern);
+        const data = results.map((el) => {
+            const searchItem = {
+                id: uuidv4(),
+                search_content: el.item.name,
+            };
+            return searchItem;
+        });
+        setSearchSuggestions(data);
+    }, [searchPattern]); // eslint-disable-line
 
     useEffect(() => {
         if (token && historySearch.length < 1) {
@@ -64,12 +84,13 @@ export default function HeaderSearchBar() {
         },
     });
 
-    const onSubmit = async ({ search_content }: HistorySearchBodyType) => {
-        if (!search_content) return;
+    const onSubmit = async (e: any) => {
+        e.preventDefault();
+        if (!searchPattern) return;
 
         const searchItem = {
             id: uuidv4(),
-            search_content,
+            search_content: searchPattern,
         };
 
         if (token) {
@@ -91,7 +112,6 @@ export default function HeaderSearchBar() {
             <Form {...form}>
                 <form
                     onClick={() => setIsOpen(true)}
-                    onSubmit={form.handleSubmit(onSubmit)}
                     className="flex w-full items-center space-x-2"
                 >
                     <div className="w-full relative">
@@ -104,6 +124,11 @@ export default function HeaderSearchBar() {
                                         <Input
                                             {...field}
                                             type="text"
+                                            onClick={(e) => e.preventDefault()}
+                                            onChange={(e) =>
+                                                setSearchPattern(e.target.value)
+                                            }
+                                            value={searchPattern}
                                             autoComplete="off"
                                             placeholder="Bạn cần tìm gì..."
                                             className="px-2 py-5 w-full"
@@ -114,12 +139,19 @@ export default function HeaderSearchBar() {
                             )}
                         />
                         <HeaderSearchList
-                            searchList={token ? historySearch : localSearch}
+                            searchList={
+                                token
+                                    ? [...historySearch, ...searchSuggestions]
+                                    : [...localSearch, ...searchSuggestions]
+                            }
                             isOpen={isOpen}
                             setIsOpen={setIsOpen}
                         />
                     </div>
-                    <Button className="hidden md:block" type="submit">
+                    <Button
+                        className="hidden md:block"
+                        onClick={(e) => onSubmit(e)}
+                    >
                         <Search />
                     </Button>
                 </form>
