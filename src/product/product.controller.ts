@@ -89,6 +89,16 @@ export class ProductController {
         };
     }
 
+    @Get('search')
+    @HttpCode(HttpStatus.OK)
+    async getByName(@Req() request: Request): Promise<SuccessResponse> {
+        return {
+            statusCode: HttpStatus.OK,
+            message: 'Get products success',
+            data: await this.productService.getByName(request),
+        };
+    }
+
     @Get('slug/:slug')
     @HttpCode(HttpStatus.OK)
     async findBySlug(@Param('slug') slug: string): Promise<SuccessResponse> {

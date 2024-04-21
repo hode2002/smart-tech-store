@@ -58,6 +58,7 @@ export interface ProductDetailDB {
             star: number;
             comment: string;
             children: {
+                id: string;
                 user: {
                     id: string;
                     email: string;

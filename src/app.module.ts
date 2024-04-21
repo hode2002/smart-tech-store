@@ -25,7 +25,7 @@ import { ReviewModule } from './review/review.module';
         ThrottlerModule.forRoot([
             {
                 ttl: 60000, //60s
-                limit: 20,
+                limit: 100,
             },
         ]),
         BullModule.forRootAsync({
