@@ -64,6 +64,7 @@ export interface ProductDetailResponse {
             comment: string;
             created_at: Date;
             children: {
+                id: string;
                 user: {
                     id: string;
                     email: string;
