@@ -58,15 +58,12 @@ export default function SmartphoneDetailPage({ params }: Props) {
     const router = useRouter();
     const token = useAppSelector((state) => state.auth.accessToken);
     const userProfile = useAppSelector((state) => state.user.profile);
-    const currentProduct = useAppSelector(
-        (state) => state.products.currentProduct,
-    );
     const cartProducts = useAppSelector((state) => state.user.cart);
     const [userOrders, setUserOrders] = useState<OrderResponseType[] | []>([]);
 
     const fetchProduct = async () => {
-        const response = (await productApiRequest.getProductsById(
-            currentProduct.id,
+        const response = (await productApiRequest.getProductsBySlug(
+            params.slug,
         )) as GetProductDetailResponseType;
         setProductInfo(response.data);
     };
@@ -76,7 +73,7 @@ export default function SmartphoneDetailPage({ params }: Props) {
             token,
             2,
         )) as GetOrderStatusResponseType;
-        setUserOrders(response.data);
+        setUserOrders(response?.data);
     };
 
     useEffect(() => {
@@ -84,7 +81,7 @@ export default function SmartphoneDetailPage({ params }: Props) {
         if (token) {
             fetchUserOrder().then();
         }
-    }, []);
+    }, [token]);
 
     const [productInfo, setProductInfo] = useState<ProductDetailType>();
     const [selectedOption, setSelectedOption] = useState<number>(0);
@@ -97,6 +94,14 @@ export default function SmartphoneDetailPage({ params }: Props) {
         ?.rating as RatingType;
     const reviews = productInfo?.product_options?.[selectedOption]
         ?.reviews as ReviewItem[];
+
+    useEffect(() => {
+        productInfo?.product_options?.forEach((item, index) => {
+            if (item.slug === params.slug) {
+                setSelectedOption(index);
+            }
+        });
+    }, [productInfo]);
 
     const convertProductName = () => {
         return (
@@ -356,31 +361,42 @@ export default function SmartphoneDetailPage({ params }: Props) {
                                     <div className="flex gap-2 flex-wrap">
                                         {productInfo?.product_options?.map(
                                             (productOption, index) => (
-                                                <Button
+                                                <Link
                                                     key={index}
-                                                    className="capitalize"
-                                                    onClick={() =>
-                                                        setSelectedOption(index)
-                                                    }
-                                                    variant={
-                                                        index === selectedOption
-                                                            ? 'default'
-                                                            : 'outline'
-                                                    }
+                                                    href={productOption.slug}
                                                 >
-                                                    {productOption.options.map(
-                                                        (el, elIdx) => {
-                                                            return (
-                                                                <span
-                                                                    className="capitalize mx-1 min-w-[80px]"
-                                                                    key={elIdx}
-                                                                >
-                                                                    {el.value}
-                                                                </span>
-                                                            );
-                                                        },
-                                                    )}
-                                                </Button>
+                                                    <Button
+                                                        className="capitalize"
+                                                        // onClick={() =>
+                                                        //     setSelectedOption(
+                                                        //         index,
+                                                        //     )
+                                                        // }
+                                                        variant={
+                                                            index ===
+                                                                selectedOption
+                                                                ? 'default'
+                                                                : 'outline'
+                                                        }
+                                                    >
+                                                        {productOption.options.map(
+                                                            (el, elIdx) => {
+                                                                return (
+                                                                    <span
+                                                                        className="capitalize mx-1 min-w-[80px]"
+                                                                        key={
+                                                                            elIdx
+                                                                        }
+                                                                    >
+                                                                        {
+                                                                            el.value
+                                                                        }
+                                                                    </span>
+                                                                );
+                                                            },
+                                                        )}
+                                                    </Button>
+                                                </Link>
                                             ),
                                         )}
                                     </div>

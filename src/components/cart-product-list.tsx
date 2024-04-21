@@ -2,12 +2,7 @@
 
 import { NavigationMenuLink } from '@/components/ui/navigation-menu';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { useAppDispatch } from '@/lib/store';
-import {
-    CartItem,
-    CurrentProductType,
-    setCurrentProduct,
-} from '@/lib/store/slices';
+import { CartItem } from '@/lib/store/slices';
 import { formatPrice } from '@/lib/utils';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -19,7 +14,6 @@ type Props = {
 
 export default function CartProductList(props: Props) {
     const { products } = props;
-    const dispatch = useAppDispatch();
 
     return (
         <ul className="left-0 p-4 w-[400px] lg:w-[500px] h-[450px]">
@@ -44,20 +38,10 @@ export default function CartProductList(props: Props) {
                         ),
                     );
 
-                    const handleRedirectToDetailPage = () => {
-                        const currentProductId: CurrentProductType = {
-                            id: cartItem.id,
-                            cateId: cartItem.category.id,
-                            productOptionId: cartItem.selected_option.id,
-                        };
-                        dispatch(setCurrentProduct(currentProductId));
-                    };
-
                     return (
                         <li key={selectedOption.id}>
                             <NavigationMenuLink asChild>
                                 <Link
-                                    onClick={handleRedirectToDetailPage}
                                     href={'/smartphone/' + selectedOption.slug}
                                     className={
                                         'block space-y-1 rounded-md p-3 leading-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground'

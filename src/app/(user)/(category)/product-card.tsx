@@ -10,12 +10,7 @@ import {
     ContextMenuTrigger,
 } from '@/components/ui/context-menu';
 import { Button } from '@/components/ui/button';
-import {
-    CurrentProductType,
-    ProductType,
-    setCartProducts,
-    setCurrentProduct,
-} from '@/lib/store/slices';
+import { ProductType, setCartProducts } from '@/lib/store/slices';
 import { toast } from '@/components/ui/use-toast';
 import accountApiRequest, {
     AddToCartResponseType,
@@ -96,15 +91,6 @@ export default function ProductCard(props: Props) {
         }
     };
 
-    const handleRedirectToDetailPage = () => {
-        const currentProductId: CurrentProductType = {
-            id: product.id,
-            cateId: product.category.id,
-            productOptionId: productOption.id,
-        };
-        dispatch(setCurrentProduct(currentProductId));
-    };
-
     return (
         <div className="my-4">
             <ContextMenu>
@@ -117,10 +103,7 @@ export default function ProductCard(props: Props) {
                                 </span>
                             </p>
                         )}
-                        <div
-                            onClick={handleRedirectToDetailPage}
-                            className="relative flex flex-col justify-center items-center gap-2"
-                        >
+                        <div className="relative flex flex-col justify-center items-center gap-2">
                             <Link href={`/smartphone/${productOption.slug}`}>
                                 <Image
                                     height={70}

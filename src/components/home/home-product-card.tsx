@@ -9,12 +9,7 @@ import {
     ContextMenuItem,
     ContextMenuTrigger,
 } from '@/components/ui/context-menu';
-import {
-    CurrentProductType,
-    ProductType,
-    setCartProducts,
-    setCurrentProduct,
-} from '@/lib/store/slices';
+import { ProductType, setCartProducts } from '@/lib/store/slices';
 import { ShieldCheck } from 'lucide-react';
 import { formatPrice } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -81,15 +76,6 @@ export default function HomeProductCard(props: Props) {
         }
     };
 
-    const handleRedirectToDetailPage = () => {
-        const currentProductId: CurrentProductType = {
-            id: product.id,
-            cateId: product.category.id,
-            productOptionId: productOption.id,
-        };
-        dispatch(setCurrentProduct(currentProductId));
-    };
-
     return (
         <div className="max-w-[300px]">
             <ContextMenu>
@@ -104,7 +90,6 @@ export default function HomeProductCard(props: Props) {
                         )}
                         <Link
                             href={'/smartphone/' + productOption.slug}
-                            onClick={handleRedirectToDetailPage}
                             className="relative flex flex-col justify-center items-center gap-2"
                         >
                             <Image

@@ -80,14 +80,7 @@ export type ProductType = {
     }[];
 };
 
-export type CurrentProductType = {
-    id: string;
-    productOptionId: string;
-    cateId: string;
-};
-
 export interface IProductState {
-    currentProduct: CurrentProductType;
     products: ProductType[];
     productSale: ProductType[];
     productCategory: ProductType[];
@@ -95,11 +88,6 @@ export interface IProductState {
 }
 
 const initialState: IProductState = {
-    currentProduct: {
-        id: '',
-        productOptionId: '',
-        cateId: '',
-    },
     products: [],
     productSale: [],
     productCategory: [],
@@ -110,12 +98,6 @@ export const productSlice = createSlice({
     name: 'product',
     initialState,
     reducers: {
-        setCurrentProduct: (
-            state,
-            action: PayloadAction<CurrentProductType>,
-        ) => {
-            state.currentProduct = action.payload;
-        },
         setProductList: (state, action: PayloadAction<ProductType[]>) => {
             state.products = action.payload;
         },
@@ -132,7 +114,6 @@ export const productSlice = createSlice({
 });
 
 export const {
-    setCurrentProduct,
     setProductList,
     setProductSale,
     setProductCategory,

@@ -120,6 +120,22 @@ class ProductApiRequest {
         }
     }
 
+    async getProductsBySlug(slug: string) {
+        try {
+            const response: GetProductDetailResponseType = await http.get(
+                '/products/slug/' + slug,
+            );
+            return response;
+        } catch (error: any) {
+            toast({
+                title: 'Error',
+                description: error?.payload?.message ?? 'Lỗi không xác định',
+                variant: 'destructive',
+            });
+            return error;
+        }
+    }
+
     async getProductsByUserFilter(category: string, filter: ProductFilterType) {
         try {
             const response: GetProductsResponseType = await http.get(

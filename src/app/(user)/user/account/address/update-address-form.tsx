@@ -47,7 +47,6 @@ export default function UpdateAddressForm() {
             .getUserAddress(token)
             .then((response: UpdateAddressResponseType) => {
                 const userAddress = response?.data;
-                console.log(userAddress);
                 dispatch(setAddress(userAddress));
             });
 

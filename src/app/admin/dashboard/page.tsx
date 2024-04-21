@@ -17,7 +17,7 @@ import { MainNav } from '@/app/admin/dashboard/components/main-nav';
 import { Overview } from '@/app/admin/dashboard/components/overview';
 import { RecentSales } from '@/app/admin/dashboard/components/recent-sales';
 import { Search } from '@/app/admin/dashboard/components/search';
-import TeamSwitcher from '@/app/admin/dashboard/components/team-switcher';
+// import TeamSwitcher from '@/app/admin/dashboard/components/team-switcher';
 import { UserNav } from '@/app/admin/dashboard/components/user-nav';
 import {
     Tooltip,
@@ -148,7 +148,7 @@ export default function DashboardPage() {
                 <div className="hidden flex-col md:flex">
                     <div className="border-b">
                         <div className="flex h-16 items-center px-4">
-                            <TeamSwitcher />
+                            {/* <TeamSwitcher /> */}
                             <MainNav className="mx-6" />
                             <div className="ml-auto flex items-center space-x-4">
                                 <Search />
