@@ -106,6 +106,23 @@ export class BrandService {
         return brand;
     }
 
+    async findByCategory(slug: string) {
+        const brands = await this.prismaService.brand.findMany({
+            where: {
+                products: {
+                    some: {
+                        category: {
+                            slug,
+                        },
+                    },
+                },
+                is_deleted: false,
+            },
+        });
+
+        return brands;
+    }
+
     async update(
         id: string,
         updateBrandDto: UpdateBrandDto,

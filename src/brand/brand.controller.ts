@@ -63,6 +63,17 @@ export class BrandController {
             data: await this.brandService.adminFindAll(),
         };
     }
+    @Get('category/:slug')
+    @HttpCode(HttpStatus.OK)
+    async findByCategory(
+        @Param('slug') slug: string,
+    ): Promise<SuccessResponse> {
+        return {
+            statusCode: HttpStatus.OK,
+            message: 'Get brand success',
+            data: await this.brandService.findByCategory(slug),
+        };
+    }
 
     @Get(':id')
     @HttpCode(HttpStatus.OK)
