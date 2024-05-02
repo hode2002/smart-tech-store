@@ -17,7 +17,7 @@ export function CheckboxMultiple(props: CheckboxMultipleProps) {
     const { form, productFilterBox, handleFilterProduct } = props;
     return (
         <Form {...form}>
-            <form className="space-y-8">
+            <form className="space-y-8 capitalize">
                 {productFilterBox &&
                     productFilterBox.map((field) => {
                         const { name, label, items } = field;

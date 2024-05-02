@@ -72,7 +72,9 @@ export type UpdatePaymentStatusResponseType = {
 
 export type OrderResponseType = {
     id: string;
+    email: string;
     name: string;
+    avatar: string;
     phone: string;
     note: string;
     order_date: Date;
@@ -88,6 +90,10 @@ export type OrderResponseType = {
     tracking_number: string;
     payment_method: string;
     transaction_id: string;
+    delivery: {
+        name: string;
+        slug: string;
+    };
     order_details: OrderDetailResponseType[];
 };
 
@@ -250,7 +256,10 @@ class OrderApiRequest {
         } catch (error: any) {
             toast({
                 title: 'Error',
-                description: error?.payload?.message ?? 'Lỗi không xác định',
+                description:
+                    typeof error?.payload?.message === 'object'
+                        ? error?.payload?.message?.[0]?.status
+                        : error?.payload?.message ?? 'Lỗi không xác định',
                 variant: 'destructive',
             });
         }

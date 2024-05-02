@@ -286,8 +286,26 @@ export default function PurchasePage() {
                                         </CardContent>
                                     );
                                 })}
-                            <CardFooter>
-                                <div className="pt-6 text-right w-full">
+                            <CardFooter className="flex flex-col pt-6">
+                                <div className="justify-end w-full">
+                                    <div className="flex gap-16 items-center justify-end">
+                                        <p className="text-right">
+                                            Phí vận chuyển:
+                                        </p>
+                                        <p>{formatPrice(order.fee)}</p>
+                                    </div>
+                                    <div className="flex gap-6 items-center justify-end">
+                                        <p className="text-right">
+                                            Tổng thanh toán:
+                                        </p>
+                                        <p className="font-bold">
+                                            {formatPrice(
+                                                order.total_amount + order.fee,
+                                            )}
+                                        </p>
+                                    </div>
+                                </div>
+                                <div className="text-right w-full pt-6">
                                     {(order.status === 0 ||
                                         order.status === 5) && (
                                             <Button

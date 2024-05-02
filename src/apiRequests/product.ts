@@ -17,12 +17,52 @@ export type CreateProductReviewType = {
 export type ProductReviewResponseType = {
     statusCode: number;
     message: string;
-    data: {
-        is_success: boolean;
+    data: ProductReview[];
+};
+
+export type ProductReview = {
+    id: string;
+    user: {
         id: string;
-        star: number;
-        comment: string;
+        name: string;
+        email: string;
+        avatar: string;
     };
+    product_option: {
+        id: string;
+        sku: string;
+        thumbnail: string;
+        product: {
+            id: string;
+            name: string;
+        };
+    };
+    star: number;
+    comment: string;
+    children: {
+        id: string;
+        user: {
+            id: string;
+            name: string;
+            email: string;
+            avatar: string;
+            role?: string;
+        };
+        comment: string;
+        _count: {
+            children: number;
+        };
+    }[];
+    created_at: string;
+    _count: {
+        children: number;
+    };
+};
+
+export type GetAllProductReviewResponseType = {
+    statusCode: number;
+    message: string;
+    data: ProductReview[];
 };
 
 class ProductApiRequest {

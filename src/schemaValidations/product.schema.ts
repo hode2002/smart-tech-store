@@ -15,11 +15,6 @@ export const ProductFilter = z.object({
 
 export type ProductFilterType = z.TypeOf<typeof ProductFilter>;
 
-export const ProductDescription = z.object({
-    id: z.string(),
-    content: z.string(),
-});
-
 export type RatingType = {
     total_reviews: number;
     details: Array<number>;
@@ -54,103 +49,21 @@ export type ReviewItem = {
 
 export type TechnicalSpecsItem = { name: string; value: string };
 
+export const ProductDescription = z.object({
+    id: z.string().optional(),
+    content: z.string(),
+});
 export type ProductDescriptionType = z.TypeOf<typeof ProductDescription>;
 
-export const ProductDetail = z.object({
-    id: z.string(),
-    name: z.string(),
-    main_image: z.string(),
-    price: z.number(),
-    promotions: z.array(z.string()),
-    warranties: z.array(z.string()),
-    label: z.string(),
-    descriptions: z.array(
-        z.object({
-            id: z.string(),
-            content: z.string(),
-        }),
-    ),
-    brand: z.object({
-        id: z.string(),
-        name: z.string(),
-        logo_url: z.string(),
-        slug: z.string(),
+export const ProductImages = z.array(
+    z.object({
+        id: z.string().optional(),
+        image_url: z.string(),
+        image_alt_text: z.string(),
     }),
-    category: z.object({
-        id: z.string(),
-        name: z.string(),
-        slug: z.string(),
-    }),
-    product_options: z.array(
-        z.object({
-            id: z.string(),
-            sku: z.string(),
-            thumbnail: z.string(),
-            price_modifier: z.number(),
-            stock: z.number(),
-            discount: z.number(),
-            is_sale: z.boolean(),
-            slug: z.string(),
-            label_image: z.string(),
-            product_images: z.array(
-                z.object({
-                    id: z.string(),
-                    image_url: z.string(),
-                    image_alt_text: z.string(),
-                }),
-            ),
-            technical_specs: z.array(
-                z.object({
-                    name: z.string(),
-                    value: z.string(),
-                }),
-            ),
-            reviews: z.array(
-                z.object({
-                    id: z.string(),
-                    user: z.object({
-                        id: z.string(),
-                        email: z.string(),
-                        name: z.string(),
-                        avatar: z.string(),
-                    }),
-                    star: z.number(),
-                    comment: z.string(),
-                    children: z.array(
-                        z.object({
-                            user: z.object({
-                                id: z.string(),
-                                email: z.string(),
-                                name: z.string(),
-                                avatar: z.string(),
-                            }),
-                            comment: z.string(),
-                            created_at: z.string(),
-                        }),
-                    ),
-                    created_at: z.string(),
-                    _count: z.object({
-                        children: z.number(),
-                    }),
-                }),
-            ),
-            options: z.array(
-                z.object({
-                    name: z.string(),
-                    value: z.string(),
-                    adjust_price: z.number(),
-                }),
-            ),
-            rating: z.object({
-                total_reviews: z.number(),
-                details: z.array(z.number()),
-                overall: z.number(),
-            }),
-        }),
-    ),
-});
+);
 
-export type ProductDetailType = z.TypeOf<typeof ProductDetail>;
+export type ProductImagesType = z.TypeOf<typeof ProductImages>;
 
 export const ProductOption = z.object({
     id: z.string(),
@@ -162,6 +75,8 @@ export const ProductOption = z.object({
     is_sale: z.boolean(),
     slug: z.string(),
     label_image: z.string(),
+    is_deleted: z.boolean().optional(),
+    created_at: z.string().optional(),
     product_images: z.array(
         z.object({
             id: z.string(),
@@ -220,6 +135,37 @@ export const ProductOption = z.object({
 
 export type ProductOptionType = z.TypeOf<typeof ProductOption>;
 
+export const ProductDetail =  z.object({
+    id: z.string(),
+    name: z.string(),
+    main_image: z.string(),
+    price: z.number(),
+    promotions: z.array(z.string()),
+    warranties: z.array(z.string()),
+    label: z.string(),
+    descriptions: z.array(
+        z.object({
+            id: z.string(),
+            content: z.string(),
+        }),
+    ),
+    brand: z.object({
+        id: z.string(),
+        name: z.string(),
+        logo_url: z.string(),
+        slug: z.string(),
+    }),
+    category: z.object({
+        id: z.string(),
+        name: z.string(),
+        slug: z.string(),
+    }),
+    created_at: z.string().optional(),
+    product_options: z.array(ProductOption),
+})
+
+export type ProductDetailType = z.TypeOf<typeof ProductDetail>;
+
 export const GetProductDetailResponse = z.object({
     statusCode: z.number(),
     message: z.string(),
@@ -242,100 +188,9 @@ export const ProductPaginationResponse = z.object({
     message: z.string(),
     data: z.object({
         totalPages: z.number(),
-        products: z.array(
-            z.object({
-                id: z.string(),
-                name: z.string(),
-                price: z.number(),
-                promotions: z.array(z.string()),
-                warranties: z.array(z.string()),
-                label: z.string(),
-                descriptions: z.array(
-                    z.object({
-                        id: z.string(),
-                        content: z.string(),
-                    }),
-                ),
-                brand: z.object({
-                    id: z.string(),
-                    name: z.string(),
-                    logo_url: z.string(),
-                    slug: z.string(),
-                }),
-                category: z.object({
-                    id: z.string(),
-                    name: z.string(),
-                    slug: z.string(),
-                }),
-                product_options: z.array(
-                    z.object({
-                        id: z.string(),
-                        sku: z.string(),
-                        thumbnail: z.string(),
-                        price_modifier: z.number(),
-                        stock: z.number(),
-                        discount: z.number(),
-                        is_sale: z.boolean(),
-                        slug: z.string(),
-                        label_image: z.string(),
-                        product_images: z.array(
-                            z.object({
-                                id: z.string(),
-                                image_url: z.string(),
-                                image_alt_text: z.string(),
-                            }),
-                        ),
-                        technical_specs: z.array(
-                            z.object({
-                                name: z.string(),
-                                value: z.string(),
-                            }),
-                        ),
-                        reviews: z.array(
-                            z.object({
-                                id: z.string(),
-                                user: z.object({
-                                    id: z.string(),
-                                    email: z.string(),
-                                    name: z.string(),
-                                    avatar: z.string(),
-                                }),
-                                star: z.number(),
-                                comment: z.string(),
-                                children: z.array(
-                                    z.object({
-                                        user: z.object({
-                                            id: z.string(),
-                                            email: z.string(),
-                                            name: z.string(),
-                                            avatar: z.string(),
-                                        }),
-                                        comment: z.string(),
-                                        created_at: z.string(),
-                                    }),
-                                ),
-                                created_at: z.string(),
-                                _count: z.object({
-                                    children: z.number(),
-                                }),
-                            }),
-                        ),
-                        options: z.array(
-                            z.object({
-                                name: z.string(),
-                                value: z.string(),
-                                adjust_price: z.number(),
-                            }),
-                        ),
-                        rating: z.object({
-                            total_reviews: z.number(),
-                            details: z.array(z.number()),
-                            overall: z.number(),
-                        }),
-                    }),
-                ),
-            }),
-        ),
+        nextPage: z.number().optional(),
+        previousPage: z.number().optional(),
+        products: z.array(ProductDetail),
     }),
 });
 

@@ -1,4 +1,3 @@
-import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import { ThemeProvider } from '@/components/theme-provider';
 import ReduxProvider from '@/lib/store/redux-provider';
@@ -7,11 +6,13 @@ import { TooltipProvider } from '@/components/ui/tooltip';
 import '../globals.css';
 
 import { Toaster } from '@/components/ui/toaster';
+import SideNav from '@/app/admin/components/side-nav';
+import { Metadata } from 'next';
 
 const inter = Inter({ subsets: ['vietnamese'] });
 
 export const metadata: Metadata = {
-    title: 'Addmin | Dashboard',
+    title: 'Admin | Dashboard',
     description: 'CT466 - Project Admin Dashboard',
 };
 
@@ -32,7 +33,7 @@ export default function AdminLayout({
                     <ReduxProvider>
                         <TooltipProvider>
                             <main className="min-h-screen min-w-[400px]">
-                                {children}
+                                <SideNav>{children}</SideNav>
                             </main>
                             <Toaster />
                         </TooltipProvider>

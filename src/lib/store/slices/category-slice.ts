@@ -6,6 +6,9 @@ export type Category = {
     name: string;
     description: string;
     slug: string;
+    is_deleted?: boolean;
+    created_at?: string;
+    updated_at?: string;
 };
 
 export interface ICategoryState {

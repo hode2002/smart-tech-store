@@ -133,7 +133,11 @@ export default function Home() {
                     />
                 </div>
 
-                <ProductBox title="Gợi ý hôm nay" products={productSale} />
+                <ProductBox
+                    title="Gợi ý hôm nay"
+                    products={productSale}
+                    option="today"
+                />
             </div>
         </>
     );

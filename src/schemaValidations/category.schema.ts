@@ -9,6 +9,9 @@ export const CategoryResponse = z.object({
             name: z.string(),
             description: z.string(),
             slug: z.string(),
+            is_deleted: z.boolean().optional(),
+            created_at: z.string().optional(),
+            updated_at: z.string().optional(),
         }),
     ),
 });

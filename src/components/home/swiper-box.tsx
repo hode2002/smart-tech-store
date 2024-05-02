@@ -35,7 +35,10 @@ export default function SwiperBox(props: Props) {
                     scrollbar={{ draggable: true }}
                 >
                     {products.map((product) => (
-                        <SwiperSlide key={product.id}>
+                        <SwiperSlide
+                            key={product.id}
+                            className="object-contain"
+                        >
                             <HomeProductCard product={product} />
                         </SwiperSlide>
                     ))}

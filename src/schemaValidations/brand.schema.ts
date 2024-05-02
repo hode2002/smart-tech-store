@@ -10,6 +10,9 @@ export const BrandResponse = z.object({
             description: z.string(),
             logo_url: z.string(),
             slug: z.string(),
+            is_deleted: z.boolean().optional(),
+            created_at: z.string().optional(),
+            updated_at: z.string().optional(),
         }),
     ),
 });

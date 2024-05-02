@@ -8,6 +8,7 @@ export type ProductType = {
     promotions: string[];
     warranties: string[];
     label: string;
+    created_at?: string;
     descriptions: {
         id: string;
         content: string;

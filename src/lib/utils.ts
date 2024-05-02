@@ -1,4 +1,7 @@
-import { ProductFilterType } from '@/schemaValidations/product.schema';
+import {
+    ProductFilterType,
+    TechnicalSpecsItem,
+} from '@/schemaValidations/product.schema';
 import { type ClassValue, clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
@@ -66,4 +69,43 @@ export const convertFilterOptionToQueryString = (filter: ProductFilterType) => {
     });
 
     return querystring;
+};
+
+const translation = [
+    'screen',
+    'screen_size',
+    'os',
+    'front_camera',
+    'rear_camera',
+    'chip',
+    'ram',
+    'rom',
+    'sim',
+    'battery',
+    'weight',
+    'connection',
+];
+
+export const translateSpecs = (
+    specs: TechnicalSpecsItem[],
+): TechnicalSpecsItem[] => {
+    return Object.keys(specs)
+        .map((_, index) => {
+            return {
+                name: translation[index],
+                value: specs[index].value,
+            };
+        })
+        .filter((item) => item != null);
+};
+
+export const arraySpecsToObject = (
+    array: TechnicalSpecsItem[],
+): {
+    [key: string]: any;
+} => {
+    return array.reduce((result: any, specs) => {
+        result[specs.name] = specs.value;
+        return result;
+    }, {} as TechnicalSpecsItem);
 };

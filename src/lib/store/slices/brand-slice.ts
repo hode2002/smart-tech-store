@@ -7,6 +7,9 @@ export type Brand = {
     logo_url: string;
     description: string;
     slug: string;
+    is_deleted?: boolean;
+    created_at?: string;
+    updated_at?: string;
 };
 
 export interface IBrandState {

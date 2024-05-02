@@ -1,9 +1,4 @@
 'use client';
-
-import { Metadata } from 'next';
-import Image from 'next/image';
-
-import { Button } from '@/components/ui/button';
 import {
     Card,
     CardContent,
@@ -11,14 +6,8 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { CalendarDateRangePicker } from '@/app/admin/dashboard/components/date-range-picker';
-import { MainNav } from '@/app/admin/dashboard/components/main-nav';
 import { Overview } from '@/app/admin/dashboard/components/overview';
 import { RecentSales } from '@/app/admin/dashboard/components/recent-sales';
-import { Search } from '@/app/admin/dashboard/components/search';
-// import TeamSwitcher from '@/app/admin/dashboard/components/team-switcher';
-import { UserNav } from '@/app/admin/dashboard/components/user-nav';
 import {
     Tooltip,
     TooltipContent,
@@ -27,20 +16,108 @@ import {
 import Link from 'next/link';
 import { LineChart } from 'recharts';
 import {
+    BadgeDollarSign,
     Home,
     Package,
     Package2,
     Settings,
     ShoppingCart,
+    Smartphone,
+    Users,
     Users2,
 } from 'lucide-react';
+import DashboardStatisticCard from '@/app/admin/components/dashboard-statistic-card';
+import { formatPrice } from '@/lib/utils';
+import { useAppSelector } from '@/lib/store';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import {
+    GetOrderStatusResponseType,
+    OrderResponseType,
+} from '@/apiRequests/order';
+import adminApiRequest, {
+    FetchAllUsersResponseType,
+    UserResponseType,
+} from '@/apiRequests/admin';
+import moment from 'moment';
+import {
+    ProductDetailType,
+    ProductPaginationResponseType,
+} from '@/schemaValidations/product.schema';
+import {
+    GetAllProductReviewResponseType,
+    ProductReview,
+} from '@/apiRequests/product';
+import ProductReviewTable from '@/app/admin/dashboard/components/product-review-table';
+import { RecentCustomers } from '@/app/admin/dashboard/components/recent-customers';
 
-// export const metadata: Metadata = {
-//     title: 'Dashboard',
-//     description: 'Example dashboard app built using the components.',
-// };
+export default function Dashboard() {
+    const token = useAppSelector((state) => state.auth.accessToken);
 
-export default function DashboardPage() {
+    const [products, setProducts] = useState<ProductDetailType[] | []>([]);
+    const [orders, setOrders] = useState<OrderResponseType[]>([]);
+    const [users, setUsers] = useState<UserResponseType[]>([]);
+    const [reviews, setReviews] = useState<ProductReview[]>([]);
+
+    const fetchProducts = useCallback(
+        async (page: number = 1) => {
+            const response = (await adminApiRequest.getAllProducts(
+                token,
+                page,
+                100,
+            )) as ProductPaginationResponseType;
+            if (response?.statusCode === 200) {
+                return setProducts(response.data.products);
+            }
+            return setProducts([]);
+        },
+        [token],
+    );
+
+    const fetchOrders = useCallback(async () => {
+        const response = (await adminApiRequest.getAllOrders(
+            token,
+        )) as GetOrderStatusResponseType;
+        if (response?.statusCode === 200) {
+            return setOrders(response.data);
+        }
+        return setOrders([]);
+    }, [token]);
+
+    const fetchUsers = useCallback(async () => {
+        const response = (await adminApiRequest.getAllUsers(
+            token,
+        )) as FetchAllUsersResponseType;
+        if (response?.statusCode === 200) {
+            return setUsers(response.data.filter((user) => user.is_active));
+        }
+        return setUsers([]);
+    }, [token]);
+
+    const fetchReviews = useCallback(async () => {
+        const response = (await adminApiRequest.getAllReviews(
+            token,
+        )) as GetAllProductReviewResponseType;
+        if (response?.statusCode === 200) {
+            return setReviews(response.data);
+        }
+        return setReviews([]);
+    }, [token]);
+
+    useEffect(() => {
+        fetchOrders().then();
+        fetchUsers().then();
+        fetchProducts().then();
+        fetchReviews().then();
+    }, [fetchOrders, fetchUsers, fetchProducts, fetchReviews]);
+
+    const totalRevenue = useMemo(() => {
+        let total = 0;
+        orders
+            .filter((item) => item.status === 2)
+            .map((order) => (total += order.total_amount + order.fee));
+        return total;
+    }, [orders]);
+
     return (
         <div className="flex min-h-screen w-full flex-col bg-muted/40">
             <aside className="fixed inset-y-0 left-0 z-10 hidden w-14 flex-col border-r bg-background sm:flex">
@@ -91,7 +168,7 @@ export default function DashboardPage() {
                     <Tooltip>
                         <TooltipTrigger asChild>
                             <Link
-                                href="#"
+                                href="/admin/customers"
                                 className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
                             >
                                 <Users2 className="h-5 w-5" />
@@ -128,202 +205,104 @@ export default function DashboardPage() {
                     </Tooltip>
                 </nav>
             </aside>
-            <div className="flex flex-col sm:gap-4 sm:py-4 sm:pl-14">
-                <div className="md:hidden">
-                    <Image
-                        src="/examples/dashboard-light.png"
-                        width={1280}
-                        height={866}
-                        alt="Dashboard"
-                        className="block dark:hidden"
-                    />
-                    <Image
-                        src="/examples/dashboard-dark.png"
-                        width={1280}
-                        height={866}
-                        alt="Dashboard"
-                        className="hidden dark:block"
-                    />
-                </div>
+            <div className="flex flex-col">
                 <div className="hidden flex-col md:flex">
-                    <div className="border-b">
-                        <div className="flex h-16 items-center px-4">
-                            {/* <TeamSwitcher /> */}
-                            <MainNav className="mx-6" />
-                            <div className="ml-auto flex items-center space-x-4">
-                                <Search />
-                                <UserNav />
-                            </div>
-                        </div>
-                    </div>
                     <div className="flex-1 space-y-4 p-8 pt-6">
                         <div className="flex items-center justify-between space-y-2">
                             <h2 className="text-3xl font-bold tracking-tight">
                                 Dashboard
                             </h2>
-                            <div className="flex items-center space-x-2">
+                            {/* <div className="flex items-center space-x-2">
                                 <CalendarDateRangePicker />
                                 <Button>Download</Button>
-                            </div>
+                            </div> */}
                         </div>
-                        <Tabs defaultValue="overview" className="space-y-4">
-                            <TabsList>
-                                <TabsTrigger value="overview">
-                                    Overview
-                                </TabsTrigger>
-                                <TabsTrigger value="analytics" disabled>
-                                    Analytics
-                                </TabsTrigger>
-                                <TabsTrigger value="reports" disabled>
-                                    Reports
-                                </TabsTrigger>
-                                <TabsTrigger value="notifications" disabled>
-                                    Notifications
-                                </TabsTrigger>
-                            </TabsList>
-                            <TabsContent value="overview" className="space-y-4">
-                                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-                                    <Card>
-                                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                            <CardTitle className="text-sm font-medium">
-                                                Total Revenue
-                                            </CardTitle>
-                                            <svg
-                                                xmlns="http://www.w3.org/2000/svg"
-                                                viewBox="0 0 24 24"
-                                                fill="none"
-                                                stroke="currentColor"
-                                                strokeLinecap="round"
-                                                strokeLinejoin="round"
-                                                strokeWidth="2"
-                                                className="h-4 w-4 text-muted-foreground"
-                                            >
-                                                <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
-                                            </svg>
-                                        </CardHeader>
-                                        <CardContent>
-                                            <div className="text-2xl font-bold">
-                                                $45,231.89
-                                            </div>
-                                            <p className="text-xs text-muted-foreground">
-                                                +20.1% from last month
-                                            </p>
-                                        </CardContent>
-                                    </Card>
-                                    <Card>
-                                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                            <CardTitle className="text-sm font-medium">
-                                                Subscriptions
-                                            </CardTitle>
-                                            <svg
-                                                xmlns="http://www.w3.org/2000/svg"
-                                                viewBox="0 0 24 24"
-                                                fill="none"
-                                                stroke="currentColor"
-                                                strokeLinecap="round"
-                                                strokeLinejoin="round"
-                                                strokeWidth="2"
-                                                className="h-4 w-4 text-muted-foreground"
-                                            >
-                                                <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
-                                                <circle cx="9" cy="7" r="4" />
-                                                <path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" />
-                                            </svg>
-                                        </CardHeader>
-                                        <CardContent>
-                                            <div className="text-2xl font-bold">
-                                                +2350
-                                            </div>
-                                            <p className="text-xs text-muted-foreground">
-                                                +180.1% from last month
-                                            </p>
-                                        </CardContent>
-                                    </Card>
-                                    <Card>
-                                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                            <CardTitle className="text-sm font-medium">
-                                                Sales
-                                            </CardTitle>
-                                            <svg
-                                                xmlns="http://www.w3.org/2000/svg"
-                                                viewBox="0 0 24 24"
-                                                fill="none"
-                                                stroke="currentColor"
-                                                strokeLinecap="round"
-                                                strokeLinejoin="round"
-                                                strokeWidth="2"
-                                                className="h-4 w-4 text-muted-foreground"
-                                            >
-                                                <rect
-                                                    width="20"
-                                                    height="14"
-                                                    x="2"
-                                                    y="5"
-                                                    rx="2"
-                                                />
-                                                <path d="M2 10h20" />
-                                            </svg>
-                                        </CardHeader>
-                                        <CardContent>
-                                            <div className="text-2xl font-bold">
-                                                +12,234
-                                            </div>
-                                            <p className="text-xs text-muted-foreground">
-                                                +19% from last month
-                                            </p>
-                                        </CardContent>
-                                    </Card>
-                                    <Card>
-                                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                            <CardTitle className="text-sm font-medium">
-                                                Active Now
-                                            </CardTitle>
-                                            <svg
-                                                xmlns="http://www.w3.org/2000/svg"
-                                                viewBox="0 0 24 24"
-                                                fill="none"
-                                                stroke="currentColor"
-                                                strokeLinecap="round"
-                                                strokeLinejoin="round"
-                                                strokeWidth="2"
-                                                className="h-4 w-4 text-muted-foreground"
-                                            >
-                                                <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
-                                            </svg>
-                                        </CardHeader>
-                                        <CardContent>
-                                            <div className="text-2xl font-bold">
-                                                +573
-                                            </div>
-                                            <p className="text-xs text-muted-foreground">
-                                                +201 since last hour
-                                            </p>
-                                        </CardContent>
-                                    </Card>
-                                </div>
-                                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-                                    <Card className="col-span-4">
-                                        <CardHeader>
-                                            <CardTitle>Overview</CardTitle>
-                                        </CardHeader>
-                                        <CardContent className="pl-2">
-                                            <Overview />
-                                        </CardContent>
-                                    </Card>
-                                    <Card className="col-span-3">
-                                        <CardHeader>
-                                            <CardTitle>Recent Sales</CardTitle>
-                                            <CardDescription>
-                                                You made 265 sales this month.
-                                            </CardDescription>
-                                        </CardHeader>
-                                        <CardContent>
-                                            <RecentSales />
-                                        </CardContent>
-                                    </Card>
-                                </div>
-                            </TabsContent>
-                        </Tabs>
+                        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+                            <DashboardStatisticCard
+                                Icon={BadgeDollarSign}
+                                title="Tổng doanh thu"
+                                subtitle={formatPrice(totalRevenue)}
+                                description="+10%"
+                            />
+                            <DashboardStatisticCard
+                                Icon={Users}
+                                title="Số lượng khách hàng"
+                                subtitle={`${users.length}`}
+                                description={`+${users.filter((user) => moment(user.created_at).isSame(moment(new Date()), 'month')).length} so với tháng trước`}
+                            />
+                            <DashboardStatisticCard
+                                Icon={ShoppingCart}
+                                title="Số đơn hàng"
+                                subtitle={`${orders.length}`}
+                                description={`+${orders.filter((order) => moment(order.order_date).isSame(moment(new Date()), 'month')).length} so với tháng trước`}
+                            />
+                            <DashboardStatisticCard
+                                Icon={Smartphone}
+                                title="Số lượng sản phẩm"
+                                subtitle={`${products.length}`}
+                                description={`+${products.filter((product) => moment(product.created_at).isSame(moment(new Date()), 'month')).length} so với tháng trước`}
+                            />
+                        </div>
+                        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
+                            <Card className="col-span-12">
+                                <CardHeader>
+                                    <CardTitle>Đơn vị (triệu đồng)</CardTitle>
+                                </CardHeader>
+                                <CardContent className="pl-2">
+                                    <Overview orders={orders} />
+                                </CardContent>
+                            </Card>
+                            <Card className="col-span-3">
+                                <CardHeader>
+                                    <CardTitle>Đơn hàng gần đây</CardTitle>
+                                    <CardDescription>
+                                        Đã bán được{' '}
+                                        <span className="font-bold">
+                                            {orders.length}
+                                        </span>{' '}
+                                        đơn hàng trong tháng này
+                                    </CardDescription>
+                                </CardHeader>
+                                <CardContent>
+                                    <RecentSales orders={orders} />
+                                </CardContent>
+                            </Card>
+                            <Card className="col-span-9">
+                                <CardHeader>
+                                    <CardTitle>Khách hàng mới</CardTitle>
+                                    <CardDescription>
+                                        Có thêm{' '}
+                                        <span className="font-bold">
+                                            {`${users.filter((user) => moment(user.created_at).isSame(moment(new Date()), 'month')).length}`}
+                                        </span>{' '}
+                                        khách hàng mới trong tháng này
+                                    </CardDescription>
+                                </CardHeader>
+                                <CardContent>
+                                    <RecentCustomers users={users} />
+                                </CardContent>
+                            </Card>
+                            <Card className="col-span-12">
+                                <CardHeader>
+                                    <CardTitle>
+                                        Đánh giá sản phẩm gần đây
+                                    </CardTitle>
+                                    <CardDescription>
+                                        Đã có{' '}
+                                        <span className="font-bold">
+                                            {reviews.length}
+                                        </span>{' '}
+                                        đánh giá mới tháng này
+                                    </CardDescription>
+                                </CardHeader>
+                                <CardContent>
+                                    <ProductReviewTable
+                                        reviews={reviews}
+                                        fetchReviews={fetchReviews}
+                                    />
+                                </CardContent>
+                            </Card>
+                        </div>
                     </div>
                 </div>
             </div>

@@ -312,7 +312,7 @@ export default function SmartphoneDetailPage({ params }: Props) {
                         </Swiper>
                     </div>
 
-                    <div className="w-full md:w-[40%] py-4 md:py-0 md:px-7 flex flex-col justify-between">
+                    <div className="w-full md:w-[40%] py-4 md:py-0 md:px-7 flex flex-col justify-evenly">
                         <div>
                             <div className="mb-10">
                                 <p className="text-[#E83A45] font-bold text-[32px]">
@@ -356,52 +356,52 @@ export default function SmartphoneDetailPage({ params }: Props) {
                                 </p>
                             </div>
 
-                            <div className="w-full">
-                                <div className="flex gap-2 items-center my-4">
-                                    <div className="flex gap-2 flex-wrap">
-                                        {productInfo?.product_options?.map(
-                                            (productOption, index) => (
-                                                <Link
-                                                    key={index}
-                                                    href={productOption.slug}
-                                                >
-                                                    <Button
-                                                        className="capitalize"
-                                                        // onClick={() =>
-                                                        //     setSelectedOption(
-                                                        //         index,
-                                                        //     )
-                                                        // }
-                                                        variant={
-                                                            index ===
-                                                                selectedOption
-                                                                ? 'default'
-                                                                : 'outline'
-                                                        }
-                                                    >
-                                                        {productOption.options.map(
-                                                            (el, elIdx) => {
-                                                                return (
-                                                                    <span
-                                                                        className="capitalize mx-1 min-w-[80px]"
-                                                                        key={
-                                                                            elIdx
-                                                                        }
-                                                                    >
-                                                                        {
-                                                                            el.value
-                                                                        }
-                                                                    </span>
-                                                                );
-                                                            },
-                                                        )}
-                                                    </Button>
-                                                </Link>
-                                            ),
-                                        )}
+                            {productInfo?.product_options?.[0]?.options
+                                ?.length > 0 && (
+                                    <div className="w-full">
+                                        <div className="flex gap-2 items-center my-4">
+                                            <div className="flex gap-2 flex-wrap">
+                                                {productInfo?.product_options?.map(
+                                                    (productOption, index) => (
+                                                        <Link
+                                                            key={index}
+                                                            href={
+                                                                productOption.slug
+                                                            }
+                                                        >
+                                                            <Button
+                                                                className="capitalize"
+                                                                variant={
+                                                                    index ===
+                                                                        selectedOption
+                                                                        ? 'default'
+                                                                        : 'outline'
+                                                                }
+                                                            >
+                                                                {productOption.options.map(
+                                                                    (el, elIdx) => {
+                                                                        return (
+                                                                            <span
+                                                                                className="capitalize mx-1 min-w-[80px]"
+                                                                                key={
+                                                                                    elIdx
+                                                                                }
+                                                                            >
+                                                                                {
+                                                                                    el.value
+                                                                                }
+                                                                            </span>
+                                                                        );
+                                                                    },
+                                                                )}
+                                                            </Button>
+                                                        </Link>
+                                                    ),
+                                                )}
+                                            </div>
+                                        </div>
                                     </div>
-                                </div>
-                            </div>
+                                )}
                         </div>
 
                         <div>
@@ -651,8 +651,8 @@ export default function SmartphoneDetailPage({ params }: Props) {
 
                                                             {review.user
                                                                 .email ===
-                                                                userProfile.email ? (
-                                                                !editMode && (
+                                                                userProfile.email
+                                                                ? !editMode && (
                                                                     <>
                                                                         <PencilIcon
                                                                             className="cursor-pointer"
@@ -677,20 +677,20 @@ export default function SmartphoneDetailPage({ params }: Props) {
                                                                         />
                                                                     </>
                                                                 )
-                                                            ) : (
-                                                                <MessageSquareQuote
-                                                                    className="cursor-pointer"
-                                                                    onClick={() => {
-                                                                        setReplyReview(
-                                                                            review,
-                                                                        );
-                                                                        setReplyMode(
-                                                                            !replyMode,
-                                                                        );
-                                                                    }}
-                                                                    color="#000000"
-                                                                />
-                                                            )}
+                                                                : token && (
+                                                                    <MessageSquareQuote
+                                                                        className="cursor-pointer"
+                                                                        onClick={() => {
+                                                                            setReplyReview(
+                                                                                review,
+                                                                            );
+                                                                            setReplyMode(
+                                                                                !replyMode,
+                                                                            );
+                                                                        }}
+                                                                        color="#000000"
+                                                                    />
+                                                                )}
                                                         </div>
 
                                                         {review?.children &&

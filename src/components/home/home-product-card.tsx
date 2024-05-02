@@ -80,7 +80,7 @@ export default function HomeProductCard(props: Props) {
         <div className="max-w-[300px]">
             <ContextMenu>
                 <ContextMenuTrigger>
-                    <div className="bg-card hover:shadow-2xl hover:cursor-pointer sm:hover:scale-[1.05] hover:scale-[1.1] transition-all duration-300 border-[1px] border-[#ccc] rounded-md px-2 py-3 max-w-[300px] shadow-md m-3 flex flex-col justify-between">
+                    <div className="h-[650px] bg-card hover:shadow-2xl hover:cursor-pointer sm:hover:scale-[1.05] hover:scale-[1.1] transition-all duration-300 border-[1px] border-[#ccc] rounded-md px-2 py-3 max-w-[300px] shadow-md m-3 flex flex-col justify-between">
                         {product?.label && (
                             <p className="mb-4 opacity-70 text-sm">
                                 <span className="bg-[#f1f1f1] text-[#333] rounded-lg animate-pulse">
@@ -89,8 +89,8 @@ export default function HomeProductCard(props: Props) {
                             </p>
                         )}
                         <Link
-                            href={'/smartphone/' + productOption.slug}
-                            className="relative flex flex-col justify-center items-center gap-2"
+                            href={`/${product?.category.slug}/${productOption.slug}`}
+                            className="relative flex flex-col justify-center items-center gap-2 object-contain"
                         >
                             <Image
                                 height={70}
