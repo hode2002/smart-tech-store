@@ -27,6 +27,7 @@ export class CreateProductDto {
 
     @IsNotEmpty()
     @IsArray()
+    @IsOptional()
     product_options: Array<ProductOptionDto>;
 
     @IsNotEmpty()
@@ -60,7 +61,7 @@ class ProductDescriptionDto {
     content: string;
 }
 
-class TechnicalSpecs {
+export class TechnicalSpecs {
     @IsString()
     @IsOptional()
     screen?: string;
@@ -142,6 +143,10 @@ class ProductOptionDto {
     @IsOptional()
     @IsBoolean()
     is_sale: boolean;
+
+    @IsOptional()
+    @IsBoolean()
+    is_deleted: boolean;
 
     @IsNotEmpty()
     @IsString()

@@ -41,13 +41,6 @@ export class BrandService {
                 logo_url: awsKey,
                 slug,
             },
-            select: {
-                id: true,
-                name: true,
-                description: true,
-                logo_url: true,
-                slug: true,
-            },
         });
     }
 
@@ -119,15 +112,18 @@ export class BrandService {
         fileUploadDto: FileUploadDto,
     ) {
         const brand = await this.findById(id);
+        let logo_url = brand.logo_url;
 
-        const res = await this.mediaService.upload(fileUploadDto);
-        if (!res?.is_success) {
-            throw new InternalServerErrorException('Internal Server Error');
-        }
-
-        const awsKey = res?.key;
-        if (!awsKey) {
-            throw new InternalServerErrorException('Internal Server Error');
+        if (fileUploadDto) {
+            const res = await this.mediaService.upload(fileUploadDto);
+            if (!res?.is_success) {
+                throw new InternalServerErrorException('Internal Server Error');
+            }
+            const awsKey = res?.key;
+            if (!awsKey) {
+                throw new InternalServerErrorException('Internal Server Error');
+            }
+            logo_url = awsKey;
         }
 
         await this.mediaService.deleteFileS3(brand.logo_url);
@@ -136,7 +132,7 @@ export class BrandService {
             where: { id },
             data: {
                 ...updateBrandDto,
-                logo_url: awsKey,
+                logo_url,
             },
             select: {
                 id: true,
@@ -151,19 +147,30 @@ export class BrandService {
     async remove(id: string) {
         const isExist = await this.findById(id);
         if (!isExist) {
-            throw new NotFoundException('Banner Not Found');
+            throw new NotFoundException('Brand Not Found');
         }
 
         const isDeleted = await this.prismaService.brand.update({
             where: { id },
             data: { is_deleted: true },
-            select: {
-                id: true,
-                name: true,
-                logo_url: true,
-                description: true,
-                slug: true,
-            },
+        });
+
+        return {
+            is_success: isDeleted ? true : false,
+        };
+    }
+
+    async restore(id: string) {
+        const isExist = await this.prismaService.brand.findUnique({
+            where: { id, is_deleted: true },
+        });
+        if (!isExist) {
+            throw new NotFoundException('Brand Not Found');
+        }
+
+        const isDeleted = await this.prismaService.brand.update({
+            where: { id },
+            data: { is_deleted: false },
         });
 
         return {

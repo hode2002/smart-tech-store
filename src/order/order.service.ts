@@ -20,6 +20,7 @@ import {
     OrderStatus,
 } from './types';
 import {
+    AdminUpdateOrderStatusDto,
     CalculateShippingFeeDto,
     UpdateOrderStatusDto,
     UpdatePaymentStatusDto,
@@ -274,6 +275,12 @@ export class OrderService {
                 order_date: true,
                 status: true,
                 total_amount: true,
+                User: {
+                    select: {
+                        email: true,
+                        avatar: true,
+                    },
+                },
                 shipping: {
                     select: {
                         id: true,
@@ -285,6 +292,12 @@ export class OrderService {
                         fee: true,
                         estimate_date: true,
                         tracking_number: true,
+                        delivery: {
+                            select: {
+                                name: true,
+                                slug: true,
+                            },
+                        },
                     },
                 },
                 payment: {
@@ -371,6 +384,121 @@ export class OrderService {
         return this.convertOrderResponse(order);
     }
 
+    async findAll(): Promise<OrderResponse[]> {
+        const orders = (await this.prismaService.order.findMany({
+            select: {
+                id: true,
+                name: true,
+                phone: true,
+                note: true,
+                order_date: true,
+                status: true,
+                total_amount: true,
+                User: {
+                    select: {
+                        email: true,
+                        avatar: true,
+                    },
+                },
+                shipping: {
+                    select: {
+                        id: true,
+                        address: true,
+                        province: true,
+                        district: true,
+                        ward: true,
+                        hamlet: true,
+                        fee: true,
+                        estimate_date: true,
+                        tracking_number: true,
+                        delivery: {
+                            select: {
+                                name: true,
+                                slug: true,
+                            },
+                        },
+                    },
+                },
+                payment: {
+                    select: {
+                        id: true,
+                        payment_method: true,
+                        total_price: true,
+                        transaction_id: true,
+                    },
+                },
+                order_details: {
+                    select: {
+                        id: true,
+                        product_option: {
+                            select: {
+                                id: true,
+                                sku: true,
+                                product: {
+                                    select: {
+                                        id: true,
+                                        name: true,
+                                        brand: {
+                                            select: {
+                                                id: true,
+                                                name: true,
+                                                slug: true,
+                                                logo_url: true,
+                                            },
+                                        },
+                                        category: {
+                                            select: {
+                                                id: true,
+                                                name: true,
+                                                slug: true,
+                                            },
+                                        },
+                                        descriptions: {
+                                            select: {
+                                                id: true,
+                                                content: true,
+                                            },
+                                        },
+                                        label: true,
+                                        price: true,
+                                        promotions: true,
+                                        warranties: true,
+                                    },
+                                },
+                                thumbnail: true,
+                                product_option_value: {
+                                    select: {
+                                        option: {
+                                            select: {
+                                                name: true,
+                                            },
+                                        },
+                                        value: true,
+                                        adjust_price: true,
+                                    },
+                                },
+                                technical_specs: {
+                                    select: {
+                                        weight: true,
+                                    },
+                                },
+                                label_image: true,
+                                price_modifier: true,
+                                discount: true,
+                                slug: true,
+                            },
+                        },
+                        price: true,
+                        quantity: true,
+                        subtotal: true,
+                    },
+                },
+            },
+        })) as OrderDBResponse[];
+
+        return orders.map((order) => this.convertOrderResponse(order));
+    }
+
     async findByStatus(
         userId: string,
         status: number,
@@ -397,6 +525,12 @@ export class OrderService {
                 order_date: true,
                 status: true,
                 total_amount: true,
+                User: {
+                    select: {
+                        email: true,
+                        avatar: true,
+                    },
+                },
                 shipping: {
                     select: {
                         id: true,
@@ -408,6 +542,12 @@ export class OrderService {
                         fee: true,
                         estimate_date: true,
                         tracking_number: true,
+                        delivery: {
+                            select: {
+                                name: true,
+                                slug: true,
+                            },
+                        },
                     },
                 },
                 payment: {
@@ -527,6 +667,27 @@ export class OrderService {
                 id,
                 status: { notIn: [OrderStatus.CANCEL, OrderStatus.RECEIVED] },
             },
+        });
+        if (!order) {
+            throw new NotFoundException('Order not found');
+        }
+
+        const isUpdated = await this.prismaService.order.update({
+            where: { id },
+            data: { status: updateOrderStatusDto.status },
+        });
+
+        return {
+            is_success: isUpdated ? true : false,
+        };
+    }
+
+    async updateStatusByAdmin(
+        id: string,
+        updateOrderStatusDto: AdminUpdateOrderStatusDto,
+    ) {
+        const order = await this.prismaService.order.findUnique({
+            where: { id },
         });
         if (!order) {
             throw new NotFoundException('Order not found');
@@ -760,6 +921,8 @@ export class OrderService {
     private convertOrderResponse(order: OrderDBResponse): OrderResponse {
         return {
             id: order.id,
+            email: order.User.email,
+            avatar: order.User.avatar,
             name: order.name,
             phone: order.phone,
             note: order.note,
@@ -776,6 +939,10 @@ export class OrderService {
             tracking_number: order.shipping.tracking_number,
             payment_method: order.payment.payment_method,
             transaction_id: order.payment.transaction_id,
+            delivery: {
+                name: order.shipping.delivery.name,
+                slug: order.shipping.delivery.slug,
+            },
             order_details: order.order_details.map((orderDetail) => {
                 return {
                     id: orderDetail.id,

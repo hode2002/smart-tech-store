@@ -2,7 +2,9 @@ import { JsonValue } from '@prisma/client/runtime/library';
 
 export interface OrderResponse {
     id: string;
+    email: string;
     name: string;
+    avatar: string;
     phone: string;
     note: string;
     order_date: Date;
@@ -18,6 +20,10 @@ export interface OrderResponse {
     tracking_number: string;
     payment_method: string;
     transaction_id: string;
+    delivery: {
+        name: string;
+        slug: string;
+    };
     order_details: {
         id: string;
         product: {

@@ -8,6 +8,10 @@ export interface OrderDBResponse {
     order_date: Date;
     status: number;
     total_amount: number;
+    User: {
+        email: string;
+        avatar: string;
+    };
     shipping: {
         id: string;
         address: string;
@@ -18,6 +22,10 @@ export interface OrderDBResponse {
         fee: number;
         estimate_date: string;
         tracking_number: string;
+        delivery: {
+            name: string;
+            slug: string;
+        };
     };
     payment: {
         id: string;

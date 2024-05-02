@@ -3,14 +3,24 @@ import {
     IsBoolean,
     IsNotEmpty,
     IsNumber,
+    IsObject,
     IsOptional,
     IsString,
 } from 'class-validator';
+import { TechnicalSpecs } from 'src/product/dto/create-product.dto';
 
 export class UpdateProductDto {
     @IsOptional()
     @IsString()
     name?: string;
+
+    @IsOptional()
+    @IsString()
+    brandId?: string;
+
+    @IsOptional()
+    @IsString()
+    cateId?: string;
 
     @IsOptional()
     @IsArray()
@@ -35,6 +45,10 @@ export class UpdateProductDto {
     @IsOptional()
     @IsString()
     label?: string;
+
+    @IsOptional()
+    @IsString()
+    main_image?: string;
 }
 
 class ProductDescriptionDto {
@@ -75,6 +89,13 @@ class ProductOptionDto {
     @IsOptional()
     @IsBoolean()
     is_sale?: boolean;
+
+    @IsOptional()
+    @IsBoolean()
+    is_deleted?: boolean;
+
+    @IsObject()
+    technical_specs: TechnicalSpecs;
 }
 
 class ProductImageDto {

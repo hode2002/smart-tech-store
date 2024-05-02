@@ -24,6 +24,7 @@ export interface ProductDetailDB {
         name: string;
         slug: string;
     };
+    created_at?: Date;
     product_options: {
         id: string;
         sku: string;
@@ -34,6 +35,8 @@ export interface ProductDetailDB {
         is_sale: boolean;
         slug: string;
         label_image: string;
+        is_deleted?: boolean;
+        created_at?: Date;
         product_images: {
             id: string;
             image_url: string;
