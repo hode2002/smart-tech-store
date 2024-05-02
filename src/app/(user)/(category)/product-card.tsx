@@ -46,8 +46,8 @@ export default function ProductCard(props: Props) {
     const salePrice = formatPrice(
         Number(
             product.price -
-            (product.price * productOption.discount) / 100 +
-            productOption.price_modifier,
+                (product.price * productOption.discount) / 100 +
+                productOption.price_modifier,
         ),
     );
 
@@ -127,30 +127,30 @@ export default function ProductCard(props: Props) {
 
                                 {product.product_options[0]?.options?.length >
                                     0 && (
-                                        <div className="flex gap-2 flex-wrap">
-                                            {product.product_options.map(
-                                                (p, idx) => {
-                                                    return (
-                                                        <Button
-                                                            key={idx}
-                                                            className=""
-                                                            onClick={() =>
-                                                                setOption(idx)
-                                                            }
-                                                            variant={
-                                                                idx === option
-                                                                    ? 'default'
-                                                                    : 'outline'
-                                                            }
-                                                        >
-                                                            {p.options[0]?.value} -{' '}
-                                                            {p.options[1]?.value}
-                                                        </Button>
-                                                    );
-                                                },
-                                            )}
-                                        </div>
-                                    )}
+                                    <div className="flex gap-2 flex-wrap">
+                                        {product.product_options.map(
+                                            (p, idx) => {
+                                                return (
+                                                    <Button
+                                                        key={idx}
+                                                        className=""
+                                                        onClick={() =>
+                                                            setOption(idx)
+                                                        }
+                                                        variant={
+                                                            idx === option
+                                                                ? 'default'
+                                                                : 'outline'
+                                                        }
+                                                    >
+                                                        {p.options[0]?.value} -{' '}
+                                                        {p.options[1]?.value}
+                                                    </Button>
+                                                );
+                                            },
+                                        )}
+                                    </div>
+                                )}
                                 <p className="my-4 font-bold text-center capitalize">
                                     {productName}
                                 </p>

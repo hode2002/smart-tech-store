@@ -43,8 +43,8 @@ export default function HomeProductCard(props: Props) {
     const salePrice = formatPrice(
         Number(
             product.price -
-            (product.price * productOption.discount) / 100 +
-            productOption.price_modifier,
+                (product.price * productOption.discount) / 100 +
+                productOption.price_modifier,
         ),
     );
 

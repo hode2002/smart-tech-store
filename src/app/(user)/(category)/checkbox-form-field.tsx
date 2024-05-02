@@ -45,18 +45,18 @@ export default function CheckBoxFormField(props: CheckboxFieldProps) {
                                                 ) => {
                                                     checked
                                                         ? field.onChange([
-                                                            ...field.value,
-                                                            item.id,
-                                                        ])
+                                                              ...field.value,
+                                                              item.id,
+                                                          ])
                                                         : field.onChange(
-                                                            field.value?.filter(
-                                                                (
-                                                                    value: string,
-                                                                ) =>
-                                                                    value !==
-                                                                    item.id,
-                                                            ),
-                                                        );
+                                                              field.value?.filter(
+                                                                  (
+                                                                      value: string,
+                                                                  ) =>
+                                                                      value !==
+                                                                      item.id,
+                                                              ),
+                                                          );
                                                     return handleFilterProduct();
                                                 }}
                                             />

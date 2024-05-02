@@ -419,17 +419,17 @@ export default function Product() {
                                                                     if (
                                                                         currPage ===
                                                                         index +
-                                                                        1
+                                                                            1
                                                                     )
                                                                         return;
                                                                     return handlePageTransitions(
                                                                         index +
-                                                                        1,
+                                                                            1,
                                                                     );
                                                                 }}
                                                                 isActive={
                                                                     currPage ===
-                                                                        index + 1
+                                                                    index + 1
                                                                         ? true
                                                                         : false
                                                                 }

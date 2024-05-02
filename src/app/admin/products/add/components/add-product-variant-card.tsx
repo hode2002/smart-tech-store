@@ -151,13 +151,13 @@ const AddProductVariantCard = (props: Props) => {
             product_option_value: optionValues.map((option) => {
                 return option.name === 'Màu sắc'
                     ? {
-                        option_id: option.id,
-                        value: color,
-                    }
+                          option_id: option.id,
+                          value: color,
+                      }
                     : {
-                        option_id: option.id,
-                        value: size,
-                    };
+                          option_id: option.id,
+                          value: size,
+                      };
             }),
         };
 

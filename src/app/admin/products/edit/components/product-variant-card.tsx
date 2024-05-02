@@ -338,33 +338,33 @@ const ProductVariantCard = (props: Props) => {
 
                                         {otherImageFiles
                                             ? Array.from(otherImageFiles).map(
-                                                (file, index) => (
-                                                    <button key={index}>
-                                                        <Image
-                                                            alt="Product image"
-                                                            className="aspect-square w-full rounded-md object-cover"
-                                                            height="300"
-                                                            width="300"
-                                                            src={URL.createObjectURL(
-                                                                file,
-                                                            )}
-                                                        />
-                                                    </button>
-                                                ),
-                                            )
+                                                  (file, index) => (
+                                                      <button key={index}>
+                                                          <Image
+                                                              alt="Product image"
+                                                              className="aspect-square w-full rounded-md object-cover"
+                                                              height="300"
+                                                              width="300"
+                                                              src={URL.createObjectURL(
+                                                                  file,
+                                                              )}
+                                                          />
+                                                      </button>
+                                                  ),
+                                              )
                                             : otherImages?.map((image) => (
-                                                <button key={image.id}>
-                                                    <Image
-                                                        alt={
-                                                            image.image_alt_text
-                                                        }
-                                                        className="aspect-square w-full rounded-md object-cover"
-                                                        height="300"
-                                                        width="300"
-                                                        src={image.image_url}
-                                                    />
-                                                </button>
-                                            ))}
+                                                  <button key={image.id}>
+                                                      <Image
+                                                          alt={
+                                                              image.image_alt_text
+                                                          }
+                                                          className="aspect-square w-full rounded-md object-cover"
+                                                          height="300"
+                                                          width="300"
+                                                          src={image.image_url}
+                                                      />
+                                                  </button>
+                                              ))}
                                         <Label
                                             htmlFor="other-images"
                                             className="flex aspect-square w-full items-center justify-center rounded-md border border-dashed"

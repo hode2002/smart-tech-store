@@ -32,9 +32,9 @@ export default function CartProductList(props: Props) {
                     const salePrice = formatPrice(
                         Number(
                             cartItem.price -
-                            (cartItem.price * selectedOption.discount) /
-                            100 +
-                            selectedOption.price_modifier,
+                                (cartItem.price * selectedOption.discount) /
+                                    100 +
+                                selectedOption.price_modifier,
                         ),
                     );
 

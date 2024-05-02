@@ -349,12 +349,12 @@ export default function EditProduct({ params }: Props) {
                                         </div>
                                         {!product?.product_options[0]?.options
                                             ?.length && (
-                                                <ProductVariantCard
-                                                    product={
-                                                        product?.product_options[0]
-                                                    }
-                                                />
-                                            )}
+                                            <ProductVariantCard
+                                                product={
+                                                    product?.product_options[0]
+                                                }
+                                            />
+                                        )}
                                     </div>
                                 </CardContent>
                             </Card>

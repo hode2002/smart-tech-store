@@ -135,7 +135,7 @@ export const ProductOption = z.object({
 
 export type ProductOptionType = z.TypeOf<typeof ProductOption>;
 
-export const ProductDetail =  z.object({
+export const ProductDetail = z.object({
     id: z.string(),
     name: z.string(),
     main_image: z.string(),
@@ -162,7 +162,7 @@ export const ProductDetail =  z.object({
     }),
     created_at: z.string().optional(),
     product_options: z.array(ProductOption),
-})
+});
 
 export type ProductDetailType = z.TypeOf<typeof ProductDetail>;
 
