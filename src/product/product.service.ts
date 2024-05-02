@@ -454,21 +454,8 @@ export class ProductService {
                         content: true,
                     },
                 },
-                brand: {
-                    select: {
-                        id: true,
-                        name: true,
-                        logo_url: true,
-                        slug: true,
-                    },
-                },
-                category: {
-                    select: {
-                        id: true,
-                        name: true,
-                        slug: true,
-                    },
-                },
+                brand: true,
+                category: true,
                 created_at: true,
                 product_options: {
                     select: {
@@ -825,7 +812,8 @@ export class ProductService {
     async getByCategory(slug: string) {
         const products = await this.prismaService.product.findMany({
             where: {
-                category: { slug },
+                category: { slug, is_deleted: false },
+                brand: { is_deleted: false },
                 product_options: {
                     none: {
                         stock: { lte: 0 },
@@ -1278,6 +1266,8 @@ export class ProductService {
     async getByParameters(request: Request) {
         const products = await this.prismaService.product.findMany({
             where: {
+                category: { is_deleted: false },
+                brand: { is_deleted: false },
                 product_options: {
                     some: {
                         technical_specs: {
