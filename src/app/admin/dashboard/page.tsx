@@ -114,7 +114,7 @@ export default function Dashboard() {
         let total = 0;
         orders
             .filter((item) => item.status === 2)
-            .map((order) => (total += order.total_amount + order.fee));
+            .map((order) => (total += order.total_amount));
         return total;
     }, [orders]);
 

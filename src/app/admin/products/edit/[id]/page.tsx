@@ -349,12 +349,12 @@ export default function EditProduct({ params }: Props) {
                                         </div>
                                         {!product?.product_options[0]?.options
                                             ?.length && (
-                                            <ProductVariantCard
-                                                product={
-                                                    product?.product_options[0]
-                                                }
-                                            />
-                                        )}
+                                                <ProductVariantCard
+                                                    product={
+                                                        product?.product_options[0]
+                                                    }
+                                                />
+                                            )}
                                     </div>
                                 </CardContent>
                             </Card>
@@ -482,25 +482,6 @@ export default function EditProduct({ params }: Props) {
                     </div>
                     {product?.product_options[0]?.options?.length > 0 && (
                         <>
-                            {product && (
-                                <div className="grid gap-4 md:grid-cols-3 lg:gap-8">
-                                    {Array.from({ length: variantLength }).map(
-                                        (_, index) => (
-                                            <AddProductVariantCard
-                                                key={index}
-                                                product={product}
-                                                variantIndex={index}
-                                                handleDeleteVariant={
-                                                    handleDeleteVariant
-                                                }
-                                                handleAddVariant={
-                                                    handleAddVariant
-                                                }
-                                            />
-                                        ),
-                                    )}
-                                </div>
-                            )}
                             <div className="grid gap-4 md:grid-cols-3 lg:gap-8">
                                 {product?.product_options?.map(
                                     (productVariant) => (
@@ -514,18 +495,39 @@ export default function EditProduct({ params }: Props) {
                                         </div>
                                     ),
                                 )}
-                                <div
-                                    onClick={() =>
-                                        setVariantLength((prev) => ++prev)
-                                    }
-                                    className="flex aspect-square bg-popover items-center justify-center rounded-md border border-dashed"
-                                >
-                                    <div className="flex flex-col items-center">
-                                        <Plus className="h-4 w-4 text-muted-foreground" />
-                                        <p>Thêm biến thể</p>
-                                    </div>
-                                    <span className="sr-only">Add</span>
-                                </div>
+                                {product && (
+                                    <>
+                                        {Array.from({
+                                            length: variantLength,
+                                        }).map((_, index) => (
+                                            <AddProductVariantCard
+                                                key={index}
+                                                product={product}
+                                                variantIndex={index}
+                                                handleDeleteVariant={
+                                                    handleDeleteVariant
+                                                }
+                                                handleAddVariant={
+                                                    handleAddVariant
+                                                }
+                                            />
+                                        ))}
+                                        <div
+                                            onClick={() =>
+                                                setVariantLength(
+                                                    (prev) => ++prev,
+                                                )
+                                            }
+                                            className="flex aspect-square bg-popover items-center justify-center rounded-md border border-dashed"
+                                        >
+                                            <div className="flex flex-col items-center">
+                                                <Plus className="h-4 w-4 text-muted-foreground" />
+                                                <p>Thêm biến thể</p>
+                                            </div>
+                                            <span className="sr-only">Add</span>
+                                        </div>
+                                    </>
+                                )}
                             </div>
                         </>
                     )}

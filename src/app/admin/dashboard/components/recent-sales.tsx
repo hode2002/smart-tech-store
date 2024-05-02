@@ -26,7 +26,7 @@ export function RecentSales(props: Props) {
                                 </p>
                             </div>
                             <div className="ml-auto font-medium text-nowrap">
-                                + {formatPrice(order.total_amount + order.fee)}
+                                + {formatPrice(order.total_amount)}
                             </div>
                         </div>
                     );

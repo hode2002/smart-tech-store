@@ -8,7 +8,6 @@ import { Button } from '@/components/ui/button';
 import {
     DropdownMenu,
     DropdownMenuContent,
-    DropdownMenuItem,
     DropdownMenuLabel,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
@@ -33,8 +32,14 @@ import {
     AlertDialogTitle,
     AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
-import { UserResponseType } from '@/apiRequests/admin';
-import { useEffect, useState } from 'react';
+import adminApiRequest, { UserResponseType } from '@/apiRequests/admin';
+import { useCallback, useEffect, useState } from 'react';
+import { PurchaseHistoryModal } from '@/app/admin/customers/purchase-history-modal';
+import { useAppSelector } from '@/lib/store';
+import {
+    GetOrderStatusResponseType,
+    OrderResponseType,
+} from '@/apiRequests/order';
 
 type Props = {
     status: string;
@@ -46,6 +51,8 @@ type Props = {
 };
 
 const TableCustomers = (props: Props) => {
+    const token = useAppSelector((state) => state.auth.accessToken);
+
     const { status, users, handleActiveUser } = props;
     const [filterUsers, setFilterUsers] = useState<
         UserResponseType[] | undefined
@@ -54,6 +61,25 @@ const TableCustomers = (props: Props) => {
     const convertStatus = (status: string) => {
         return status === 'active' ? true : false;
     };
+
+    const [open, setOpen] = useState<boolean>(false);
+    const [orders, setOrders] = useState<OrderResponseType[]>([]);
+
+    const fetchOrders = useCallback(async () => {
+        const response = (await adminApiRequest.getAllOrders(
+            token,
+        )) as GetOrderStatusResponseType;
+        if (response?.statusCode === 200) {
+            return response.data;
+        }
+        return [];
+    }, [token]);
+
+    useEffect(() => {
+        fetchOrders().then((orders) => {
+            setOrders(orders);
+        });
+    }, [fetchOrders]);
 
     useEffect(() => {
         if (status === 'all') {
@@ -143,9 +169,14 @@ const TableCustomers = (props: Props) => {
                                         <DropdownMenuLabel>
                                             Thao tác
                                         </DropdownMenuLabel>
-                                        <DropdownMenuItem>
-                                            Edit
-                                        </DropdownMenuItem>
+                                        <PurchaseHistoryModal
+                                            orders={orders?.filter(
+                                                (order) =>
+                                                    order.email === user.email,
+                                            )}
+                                            open={open}
+                                            setOpen={setOpen}
+                                        />
                                         <AlertDialog>
                                             {user.is_active ? (
                                                 <>

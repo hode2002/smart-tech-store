@@ -49,12 +49,12 @@ export default function Order() {
         orders?.forEach((order) => {
             if (
                 order.status === 2 &&
-                moment(order.order_date).isSameOrAfter(
+                moment(order.estimate_date).isSameOrAfter(
                     moment(new Date()),
                     statisticBy,
                 )
             ) {
-                total += order.fee + order.total_amount;
+                total += order.total_amount;
             }
         });
         return total;
@@ -220,7 +220,7 @@ export default function Order() {
                         <OrderTable
                             status={status}
                             orders={filterOrders.filter((order) =>
-                                moment(order.order_date).isSame(
+                                moment(order.estimate_date).isSame(
                                     moment(new Date()),
                                     'week',
                                 ),
@@ -236,7 +236,7 @@ export default function Order() {
                         <OrderTable
                             status={status}
                             orders={filterOrders.filter((order) =>
-                                moment(order.order_date).isSame(
+                                moment(order.estimate_date).isSame(
                                     moment(new Date()),
                                     'month',
                                 ),
@@ -252,7 +252,7 @@ export default function Order() {
                         <OrderTable
                             status={status}
                             orders={filterOrders.filter((order) =>
-                                moment(order.order_date).isSame(
+                                moment(order.estimate_date).isSame(
                                     moment(new Date()),
                                     'year',
                                 ),
