@@ -53,90 +53,6 @@ const ProductTable = (props: Props) => {
                 </TableRow>
             </TableHeader>
             <TableBody>
-                {/* {products &&
-                    products?.map((product) => {
-                        return (
-                            product &&
-                            product?.product_options?.map((productOption) => {
-                                return (
-                                    <TableRow key={productOption.id}>
-                                        <TableCell className="hidden sm:table-cell">
-                                            <Image
-                                                alt="Product image"
-                                                className="aspect-square rounded-md object-cover"
-                                                height="64"
-                                                src={productOption.thumbnail}
-                                                width="64"
-                                            />
-                                        </TableCell>
-                                        <TableCell className="font-medium capitalize">
-                                            {product.name.toLowerCase() +
-                                                ' ' +
-                                                productOption.sku
-                                                    .replaceAll('-', ' ')
-                                                    .toLowerCase()}
-                                        </TableCell>
-                                        <TableCell>{product.price}</TableCell>
-                                        <TableCell className="capitalize">
-                                            {product.category.name}
-                                        </TableCell>
-                                        <TableCell className="capitalize">
-                                            {product.brand.name}
-                                        </TableCell>
-                                        <TableCell className="hidden md:table-cell">
-                                            {productOption.discount}
-                                        </TableCell>
-                                        <TableCell className="hidden md:table-cell">
-                                            {productOption.stock}
-                                        </TableCell>
-                                        <TableCell className="hidden md:table-cell">
-                                            {moment(
-                                                productOption.created_at,
-                                            ).format('DD-MM-YYYY')}
-                                        </TableCell>
-                                        <TableCell>
-                                            {productOption.is_deleted ? (
-                                                <Badge variant="destructive">
-                                                    inactive
-                                                </Badge>
-                                            ) : (
-                                                <Badge variant="outline">
-                                                    Active
-                                                </Badge>
-                                            )}
-                                        </TableCell>
-                                        <TableCell>
-                                            <DropdownMenu>
-                                                <DropdownMenuTrigger asChild>
-                                                    <Button
-                                                        aria-haspopup="true"
-                                                        size="icon"
-                                                        variant="ghost"
-                                                    >
-                                                        <MoreHorizontal className="h-4 w-4" />
-                                                        <span className="sr-only">
-                                                            Toggle menu
-                                                        </span>
-                                                    </Button>
-                                                </DropdownMenuTrigger>
-                                                <DropdownMenuContent align="end">
-                                                    <DropdownMenuLabel>
-                                                        Thao tác
-                                                    </DropdownMenuLabel>
-                                                    <DropdownMenuItem>
-                                                        Edit
-                                                    </DropdownMenuItem>
-                                                    <DropdownMenuItem>
-                                                        Delete
-                                                    </DropdownMenuItem>
-                                                </DropdownMenuContent>
-                                            </DropdownMenu>
-                                        </TableCell>
-                                    </TableRow>
-                                );
-                            })
-                        );
-                    })} */}
                 {products &&
                     products?.map((product) => {
                         return (
@@ -160,10 +76,14 @@ const ProductTable = (props: Props) => {
                                 <TableCell>
                                     {formatPrice(product.price)}
                                 </TableCell>
-                                <TableCell className="capitalize">
+                                <TableCell
+                                    className={`capitalize ${product.category.is_deleted ? 'line-through' : ''}`}
+                                >
                                     {product.category.name}
                                 </TableCell>
-                                <TableCell className="capitalize">
+                                <TableCell
+                                    className={`capitalize ${product.brand.is_deleted ? 'line-through' : ''}`}
+                                >
                                     {product.brand.name}
                                 </TableCell>
                                 <TableCell className="hidden md:table-cell">
@@ -172,36 +92,39 @@ const ProductTable = (props: Props) => {
                                     )}
                                 </TableCell>
                                 <TableCell>
-                                    <DropdownMenu>
-                                        <DropdownMenuTrigger asChild>
-                                            <Button
-                                                aria-haspopup="true"
-                                                size="icon"
-                                                variant="ghost"
-                                            >
-                                                <MoreHorizontal className="h-4 w-4" />
-                                                <span className="sr-only">
-                                                    Toggle menu
-                                                </span>
-                                            </Button>
-                                        </DropdownMenuTrigger>
-                                        <DropdownMenuContent align="end">
-                                            <DropdownMenuLabel>
-                                                Thao tác
-                                            </DropdownMenuLabel>
-                                            <Link
-                                                key={product.id}
-                                                href={
-                                                    '/admin/products/edit/' +
-                                                    product.id
-                                                }
-                                            >
-                                                <DropdownMenuItem>
-                                                    Cập nhật
-                                                </DropdownMenuItem>
-                                            </Link>
-                                        </DropdownMenuContent>
-                                    </DropdownMenu>
+                                    {!product.brand.is_deleted &&
+                                        !product.category.is_deleted && (
+                                            <DropdownMenu>
+                                                <DropdownMenuTrigger asChild>
+                                                    <Button
+                                                        aria-haspopup="true"
+                                                        size="icon"
+                                                        variant="ghost"
+                                                    >
+                                                        <MoreHorizontal className="h-4 w-4" />
+                                                        <span className="sr-only">
+                                                            Toggle menu
+                                                        </span>
+                                                    </Button>
+                                                </DropdownMenuTrigger>
+                                                <DropdownMenuContent align="end">
+                                                    <DropdownMenuLabel>
+                                                        Thao tác
+                                                    </DropdownMenuLabel>
+                                                    <Link
+                                                        key={product.id}
+                                                        href={
+                                                            '/admin/products/edit/' +
+                                                            product.id
+                                                        }
+                                                    >
+                                                        <DropdownMenuItem>
+                                                            Cập nhật
+                                                        </DropdownMenuItem>
+                                                    </Link>
+                                                </DropdownMenuContent>
+                                            </DropdownMenu>
+                                        )}
                                 </TableCell>
                             </TableRow>
                         );

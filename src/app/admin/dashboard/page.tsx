@@ -177,7 +177,7 @@ export default function Dashboard() {
                         </TooltipTrigger>
                         <TooltipContent side="right">Customers</TooltipContent>
                     </Tooltip>
-                    <Tooltip>
+                    {/* <Tooltip>
                         <TooltipTrigger asChild>
                             <Link
                                 href="#"
@@ -188,7 +188,7 @@ export default function Dashboard() {
                             </Link>
                         </TooltipTrigger>
                         <TooltipContent side="right">Analytics</TooltipContent>
-                    </Tooltip>
+                    </Tooltip> */}
                 </nav>
                 <nav className="mt-auto flex flex-col items-center gap-4 px-2 py-4">
                     <Tooltip>

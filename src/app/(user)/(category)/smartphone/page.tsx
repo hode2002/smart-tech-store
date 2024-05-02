@@ -30,6 +30,7 @@ import {
     SelectContent,
     SelectGroup,
     SelectItem,
+    SelectLabel,
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
@@ -54,7 +55,7 @@ export default function SmartphonePage() {
                 setProducts(response.data);
             });
         brandApiRequest
-            .getBrands()
+            .getByCategoryName('smartphone')
             .then((res: BrandResponseType) => setBrands(res.data));
     }, []);
 
@@ -229,6 +230,7 @@ export default function SmartphonePage() {
         ],
         [],
     );
+    const [sortedBy, setSortedBy] = useState<string>('new');
 
     const productFilterBox = useMemo<
         Array<{
@@ -404,22 +406,28 @@ export default function SmartphonePage() {
                         <div>
                             <div className="flex flex-col-reverse md:flex-row justify-between md:items-center gap-4">
                                 <div className="flex flex-col md:flex-row gap-2">
-                                    <p className="whitespace-nowrap">
+                                    {/* <p className="whitespace-nowrap">
                                         Lọc theo:
                                     </p>
                                     <div className="flex flex-wrap capitalize">
                                         <span className="me-1 font-bold">
                                             Samsung
                                         </span>
-                                    </div>
+                                    </div> */}
                                 </div>
                                 <div className="flex justify-end">
-                                    <Select>
+                                    <Select
+                                        value={sortedBy}
+                                        onValueChange={setSortedBy}
+                                    >
                                         <SelectTrigger className="w-[180px]">
                                             <SelectValue placeholder="Sắp xếp theo" />
                                         </SelectTrigger>
                                         <SelectContent>
                                             <SelectGroup>
+                                                <SelectLabel>
+                                                    Sắp xếp theo
+                                                </SelectLabel>
                                                 <SelectItem value="new">
                                                     Mới
                                                 </SelectItem>

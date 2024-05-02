@@ -464,14 +464,21 @@ export default function EditProduct({ params }: Props) {
                                                     <SelectValue className="capitalize" />
                                                 </SelectTrigger>
                                                 <SelectContent className="capitalize">
-                                                    {brands.map((brand) => (
-                                                        <SelectItem
-                                                            key={brand.id}
-                                                            value={brand.slug}
-                                                        >
-                                                            {brand.name}
-                                                        </SelectItem>
-                                                    ))}
+                                                    {brands
+                                                        .filter(
+                                                            (item) =>
+                                                                !item.is_deleted,
+                                                        )
+                                                        .map((brand) => (
+                                                            <SelectItem
+                                                                key={brand.id}
+                                                                value={
+                                                                    brand.slug
+                                                                }
+                                                            >
+                                                                {brand.name}
+                                                            </SelectItem>
+                                                        ))}
                                                 </SelectContent>
                                             </Select>
                                         </div>

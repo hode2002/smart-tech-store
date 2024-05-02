@@ -16,6 +16,22 @@ class BrandApiRequest {
             return error;
         }
     }
+
+    async getByCategoryName(slug: string) {
+        try {
+            const response: BrandResponseType = await http.get(
+                '/brands/category/' + slug,
+            );
+            return response;
+        } catch (error: any) {
+            toast({
+                title: 'Error',
+                description: error?.payload?.message ?? 'Lỗi không xác định',
+                variant: 'destructive',
+            });
+            return error;
+        }
+    }
 }
 
 const brandApiRequest = new BrandApiRequest();

@@ -1,3 +1,5 @@
+import { Brand } from '@/schemaValidations/brand.schema';
+import { Category } from '@/schemaValidations/category.schema';
 import { z } from 'zod';
 
 export const ProductFilter = z.object({
@@ -149,17 +151,8 @@ export const ProductDetail = z.object({
             content: z.string(),
         }),
     ),
-    brand: z.object({
-        id: z.string(),
-        name: z.string(),
-        logo_url: z.string(),
-        slug: z.string(),
-    }),
-    category: z.object({
-        id: z.string(),
-        name: z.string(),
-        slug: z.string(),
-    }),
+    brand: Brand,
+    category: Category,
     created_at: z.string().optional(),
     product_options: z.array(ProductOption),
 });

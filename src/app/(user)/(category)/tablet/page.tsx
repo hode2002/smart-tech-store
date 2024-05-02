@@ -39,7 +39,7 @@ import { Brand, ProductType } from '@/lib/store/slices';
 import productApiRequest from '@/apiRequests/product';
 import { useAppSelector } from '@/lib/store';
 
-export default function SmartphonePage() {
+export default function TabletPage() {
     const [isCLient, setIsClient] = useState(false);
     useEffect(() => setIsClient(true), []);
 
@@ -286,14 +286,14 @@ export default function SmartphonePage() {
                         <div>
                             <div className="flex flex-col-reverse md:flex-row justify-between md:items-center gap-4">
                                 <div className="flex flex-col md:flex-row gap-2">
-                                    <p className="whitespace-nowrap">
+                                    {/* <p className="whitespace-nowrap">
                                         Lọc theo:
                                     </p>
                                     <div className="flex flex-wrap capitalize">
                                         <span className="me-1 font-bold">
                                             Samsung
                                         </span>
-                                    </div>
+                                    </div> */}
                                 </div>
                                 <div className="flex justify-end">
                                     <Select>

@@ -79,7 +79,7 @@ const Aside = () => {
                     </TooltipTrigger>
                     <TooltipContent side="right">Khách hàng</TooltipContent>
                 </Tooltip>
-                <Tooltip>
+                {/* <Tooltip>
                     <TooltipTrigger asChild>
                         <Link
                             href="#"
@@ -90,7 +90,7 @@ const Aside = () => {
                         </Link>
                     </TooltipTrigger>
                     <TooltipContent side="right">Analytics</TooltipContent>
-                </Tooltip>
+                </Tooltip> */}
             </nav>
             <nav className="mt-auto flex flex-col items-center gap-4 px-2 py-4">
                 <Tooltip>
