@@ -13,17 +13,52 @@ import {
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { AtJwtGuard } from 'src/auth/guards';
-import { GetEmail, GetUserId } from 'src/common/decorators/';
-import { ChangePasswordDto, UpdateUserAddressDto, UpdateUserDto } from './dto';
+import { GetEmail, GetUserId, Permission } from 'src/common/decorators/';
+import {
+    ChangePasswordDto,
+    UpdateUserAddressDto,
+    UpdateUserDto,
+    UpdateUserStatusDto,
+} from './dto';
 import { CreateUserEmailDto } from 'src/auth/dto';
 import { Request } from 'express';
 import { SuccessResponse } from 'src/common/response';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { FileUploadDto } from 'src/media/dto';
+import { Role } from '@prisma/client';
+import { RoleGuard } from 'src/common/guards';
 
 @Controller('/api/v1/users')
 export class UserController {
     constructor(private readonly userService: UserService) {}
+
+    @Get()
+    @Permission(Role.ADMIN)
+    @UseGuards(AtJwtGuard, RoleGuard)
+    @HttpCode(HttpStatus.OK)
+    async getAll(): Promise<SuccessResponse> {
+        return {
+            statusCode: HttpStatus.OK,
+            message: 'Get all users success',
+            data: await this.userService.getAll(),
+        };
+    }
+
+    @Post('')
+    @Permission(Role.ADMIN)
+    @UseGuards(AtJwtGuard, RoleGuard)
+    @HttpCode(HttpStatus.OK)
+    async updateStatusByEmail(
+        @Body() updateUserStatusDto: UpdateUserStatusDto,
+    ): Promise<SuccessResponse> {
+        return {
+            statusCode: HttpStatus.OK,
+            message: 'Update user status success',
+            data: await this.userService.updateStatusByEmail(
+                updateUserStatusDto,
+            ),
+        };
+    }
 
     @Get('profile')
     @UseGuards(AtJwtGuard)

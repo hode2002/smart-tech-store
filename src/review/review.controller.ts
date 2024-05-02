@@ -12,12 +12,26 @@ import {
 import { ReviewService } from './review.service';
 import { AtJwtGuard } from 'src/auth/guards';
 import { SuccessResponse } from 'src/common/response';
-import { GetUserId } from 'src/common/decorators';
+import { GetUserId, Permission } from 'src/common/decorators';
 import { CreateReplyReviewDto, CreateReviewDto } from './dto';
+import { RoleGuard } from 'src/common/guards';
+import { Role } from '@prisma/client';
 
 @Controller('api/v1/reviews')
 export class ReviewController {
     constructor(private readonly reviewService: ReviewService) {}
+
+    @Get()
+    @Permission(Role.ADMIN)
+    @UseGuards(AtJwtGuard, RoleGuard)
+    @HttpCode(HttpStatus.OK)
+    async getAllReviews(): Promise<SuccessResponse> {
+        return {
+            statusCode: HttpStatus.OK,
+            message: 'Get all reviews success',
+            data: await this.reviewService.getAllReviews(),
+        };
+    }
 
     @Post()
     @UseGuards(AtJwtGuard)

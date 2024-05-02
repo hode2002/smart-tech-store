@@ -6,7 +6,12 @@ import {
     NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from './../prisma/prisma.service';
-import { ChangePasswordDto, UpdateUserAddressDto, UpdateUserDto } from './dto';
+import {
+    ChangePasswordDto,
+    UpdateUserAddressDto,
+    UpdateUserDto,
+    UpdateUserStatusDto,
+} from './dto';
 import { CreateUserEmailDto, ThirdPartyLoginDto } from 'src/auth/dto';
 import * as bcrypt from 'bcrypt';
 import * as passwordGenerator from 'generate-password';
@@ -14,7 +19,7 @@ import { InjectQueue } from '@nestjs/bull';
 import { Queue } from 'bull';
 import { FileUploadDto } from 'src/media/dto';
 import { MediaService } from 'src/media/media.service';
-import { AuthType } from '@prisma/client';
+import { AuthType, Role } from '@prisma/client';
 
 @Injectable()
 export class UserService {
@@ -42,6 +47,35 @@ export class UserService {
                 is_active: true,
                 avatar,
                 auth_type: authType,
+            },
+        });
+    }
+
+    async updateStatusByEmail(updateUserStatusDto: UpdateUserStatusDto) {
+        const { email, is_active } = updateUserStatusDto;
+        return await this.prismaService.user.update({
+            where: {
+                email,
+                NOT: {
+                    role: Role.ADMIN,
+                },
+            },
+            data: { is_active },
+            select: {
+                email: true,
+                name: true,
+                avatar: true,
+                phone: true,
+                is_active: true,
+                created_at: true,
+                address: {
+                    select: {
+                        province: true,
+                        district: true,
+                        ward: true,
+                        address: true,
+                    },
+                },
             },
         });
     }
@@ -82,6 +116,30 @@ export class UserService {
                 name: true,
                 avatar: true,
                 phone: true,
+            },
+        });
+    }
+
+    async getAll() {
+        return await this.prismaService.user.findMany({
+            where: {
+                NOT: { role: Role.ADMIN },
+            },
+            select: {
+                email: true,
+                name: true,
+                avatar: true,
+                phone: true,
+                is_active: true,
+                created_at: true,
+                address: {
+                    select: {
+                        province: true,
+                        district: true,
+                        ward: true,
+                        address: true,
+                    },
+                },
             },
         });
     }

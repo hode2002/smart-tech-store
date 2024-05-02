@@ -93,4 +93,16 @@ export class CategoryController {
             data: await this.categoryService.remove(id),
         };
     }
+
+    @Post('restore/:id')
+    @Permission(Role.ADMIN)
+    @UseGuards(AtJwtGuard, RoleGuard)
+    @HttpCode(HttpStatus.OK)
+    async restore(@Param('id') id: string): Promise<SuccessResponse> {
+        return {
+            statusCode: HttpStatus.OK,
+            message: 'Restore success',
+            data: await this.categoryService.restore(id),
+        };
+    }
 }

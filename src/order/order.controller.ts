@@ -14,7 +14,7 @@ import {
 import { OrderService } from './order.service';
 import { AtJwtGuard } from 'src/auth/guards';
 import { SuccessResponse } from 'src/common/response';
-import { GetUserId } from 'src/common/decorators';
+import { GetUserId, Permission } from 'src/common/decorators';
 import { OrderResponse } from './types';
 import {
     CalculateShippingFeeDto,
@@ -24,10 +24,25 @@ import {
 } from './dto';
 import { Request, Response } from 'express';
 import { Throttle } from '@nestjs/throttler';
+import { Role } from '@prisma/client';
+import { RoleGuard } from 'src/common/guards';
+import { AdminUpdateOrderStatusDto } from './dto/admin-update-order-status.dto';
 
 @Controller('api/v1/orders')
 export class OrderController {
     constructor(private readonly orderService: OrderService) {}
+
+    @Get()
+    @Permission(Role.ADMIN)
+    @UseGuards(AtJwtGuard, RoleGuard)
+    @HttpCode(HttpStatus.OK)
+    async getAll(): Promise<SuccessResponse> {
+        return {
+            statusCode: HttpStatus.OK,
+            message: 'Get all orders success',
+            data: await this.orderService.findAll(),
+        };
+    }
 
     @Post()
     @UseGuards(AtJwtGuard)
@@ -149,6 +164,23 @@ export class OrderController {
             data: await this.orderService.updateStatus(
                 id,
                 userId,
+                updateOrderStatusDto,
+            ),
+        };
+    }
+
+    @Patch(':id/status/admin')
+    @UseGuards(AtJwtGuard)
+    @HttpCode(HttpStatus.OK)
+    async updateStatusByAdmin(
+        @Param('id') id: string,
+        @Body() updateOrderStatusDto: AdminUpdateOrderStatusDto,
+    ): Promise<SuccessResponse> {
+        return {
+            statusCode: HttpStatus.OK,
+            message: 'Update order status success',
+            data: await this.orderService.updateStatusByAdmin(
+                id,
                 updateOrderStatusDto,
             ),
         };

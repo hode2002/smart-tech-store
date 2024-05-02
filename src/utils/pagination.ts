@@ -5,7 +5,11 @@ export const pagination = (request: Request, countRecords: number) => {
         +request.query['limit'] <= countRecords
             ? +request.query['limit']
             : countRecords;
-    const totalPages = +(countRecords / PAGE_SIZE).toFixed();
+
+    const totalPages =
+        +(countRecords / PAGE_SIZE) > 1
+            ? +(countRecords / PAGE_SIZE).toFixed() + 1
+            : +(countRecords / PAGE_SIZE).toFixed();
     const page = +request.query['page'] || 1;
     const skip = (page - 1) * PAGE_SIZE || 0;
 

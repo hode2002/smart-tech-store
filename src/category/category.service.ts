@@ -120,4 +120,22 @@ export class CategoryService {
 
         return await this.update(id, { is_deleted: true });
     }
+
+    async restore(id: string) {
+        const isExist = await this.prismaService.category.findUnique({
+            where: { id, is_deleted: true },
+        });
+        if (!isExist) {
+            throw new NotFoundException('Category Not Found');
+        }
+
+        const isDeleted = await this.prismaService.category.update({
+            where: { id },
+            data: { is_deleted: false },
+        });
+
+        return {
+            is_success: isDeleted ? true : false,
+        };
+    }
 }

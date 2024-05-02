@@ -11,6 +11,58 @@ export class ReviewService {
         private readonly userService: UserService,
     ) {}
 
+    async getAllReviews() {
+        return await this.prismaService.review.findMany({
+            where: {
+                parent_id: null,
+            },
+            select: {
+                id: true,
+                user: {
+                    select: {
+                        id: true,
+                        name: true,
+                        email: true,
+                        avatar: true,
+                    },
+                },
+                product_option: {
+                    select: {
+                        id: true,
+                        sku: true,
+                        thumbnail: true,
+                        product: {
+                            select: {
+                                id: true,
+                                name: true,
+                            },
+                        },
+                    },
+                },
+                star: true,
+                comment: true,
+                _count: true,
+                children: {
+                    select: {
+                        id: true,
+                        user: {
+                            select: {
+                                id: true,
+                                name: true,
+                                email: true,
+                                avatar: true,
+                                role: true,
+                            },
+                        },
+                        comment: true,
+                        _count: true,
+                    },
+                },
+                created_at: true,
+            },
+        });
+    }
+
     async upsertReview(userId: string, createReviewDto: CreateReviewDto) {
         const user = await this.userService.findById(userId);
         if (!user) {

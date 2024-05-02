@@ -39,6 +39,18 @@ export class ProductController {
         };
     }
 
+    @Get(':id/management')
+    @HttpCode(HttpStatus.OK)
+    async findDetailManagement(
+        @Param('id') id: string,
+    ): Promise<SuccessResponse> {
+        return {
+            statusCode: HttpStatus.OK,
+            message: 'Get product success',
+            data: await this.productService.findDetailManagement(id),
+        };
+    }
+
     @Get('/management')
     @HttpCode(HttpStatus.OK)
     async findAllManagement(@Req() request: Request): Promise<SuccessResponse> {
@@ -96,6 +108,18 @@ export class ProductController {
             statusCode: HttpStatus.OK,
             message: 'Get products success',
             data: await this.productService.getByName(request),
+        };
+    }
+
+    @Get('option-value')
+    @Permission(Role.ADMIN)
+    @UseGuards(AtJwtGuard, RoleGuard)
+    @HttpCode(HttpStatus.OK)
+    async getOptionValue(): Promise<SuccessResponse> {
+        return {
+            statusCode: HttpStatus.OK,
+            message: 'Get product option value success',
+            data: await this.productService.getOptionValue(),
         };
     }
 
