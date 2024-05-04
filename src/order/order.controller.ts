@@ -44,6 +44,18 @@ export class OrderController {
         };
     }
 
+    @Get('/admin')
+    @Permission(Role.ADMIN)
+    @UseGuards(AtJwtGuard, RoleGuard)
+    @HttpCode(HttpStatus.OK)
+    async getAllByAdmin(): Promise<SuccessResponse> {
+        return {
+            statusCode: HttpStatus.OK,
+            message: 'Get all orders success',
+            data: await this.orderService.getAllByAdmin(),
+        };
+    }
+
     @Post()
     @UseGuards(AtJwtGuard)
     @HttpCode(HttpStatus.CREATED)
