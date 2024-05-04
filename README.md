@@ -1,4 +1,14 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+<p align="center">
+  <a href="http://nextjs.org/" target="blank"><img src="https://assets.vercel.com/image/upload/v1662130559/nextjs/Icon_dark_background.png" width="200" alt="Nest Logo" /></a>
+</p>
+
+<h1 align="center">
+  NextJS
+</h1>
+
+<p align="center">
+  This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`].
+</p>
 
 ## Getting Started
 
