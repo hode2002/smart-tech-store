@@ -37,14 +37,14 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import CategoryProductList from '@/app/(user)/(category)/cate-product-list';
 import { Brand, ProductType } from '@/lib/store/slices';
 import productApiRequest from '@/apiRequests/product';
-import { useAppSelector } from '@/lib/store';
-
+import brandApiRequest from '@/apiRequests/brand';
+import { BrandResponseType } from '@/schemaValidations/brand.schema';
 export default function LaptopPage() {
     const [isCLient, setIsClient] = useState(false);
     useEffect(() => setIsClient(true), []);
 
     const [products, setProducts] = useState<ProductType[]>([]);
-    const brands: Brand[] = useAppSelector((state) => state.brand.brands);
+    const [brands, setBrands] = useState<Brand[]>([]);
 
     useEffect(() => {
         productApiRequest
@@ -52,6 +52,9 @@ export default function LaptopPage() {
             .then((response: GetProductsResponseType) => {
                 setProducts(response.data);
             });
+        brandApiRequest
+            .getByCategoryName('laptop')
+            .then((res: BrandResponseType) => setBrands(res.data));
     }, []);
 
     const brandsFilter: Array<FilterFieldType> = useMemo(

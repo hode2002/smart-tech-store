@@ -6,6 +6,7 @@ export type UserProfile = {
     name?: string | '';
     avatar: string;
     phone?: string | '';
+    role?: string | '';
 };
 
 export type UserAddress = {

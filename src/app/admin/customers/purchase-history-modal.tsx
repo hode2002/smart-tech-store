@@ -57,16 +57,13 @@ export function PurchaseHistoryModal(props: Props) {
                 </Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-[425px] min-w-[1025px]">
-                {orders && orders?.length > 0 ? (
-                    orders?.map((order) => (
-                        <ScrollArea
-                            key={order.id}
-                            className="h-[700px] w-full p-3"
-                        >
-                            <DialogHeader>
-                                <DialogTitle>Lịch sử mua hàng</DialogTitle>
-                            </DialogHeader>
-                            <div className="grid gap-4 py-4">
+                <ScrollArea className="h-[700px] w-full p-3">
+                    <DialogHeader>
+                        <DialogTitle>Lịch sử mua hàng</DialogTitle>
+                    </DialogHeader>
+                    {orders && orders?.length > 0 ? (
+                        orders?.map((order) => (
+                            <div key={order.id} className="grid gap-4 py-4">
                                 <DropdownMenuSeparator />
                                 <div className="flex flex-col gap-4 ms-10">
                                     <Table>
@@ -177,19 +174,19 @@ export function PurchaseHistoryModal(props: Props) {
                                 </div>
                                 <DropdownMenuSeparator />
                             </div>
-                            <DialogFooter>
-                                <Button
-                                    variant={'outline'}
-                                    onClick={() => setOpen(false)}
-                                >
-                                    Quay lại
-                                </Button>
-                            </DialogFooter>
-                        </ScrollArea>
-                    ))
-                ) : (
-                    <p className="text-center">Không có đơn hàng</p>
-                )}
+                        ))
+                    ) : (
+                        <p className="text-center">Không có đơn hàng</p>
+                    )}
+                    <DialogFooter>
+                        <Button
+                            variant={'outline'}
+                            onClick={() => setOpen(false)}
+                        >
+                            Quay lại
+                        </Button>
+                    </DialogFooter>
+                </ScrollArea>
             </DialogContent>
         </Dialog>
     );

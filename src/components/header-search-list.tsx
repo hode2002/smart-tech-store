@@ -23,7 +23,8 @@ export default function HeaderSearchList(props: Props) {
 
     const handleClick = (searchItem: HistorySearchItem) => {
         router.push(
-            `/search/${searchItem.search_content.replaceAll(' ', '-').toLowerCase()}`,
+            // `/search/${searchItem.search_content.replaceAll(' ', '-').toLowerCase()}`,
+            `/search/${searchItem.search_content}`,
         );
     };
 
@@ -54,7 +55,7 @@ export default function HeaderSearchList(props: Props) {
                                 onClick={() => handleClick(searchItem)}
                                 className="truncate"
                             >
-                                {searchItem.search_content}
+                                {searchItem?.search_content}
                             </div>
                             <p
                                 onMouseDown={(e) => e.stopPropagation()}

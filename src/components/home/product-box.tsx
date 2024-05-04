@@ -20,7 +20,7 @@ export default function ProductBox(props: Props) {
 
             {option === 'today' ? (
                 <ProductList
-                    products={products.filter((product) =>
+                    products={products?.filter((product) =>
                         moment(product.created_at).isSame(
                             moment(new Date()),
                             'day',

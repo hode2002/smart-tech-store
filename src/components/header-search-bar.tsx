@@ -28,9 +28,12 @@ import { v4 as uuidv4 } from 'uuid';
 import { useEffect, useState } from 'react';
 import HeaderSearchList from '@/components/header-search-list';
 import { createFuseInstance } from '@/lib/fuse';
+import { useRouter } from 'next/navigation';
 
 export default function HeaderSearchBar() {
     const dispatch = useAppDispatch();
+    const router = useRouter();
+
     const token = useAppSelector((state) => state.auth.accessToken);
     const products = useAppSelector((state) => state.products.products);
     const fuse = createFuseInstance(products?.length > 0 ? products : []);
@@ -102,6 +105,8 @@ export default function HeaderSearchBar() {
         }
 
         form.reset();
+
+        router.push(`/search/${searchItem.search_content}`);
     };
 
     return (

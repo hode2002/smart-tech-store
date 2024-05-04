@@ -40,6 +40,7 @@ export const LoginResponse = z.object({
             name: z.string(),
             avatar: z.string().url(),
             phone: z.string(),
+            role: z.string().optional(),
         }),
         tokens: z.object({
             accessToken: z.string(),

@@ -54,7 +54,6 @@ export function LoginForm() {
         });
         setLoading(false);
         if (response.statusCode === 200) {
-            router.push('/');
             const {
                 tokens: { accessToken, refreshToken },
                 profile,
@@ -62,6 +61,11 @@ export function LoginForm() {
             dispatch(setAccessToken(accessToken));
             dispatch(setRefreshToken(refreshToken));
             dispatch(setProfile(profile));
+            if (profile.role === 'ADMIN') {
+                router.push('/admin/dashboard');
+            } else {
+                router.push('/');
+            }
         }
     };
 

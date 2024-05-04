@@ -220,7 +220,7 @@ export default function Order() {
                         <OrderTable
                             status={status}
                             orders={filterOrders.filter((order) =>
-                                moment(order.estimate_date).isSame(
+                                moment(order.order_date).isSame(
                                     moment(new Date()),
                                     'week',
                                 ),
@@ -236,7 +236,7 @@ export default function Order() {
                         <OrderTable
                             status={status}
                             orders={filterOrders.filter((order) =>
-                                moment(order.estimate_date).isSame(
+                                moment(order.order_date).isSame(
                                     moment(new Date()),
                                     'month',
                                 ),
@@ -252,7 +252,7 @@ export default function Order() {
                         <OrderTable
                             status={status}
                             orders={filterOrders.filter((order) =>
-                                moment(order.estimate_date).isSame(
+                                moment(order.order_date).isSame(
                                     moment(new Date()),
                                     'year',
                                 ),

@@ -14,7 +14,6 @@ import {
     TooltipTrigger,
 } from '@/components/ui/tooltip';
 import Link from 'next/link';
-import { LineChart } from 'recharts';
 import {
     BadgeDollarSign,
     Home,
@@ -113,7 +112,14 @@ export default function Dashboard() {
     const totalRevenue = useMemo(() => {
         let total = 0;
         orders
-            .filter((item) => item.status === 2)
+            .filter(
+                (item) =>
+                    item.status === 2 &&
+                    moment(item.estimate_date).isSame(
+                        moment(new Date()),
+                        'month',
+                    ),
+            )
             .map((order) => (total += order.total_amount));
         return total;
     }, [orders]);
@@ -222,7 +228,8 @@ export default function Dashboard() {
                                 Icon={BadgeDollarSign}
                                 title="Tổng doanh thu"
                                 subtitle={formatPrice(totalRevenue)}
-                                description="+10%"
+                                // description="+10%"
+                                description=""
                             />
                             <DashboardStatisticCard
                                 Icon={Users}
@@ -234,7 +241,7 @@ export default function Dashboard() {
                                 Icon={ShoppingCart}
                                 title="Số đơn hàng"
                                 subtitle={`${orders.length}`}
-                                description={`+${orders.filter((order) => moment(order.order_date).isSame(moment(new Date()), 'month')).length} so với tháng trước`}
+                                description={`+${orders.filter((order) => moment(order.estimate_date).isSame(moment(new Date()), 'month')).length} so với tháng trước`}
                             />
                             <DashboardStatisticCard
                                 Icon={Smartphone}
@@ -258,7 +265,16 @@ export default function Dashboard() {
                                     <CardDescription>
                                         Đã bán được{' '}
                                         <span className="font-bold">
-                                            {orders.length}
+                                            {
+                                                orders?.filter((order) =>
+                                                    moment(
+                                                        order.estimate_date,
+                                                    ).isSame(
+                                                        moment(new Date()),
+                                                        'month',
+                                                    ),
+                                                ).length
+                                            }
                                         </span>{' '}
                                         đơn hàng trong tháng này
                                     </CardDescription>

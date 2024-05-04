@@ -1,13 +1,12 @@
 'use client';
 
 import Link from 'next/link';
-import { Avatar } from '@radix-ui/react-avatar';
 import { usePathname, useRouter } from 'next/navigation';
-import Image from 'next/image';
 import { useAppSelector } from '@/lib/store';
 import { useEffect, useState } from 'react';
 import { toast } from '@/components/ui/use-toast';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 export default function CategoryLayout({
     children,
@@ -43,16 +42,16 @@ export default function CategoryLayout({
                             {isCLient ? (
                                 <div className="flex items-center gap-2 py-2 pr-4 pl-3 text-gray-700 text-[14px] md:text-[16px] hover:bg-gray-50 lg:hover:bg-transparent lg:hover:text-primary-700 lg:p-0 dark:text-gray-400 lg:dark:hover:text-white dark:hover:bg-gray-700 dark:hover:text-white lg:dark:hover:bg-transparent dark:border-gray-700">
                                     <Avatar>
-                                        <Image
-                                            className="w-[50px] h-[50px] rounded-[50%]"
+                                        <AvatarImage
                                             width={50}
                                             height={50}
                                             src={profile?.avatar}
-                                            alt="Avatar"
                                         />
+                                        <AvatarFallback>avatar</AvatarFallback>
                                     </Avatar>
-
-                                    <p className="font-bold">{profile.email}</p>
+                                    <p className="font-bold truncate w-[50%]">
+                                        {profile.email}
+                                    </p>
                                 </div>
                             ) : (
                                 <div className="flex items-center space-x-4">

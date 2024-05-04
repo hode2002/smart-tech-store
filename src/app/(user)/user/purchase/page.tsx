@@ -62,7 +62,7 @@ export default function PurchasePage() {
             case 1:
                 return 'Đơn hàng đang trên đường giao';
             case 2:
-                return 'Đơn hàng đã đưuọc giao thành công';
+                return 'Đơn hàng đã được giao thành công';
             case 3:
                 return 'Đơn hàng đã bị hủy';
         }
@@ -194,14 +194,14 @@ export default function PurchasePage() {
                                     <p className="font-semibold">
                                         {convertStatus(order.status)}
                                     </p>
-                                    {order.status === 2 && (
+                                    {/* {order.status === 2 && (
                                         <Button
                                             variant={'link'}
                                             className="underline text-popover-foreground "
                                         >
                                             Đánh giá
                                         </Button>
-                                    )}
+                                    )} */}
                                 </div>
                             </CardHeader>
                             {order?.order_details &&
@@ -211,7 +211,9 @@ export default function PurchasePage() {
                                             key={orderDetail.id}
                                             className="px-6 pt-6 border-b transition-colors hover:bg-accent hover:text-accent-foreground "
                                         >
-                                            <Link href={'#'}>
+                                            <Link
+                                                href={`/${orderDetail.product.category.slug}/${orderDetail.product.slug}`}
+                                            >
                                                 <div className="flex justify-between items-center">
                                                     <div className="flex gap-3 items-center">
                                                         <Image
@@ -299,23 +301,21 @@ export default function PurchasePage() {
                                             Tổng thanh toán:
                                         </p>
                                         <p className="font-bold">
-                                            {formatPrice(
-                                                order.total_amount + order.fee,
-                                            )}
+                                            {formatPrice(order.total_amount)}
                                         </p>
                                     </div>
                                 </div>
                                 <div className="text-right w-full pt-6">
                                     {(order.status === 0 ||
                                         order.status === 5) && (
-                                        <Button
-                                            onClick={() =>
-                                                handleCancelOrder(order.id)
-                                            }
-                                        >
-                                            Hủy
-                                        </Button>
-                                    )}
+                                            <Button
+                                                onClick={() =>
+                                                    handleCancelOrder(order.id)
+                                                }
+                                            >
+                                                Hủy
+                                            </Button>
+                                        )}
                                     {order.status === 1 && (
                                         <Button
                                             onClick={() =>
@@ -330,14 +330,14 @@ export default function PurchasePage() {
                                     )}
                                     {(order.status === 2 ||
                                         order.status === 3) && (
-                                        <Button
-                                            onClick={() =>
-                                                handleRepurchase(order)
-                                            }
-                                        >
-                                            Mua lại
-                                        </Button>
-                                    )}
+                                            <Button
+                                                onClick={() =>
+                                                    handleRepurchase(order)
+                                                }
+                                            >
+                                                Mua lại
+                                            </Button>
+                                        )}
                                 </div>
                             </CardFooter>
                         </Card>

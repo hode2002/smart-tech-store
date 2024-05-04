@@ -1,4 +1,5 @@
 'use client';
+
 import { ModeToggle } from '@/components/mode-toggle';
 import SideBar from './side-bar';
 import { useState } from 'react';
@@ -28,15 +29,16 @@ import Image from 'next/image';
 
 import { Avatar } from '@/components/ui/avatar';
 import { setDeliveryList } from '@/lib/store/slices/delivery-slice';
+import { useCookies } from 'next-client-cookies';
 
 export default function HeaderUserAccount() {
     const router = useRouter();
     const dispatch = useAppDispatch();
+    const cookies = useCookies();
 
     const token = useAppSelector((state) => state.auth.accessToken);
     const profile = useAppSelector((state) => state.user.profile);
     const [loading, setLoading] = useState(false);
-
     const handleLogout = async () => {
         if (loading) return;
         setLoading(true);
@@ -48,6 +50,12 @@ export default function HeaderUserAccount() {
             dispatch(setDeliveryList([]));
             dispatch(setCategories([]));
             dispatch(setBrands([]));
+            const atToken = cookies.get('accessToken');
+            const rfToken = cookies.get('refreshToken');
+            if (atToken || rfToken) {
+                cookies.remove('accessToken');
+                cookies.remove('refreshToken');
+            }
             return router.push('/login');
         }
     };
@@ -81,20 +89,22 @@ export default function HeaderUserAccount() {
                             </NavigationMenuTrigger>
                             <NavigationMenuContent>
                                 <div className="left-0 p-4">
-                                    <div>
-                                        <NavigationMenuLink asChild>
-                                            <Link href={'/admin/dashboard'}>
-                                                <Button
-                                                    className="w-full"
-                                                    variant={'ghost'}
-                                                >
-                                                    <span className="text-popover-foreground">
-                                                        Admin Dashboard
-                                                    </span>
-                                                </Button>
-                                            </Link>
-                                        </NavigationMenuLink>
-                                    </div>
+                                    {profile && profile?.role === 'ADMIN' && (
+                                        <div>
+                                            <NavigationMenuLink asChild>
+                                                <Link href={'/admin/dashboard'}>
+                                                    <Button
+                                                        className="w-full"
+                                                        variant={'ghost'}
+                                                    >
+                                                        <span className="text-popover-foreground">
+                                                            Admin Dashboard
+                                                        </span>
+                                                    </Button>
+                                                </Link>
+                                            </NavigationMenuLink>
+                                        </div>
+                                    )}
                                     <div>
                                         <NavigationMenuLink asChild>
                                             <Button

@@ -48,6 +48,7 @@ export const UpdateProfileResponse = z
             name: z.string(),
             avatar: z.string().url(),
             phone: z.string(),
+            role: z.string().optional(),
         }),
     })
     .strict();

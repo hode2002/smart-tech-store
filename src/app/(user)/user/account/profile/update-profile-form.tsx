@@ -33,8 +33,8 @@ export default function UpdateProfileForm() {
     const form = useForm<UpdateProfileType>({
         resolver: zodResolver(UpdateProfile),
         defaultValues: {
-            name: profile.name ?? '',
-            phone: profile.phone ?? '',
+            name: profile?.name ?? '',
+            phone: profile?.phone ?? '',
         },
     });
 
@@ -64,7 +64,7 @@ export default function UpdateProfileForm() {
                     <Input
                         id="email"
                         type="text"
-                        value={'54dhvd@gmail.com'}
+                        defaultValue={profile?.email}
                         readOnly={true}
                     />
                 </div>

@@ -46,12 +46,12 @@ export default function SearchPage({
                         <BreadcrumbItem>
                             <p>Tìm kiếm</p>
                         </BreadcrumbItem>
-                        <BreadcrumbSeparator />
+                        {/* <BreadcrumbSeparator />
                         <BreadcrumbItem>
                             <BreadcrumbPage className="capitalize">
                                 {params.keyword}
                             </BreadcrumbPage>
-                        </BreadcrumbItem>
+                        </BreadcrumbItem> */}
                     </BreadcrumbList>
                 </Breadcrumb>
                 <div className="my-8 flex">
@@ -59,9 +59,10 @@ export default function SearchPage({
                         <div className="w-full py-3">
                             <div className="flex gap-2 items-center">
                                 <p className="font-bold text-[20px] pb-2">
-                                    Tìm thấy {products.length} kết quả với từ
+                                    Tìm thấy {products.length} kết quả
+                                    {/* với từ
                                     khóa{' '}
-                                    {`"${params.keyword.replaceAll('-', ' ')}"`}
+                                    {`"${params.keyword.replaceAll('-', ' ')}"`} */}
                                 </p>
                             </div>
                         </div>

@@ -276,7 +276,7 @@ class AdminApiRequest {
     async getAllOrders(token: string) {
         try {
             const response: GetOrderStatusResponseType = await http.get(
-                '/orders',
+                '/orders/admin',
                 {
                     headers: {
                         Authorization: 'Bearer ' + token,

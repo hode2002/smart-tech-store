@@ -179,6 +179,7 @@ export default function CheckoutPage() {
                                             </Button>
                                         ))}
                                 </div>
+                                <div>Ngày giao hàng dự kiến: { }</div>
                             </div>
 
                             <div className="border-b px-4 py-6 gap-4">

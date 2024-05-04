@@ -16,7 +16,10 @@ export function Overview(props: Props) {
     const getTotalByMonth = (month: number) => {
         let total = 0;
         orders.map((order) => {
-            if (moment(order.order_date).month() === month) {
+            if (
+                moment(order.estimate_date).month() === month &&
+                order.status === 2
+            ) {
                 total += order.total_amount + order.fee;
             }
         });
@@ -25,14 +28,13 @@ export function Overview(props: Props) {
 
     const getData = (): ChartColumn[] => {
         const data: ChartColumn[] = Array.from({
-            length: moment(new Date()).month(),
+            length: moment(new Date()).month() + 1,
         }).map((_, month) => {
             return {
                 name: 'T' + (month + 1),
-                total: getTotalByMonth(month + 1),
+                total: getTotalByMonth(month),
             };
         });
-
         return data;
     };
 
