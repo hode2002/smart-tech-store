@@ -499,6 +499,121 @@ export class OrderService {
         return orders.map((order) => this.convertOrderResponse(order));
     }
 
+    async getAllByAdmin(): Promise<OrderResponse[]> {
+        const orders = (await this.prismaService.order.findMany({
+            select: {
+                id: true,
+                name: true,
+                phone: true,
+                note: true,
+                order_date: true,
+                status: true,
+                total_amount: true,
+                User: {
+                    select: {
+                        email: true,
+                        avatar: true,
+                    },
+                },
+                shipping: {
+                    select: {
+                        id: true,
+                        address: true,
+                        province: true,
+                        district: true,
+                        ward: true,
+                        hamlet: true,
+                        fee: true,
+                        estimate_date: true,
+                        tracking_number: true,
+                        delivery: {
+                            select: {
+                                name: true,
+                                slug: true,
+                            },
+                        },
+                    },
+                },
+                payment: {
+                    select: {
+                        id: true,
+                        payment_method: true,
+                        total_price: true,
+                        transaction_id: true,
+                    },
+                },
+                order_details: {
+                    select: {
+                        id: true,
+                        product_option: {
+                            select: {
+                                id: true,
+                                sku: true,
+                                product: {
+                                    select: {
+                                        id: true,
+                                        name: true,
+                                        brand: {
+                                            select: {
+                                                id: true,
+                                                name: true,
+                                                slug: true,
+                                                logo_url: true,
+                                            },
+                                        },
+                                        category: {
+                                            select: {
+                                                id: true,
+                                                name: true,
+                                                slug: true,
+                                            },
+                                        },
+                                        descriptions: {
+                                            select: {
+                                                id: true,
+                                                content: true,
+                                            },
+                                        },
+                                        label: true,
+                                        price: true,
+                                        promotions: true,
+                                        warranties: true,
+                                    },
+                                },
+                                thumbnail: true,
+                                product_option_value: {
+                                    select: {
+                                        option: {
+                                            select: {
+                                                name: true,
+                                            },
+                                        },
+                                        value: true,
+                                        adjust_price: true,
+                                    },
+                                },
+                                technical_specs: {
+                                    select: {
+                                        weight: true,
+                                    },
+                                },
+                                label_image: true,
+                                price_modifier: true,
+                                discount: true,
+                                slug: true,
+                            },
+                        },
+                        price: true,
+                        quantity: true,
+                        subtotal: true,
+                    },
+                },
+            },
+        })) as OrderDBResponse[];
+
+        return orders.map((order) => this.convertOrderResponse(order, true));
+    }
+
     async findByStatus(
         userId: string,
         status: number,
@@ -644,7 +759,15 @@ export class OrderService {
 
         const isUpdated = await this.prismaService.payment.update({
             where: { id },
-            data: { transaction_id },
+            data: {
+                transaction_id,
+                order: {
+                    update: {
+                        total_amount: 0,
+                        shipping: { update: { fee: 0 } },
+                    },
+                },
+            },
         });
 
         return {
@@ -667,6 +790,9 @@ export class OrderService {
                 id,
                 status: { notIn: [OrderStatus.CANCEL, OrderStatus.RECEIVED] },
             },
+            select: {
+                shipping: true,
+            },
         });
         if (!order) {
             throw new NotFoundException('Order not found');
@@ -676,6 +802,10 @@ export class OrderService {
             where: { id },
             data: { status: updateOrderStatusDto.status },
         });
+
+        if (updateOrderStatusDto.status === OrderStatus.RECEIVED) {
+            await this.cancelGHTKOrder(order.shipping.order_label);
+        }
 
         return {
             is_success: isUpdated ? true : false,
@@ -688,6 +818,9 @@ export class OrderService {
     ) {
         const order = await this.prismaService.order.findUnique({
             where: { id },
+            select: {
+                shipping: true,
+            },
         });
         if (!order) {
             throw new NotFoundException('Order not found');
@@ -697,6 +830,10 @@ export class OrderService {
             where: { id },
             data: { status: updateOrderStatusDto.status },
         });
+
+        if (updateOrderStatusDto.status === OrderStatus.RECEIVED) {
+            await this.cancelGHTKOrder(order.shipping.order_label);
+        }
 
         return {
             is_success: isUpdated ? true : false,
@@ -918,7 +1055,10 @@ export class OrderService {
         return response.data;
     }
 
-    private convertOrderResponse(order: OrderDBResponse): OrderResponse {
+    private convertOrderResponse(
+        order: OrderDBResponse,
+        isAdmin: boolean = false,
+    ): OrderResponse {
         return {
             id: order.id,
             email: order.User.email,
@@ -928,7 +1068,12 @@ export class OrderService {
             note: order.note,
             order_date: order.order_date,
             status: order.status,
-            total_amount: order.total_amount,
+            total_amount:
+                order.total_amount === 0 &&
+                order.shipping.tracking_number &&
+                isAdmin
+                    ? order.payment.total_price
+                    : order.total_amount,
             address: order.shipping.address,
             province: order.shipping.province,
             district: order.shipping.district,

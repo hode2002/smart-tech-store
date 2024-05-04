@@ -68,18 +68,8 @@ export class AuthService {
             throw new InternalServerErrorException('Internal Server Error');
         }
 
-        // return {
-        //     profile: {
-        //         email: user.email,
-        //         name: user.name,
-        //         avatar: user.avatar,
-        //         phone: user.phone,
-        //     },
-        //     tokens,
-        // };
-
         res.cookie('accessToken', tokens.accessToken, {
-            // path: '/',
+            // path: '/',0
             // httpOnly: true,
             // sameSite: 'strict',
             // secure: false,
@@ -253,6 +243,7 @@ export class AuthService {
                 name: user.name,
                 avatar: user.avatar,
                 phone: user.phone,
+                role: user.role,
             },
             tokens,
         };

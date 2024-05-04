@@ -1651,14 +1651,14 @@ export class ProductService {
                 OR: [
                     {
                         name: {
-                            contains: <string>request.query['name'],
+                            contains: <string>request.query['keyword'],
                         },
                     },
                     {
                         product_options: {
                             some: {
                                 slug: {
-                                    contains: <string>request.query['name'],
+                                    contains: <string>request.query['keyword'],
                                 },
                             },
                         },

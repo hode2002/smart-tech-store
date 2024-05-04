@@ -152,6 +152,7 @@ export class UserService {
                 name: true,
                 avatar: true,
                 phone: true,
+                role: true,
             },
         });
     }
