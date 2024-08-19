@@ -38,7 +38,8 @@ export default function HeaderSearchBar() {
     const products = useAppSelector((state) => state.products.products);
     const fuse = createFuseInstance(products?.length > 0 ? products : []);
 
-    const historySearch = useAppSelector((state) => state.user.historySearch);
+    const historySearch =
+        useAppSelector((state) => state.user.historySearch) ?? [];
     const localSearch = useAppSelector((state) => state.user.localSearch);
     const [isOpen, setIsOpen] = useState<boolean>(false);
     const [searchPattern, setSearchPattern] = useState<string>('');

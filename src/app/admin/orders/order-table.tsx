@@ -112,10 +112,11 @@ const OrderTable = (props: Props) => {
                                 return (
                                     <TableRow
                                         key={order.id}
-                                        className={`cursor-pointer ${order.id === selectedOrder?.id
+                                        className={`cursor-pointer ${
+                                            order.id === selectedOrder?.id
                                                 ? 'bg-accent'
                                                 : ''
-                                            }`}
+                                        }`}
                                         onClick={() =>
                                             setSelectedOrder(
                                                 order.id === selectedOrder?.id

@@ -17,7 +17,6 @@ import { useState } from 'react';
 import accountApiRequest from '@/apiRequests/account';
 import {
     ChangePassword,
-    ChangePasswordResponseType,
     ChangePasswordType,
 } from '@/schemaValidations/account.schema';
 import { PasswordInput } from '@/components/ui/password-input';
@@ -43,10 +42,9 @@ export default function PasswordPage() {
     const onSubmit = async (values: ChangePasswordType) => {
         if (loading) return;
         setLoading(true);
-        const response: ChangePasswordResponseType =
-            await accountApiRequest.changePassword(token, values);
+        const response = await accountApiRequest.changePassword(token, values);
         setLoading(false);
-        if (response.statusCode === 200) {
+        if (response?.statusCode === 200) {
             setOldPass('');
             setNewPass('');
             setConfirmNewPass('');

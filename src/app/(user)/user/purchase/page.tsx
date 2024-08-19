@@ -308,14 +308,14 @@ export default function PurchasePage() {
                                 <div className="text-right w-full pt-6">
                                     {(order.status === 0 ||
                                         order.status === 5) && (
-                                            <Button
-                                                onClick={() =>
-                                                    handleCancelOrder(order.id)
-                                                }
-                                            >
-                                                Hủy
-                                            </Button>
-                                        )}
+                                        <Button
+                                            onClick={() =>
+                                                handleCancelOrder(order.id)
+                                            }
+                                        >
+                                            Hủy
+                                        </Button>
+                                    )}
                                     {order.status === 1 && (
                                         <Button
                                             onClick={() =>
@@ -330,14 +330,14 @@ export default function PurchasePage() {
                                     )}
                                     {(order.status === 2 ||
                                         order.status === 3) && (
-                                            <Button
-                                                onClick={() =>
-                                                    handleRepurchase(order)
-                                                }
-                                            >
-                                                Mua lại
-                                            </Button>
-                                        )}
+                                        <Button
+                                            onClick={() =>
+                                                handleRepurchase(order)
+                                            }
+                                        >
+                                            Mua lại
+                                        </Button>
+                                    )}
                                 </div>
                             </CardFooter>
                         </Card>

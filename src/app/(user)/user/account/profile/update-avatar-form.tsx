@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { useAppDispatch, useAppSelector } from '@/lib/store';
 import { UpdateAvatarResponseType } from '@/schemaValidations/account.schema';
 import { ReloadIcon } from '@radix-ui/react-icons';
-import { ChangeEvent, useRef, useState } from 'react';
+import { ChangeEvent, useEffect, useRef, useState } from 'react';
 import accountApiRequest from '@/apiRequests/account';
 import { setProfile } from '@/lib/store/slices';
 import { Button } from '@/components/ui/button';
@@ -19,6 +19,9 @@ export default function UpdateAvatarForm() {
     const [loading, setLoading] = useState(false);
     const [file, setFile] = useState<File | null>(null);
     const inputRef = useRef<HTMLInputElement | null>(null);
+
+    const [isCLient, setIsClient] = useState(false);
+    useEffect(() => setIsClient(true), []);
 
     const handleSubmit = async ({ avatar }: { avatar: File }) => {
         if (loading) return;
@@ -53,17 +56,19 @@ export default function UpdateAvatarForm() {
                 <div className="flex justify-center">
                     <Label htmlFor="avatar">
                         <Avatar>
-                            <Image
-                                className="w-[150px] h-[150px] rounded-[50%]"
-                                width={150}
-                                height={150}
-                                src={
-                                    file
-                                        ? URL.createObjectURL(file)
-                                        : profile.avatar
-                                }
-                                alt="Avatar"
-                            />
+                            {isCLient && (
+                                <Image
+                                    className="w-[150px] h-[150px] rounded-[50%]"
+                                    width={150}
+                                    height={150}
+                                    src={
+                                        file
+                                            ? URL.createObjectURL(file)
+                                            : profile.avatar
+                                    }
+                                    alt="Avatar"
+                                />
+                            )}
                         </Avatar>
                     </Label>
                 </div>

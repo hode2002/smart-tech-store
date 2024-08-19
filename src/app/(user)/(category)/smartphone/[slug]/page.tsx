@@ -318,90 +318,90 @@ export default function SmartphoneDetailPage({ params }: Props) {
                                 <p className="text-[#E83A45] font-bold text-[32px]">
                                     {formatPrice(
                                         productInfo.price -
-                                        (productInfo.price *
+                                            (productInfo.price *
+                                                productInfo.product_options[
+                                                    selectedOption
+                                                ].discount) /
+                                                100 +
                                             productInfo.product_options[
                                                 selectedOption
-                                            ].discount) /
-                                        100 +
-                                        productInfo.product_options[
-                                            selectedOption
-                                        ].price_modifier,
+                                            ].price_modifier,
                                     )}
                                 </p>
 
                                 <p className="opacity-80 text-[20px]">
                                     {productInfo.product_options[selectedOption]
                                         .discount !== 0 && (
-                                            <>
-                                                <span className="line-through ">
-                                                    {formatPrice(
-                                                        productInfo.price +
+                                        <>
+                                            <span className="line-through ">
+                                                {formatPrice(
+                                                    productInfo.price +
                                                         productInfo
                                                             .product_options[
                                                             selectedOption
                                                         ].price_modifier,
-                                                    )}
-                                                </span>
-                                                <span className="ml-2">
-                                                    -
-                                                    {
-                                                        productInfo.product_options[
-                                                            selectedOption
-                                                        ].discount
-                                                    }
-                                                    %
-                                                </span>
-                                            </>
-                                        )}
+                                                )}
+                                            </span>
+                                            <span className="ml-2">
+                                                -
+                                                {
+                                                    productInfo.product_options[
+                                                        selectedOption
+                                                    ].discount
+                                                }
+                                                %
+                                            </span>
+                                        </>
+                                    )}
                                 </p>
                             </div>
 
                             {productInfo?.product_options?.[0]?.options
                                 ?.length > 0 && (
-                                    <div className="w-full">
-                                        <div className="flex gap-2 items-center my-4">
-                                            <div className="flex gap-2 flex-wrap">
-                                                {productInfo?.product_options?.map(
-                                                    (productOption, index) => (
-                                                        <Link
-                                                            key={index}
-                                                            href={
-                                                                productOption.slug
+                                <div className="w-full">
+                                    <div className="flex gap-2 items-center my-4">
+                                        <div className="flex gap-2 flex-wrap">
+                                            {productInfo?.product_options?.map(
+                                                (productOption, index) => (
+                                                    <Link
+                                                        key={index}
+                                                        href={
+                                                            productOption.slug
+                                                        }
+                                                    >
+                                                        <Button
+                                                            className="capitalize"
+                                                            variant={
+                                                                index ===
+                                                                selectedOption
+                                                                    ? 'default'
+                                                                    : 'outline'
                                                             }
                                                         >
-                                                            <Button
-                                                                className="capitalize"
-                                                                variant={
-                                                                    index ===
-                                                                        selectedOption
-                                                                        ? 'default'
-                                                                        : 'outline'
-                                                                }
-                                                            >
-                                                                {productOption.options.map(
-                                                                    (el, elIdx) => {
-                                                                        return (
-                                                                            <span
-                                                                                className="capitalize mx-1 min-w-[80px]"
-                                                                                key={
-                                                                                    elIdx
-                                                                                }
-                                                                            >
-                                                                                {
-                                                                                    el.value
-                                                                                }
-                                                                            </span>
-                                                                        );
-                                                                    },
-                                                                )}
-                                                            </Button>
-                                                        </Link>
-                                                    ),
-                                                )}
-                                            </div>
+                                                            {productOption.options.map(
+                                                                (el, elIdx) => {
+                                                                    return (
+                                                                        <span
+                                                                            className="capitalize mx-1 min-w-[80px]"
+                                                                            key={
+                                                                                elIdx
+                                                                            }
+                                                                        >
+                                                                            {
+                                                                                el.value
+                                                                            }
+                                                                        </span>
+                                                                    );
+                                                                },
+                                                            )}
+                                                        </Button>
+                                                    </Link>
+                                                ),
+                                            )}
                                         </div>
                                     </div>
-                                )}
+                                </div>
+                            )}
                         </div>
 
                         <div>
@@ -528,7 +528,7 @@ export default function SmartphoneDetailPage({ params }: Props) {
                                                                 <span>
                                                                     {Number(
                                                                         star /
-                                                                        rating.total_reviews,
+                                                                            rating.total_reviews,
                                                                     ) * 100}
                                                                 </span>
                                                                 <span>%</span>
@@ -651,46 +651,46 @@ export default function SmartphoneDetailPage({ params }: Props) {
 
                                                             {review.user
                                                                 .email ===
-                                                                userProfile.email
+                                                            userProfile.email
                                                                 ? !editMode && (
-                                                                    <>
-                                                                        <PencilIcon
-                                                                            className="cursor-pointer"
-                                                                            onClick={() => {
-                                                                                setComment(
-                                                                                    review.comment,
-                                                                                );
-                                                                                setEditMode(
-                                                                                    !editMode,
-                                                                                );
-                                                                            }}
-                                                                            color="#000000"
-                                                                        />
-                                                                        <Trash
-                                                                            className="cursor-pointer"
-                                                                            onClick={() => {
-                                                                                handleDeleteReview(
-                                                                                    review.id,
-                                                                                );
-                                                                            }}
-                                                                            color="#000000"
-                                                                        />
-                                                                    </>
-                                                                )
+                                                                      <>
+                                                                          <PencilIcon
+                                                                              className="cursor-pointer"
+                                                                              onClick={() => {
+                                                                                  setComment(
+                                                                                      review.comment,
+                                                                                  );
+                                                                                  setEditMode(
+                                                                                      !editMode,
+                                                                                  );
+                                                                              }}
+                                                                              color="#000000"
+                                                                          />
+                                                                          <Trash
+                                                                              className="cursor-pointer"
+                                                                              onClick={() => {
+                                                                                  handleDeleteReview(
+                                                                                      review.id,
+                                                                                  );
+                                                                              }}
+                                                                              color="#000000"
+                                                                          />
+                                                                      </>
+                                                                  )
                                                                 : token && (
-                                                                    <MessageSquareQuote
-                                                                        className="cursor-pointer"
-                                                                        onClick={() => {
-                                                                            setReplyReview(
-                                                                                review,
-                                                                            );
-                                                                            setReplyMode(
-                                                                                !replyMode,
-                                                                            );
-                                                                        }}
-                                                                        color="#000000"
-                                                                    />
-                                                                )}
+                                                                      <MessageSquareQuote
+                                                                          className="cursor-pointer"
+                                                                          onClick={() => {
+                                                                              setReplyReview(
+                                                                                  review,
+                                                                              );
+                                                                              setReplyMode(
+                                                                                  !replyMode,
+                                                                              );
+                                                                          }}
+                                                                          color="#000000"
+                                                                      />
+                                                                  )}
                                                         </div>
 
                                                         {review?.children &&
