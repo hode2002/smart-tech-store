@@ -165,9 +165,7 @@ export class OrderService {
             );
 
             if (!GHTKOrder?.success) {
-                throw new UnprocessableEntityException(
-                    `Cannot create GHTK order`,
-                );
+                throw new UnprocessableEntityException(GHTKOrder.message);
             }
 
             const payment = prisma.payment.create({
@@ -611,7 +609,7 @@ export class OrderService {
             },
         })) as OrderDBResponse[];
 
-        return orders.map((order) => this.convertOrderResponse(order, true));
+        return orders.map((order) => this.convertOrderResponse(order));
     }
 
     async findByStatus(
@@ -759,15 +757,7 @@ export class OrderService {
 
         const isUpdated = await this.prismaService.payment.update({
             where: { id },
-            data: {
-                transaction_id,
-                order: {
-                    update: {
-                        total_amount: 0,
-                        shipping: { update: { fee: 0 } },
-                    },
-                },
-            },
+            data: { transaction_id },
         });
 
         return {
@@ -1055,10 +1045,7 @@ export class OrderService {
         return response.data;
     }
 
-    private convertOrderResponse(
-        order: OrderDBResponse,
-        isAdmin: boolean = false,
-    ): OrderResponse {
+    private convertOrderResponse(order: OrderDBResponse): OrderResponse {
         return {
             id: order.id,
             email: order.User.email,
@@ -1068,12 +1055,7 @@ export class OrderService {
             note: order.note,
             order_date: order.order_date,
             status: order.status,
-            total_amount:
-                order.total_amount === 0 &&
-                order.shipping.tracking_number &&
-                isAdmin
-                    ? order.payment.total_price
-                    : order.total_amount,
+            total_amount: order.total_amount,
             address: order.shipping.address,
             province: order.shipping.province,
             district: order.shipping.district,
