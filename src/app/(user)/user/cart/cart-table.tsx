@@ -302,9 +302,11 @@ export default function CartTable() {
                             {formatPrice(priceModifier)}
                         </div>
                         {selectedOption.discount !== 0 && (
-                            <div className="text-center line-through font-medium">
-                                {formatPrice(unitPrice)} -{' '}
-                                {selectedOption.discount} %
+                            <div className="text-center font-medium">
+                                <span className="line-through">
+                                    {formatPrice(unitPrice)}
+                                </span>
+                                <span> - {selectedOption.discount} %</span>
                             </div>
                         )}
                     </>
@@ -581,10 +583,10 @@ export default function CartTable() {
                                                 {header.isPlaceholder
                                                     ? null
                                                     : flexRender(
-                                                          header.column
-                                                              .columnDef.header,
-                                                          header.getContext(),
-                                                      )}
+                                                        header.column
+                                                            .columnDef.header,
+                                                        header.getContext(),
+                                                    )}
                                             </TableHead>
                                         );
                                     })}

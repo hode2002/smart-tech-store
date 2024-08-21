@@ -47,17 +47,17 @@ const OrderDetailInfo = (props: Props) => {
                                 <span className="sr-only">Copy Order ID</span>
                             </Button>
                         </CardTitle>
-                        <CardDescription>
-                            <div>
+                        <CardDescription className="flex flex-col">
+                            <span>
                                 Ngày đặt:{' '}
                                 {moment(order?.order_date).format('DD-MM-YYYY')}
-                            </div>
-                            <div>
+                            </span>
+                            <span>
                                 Ngày giao dự kiến:{' '}
                                 {moment(order?.estimate_date).format(
                                     'DD-MM-YYYY',
                                 )}
-                            </div>
+                            </span>
                         </CardDescription>
                     </div>
                     <div className="ml-auto flex items-center gap-1">
@@ -206,9 +206,10 @@ const OrderDetailInfo = (props: Props) => {
                         <div className="grid gap-3">
                             <div className="flex items-center justify-between">
                                 {order.payment_method === 'cod' ? (
-                                    <dt className="flex items-center gap-1 text-muted-foreground">
-                                        {order.payment_method}
-                                    </dt>
+                                    <p className="flex items-center gap-1 text-muted-foreground">
+                                        Cash on delivery
+                                        <span>({order.payment_method})</span>
+                                    </p>
                                 ) : (
                                     <>
                                         <dt className="flex items-center gap-1 text-muted-foreground uppercase">

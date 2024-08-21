@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -139,6 +139,14 @@ export default function PurchasePage() {
         dispatch(setProductCheckout(productsCheckout));
         router.push('/user/checkout');
     };
+
+    const orderPaymentSuccessful = useCallback((order: OrderResponseType) => {
+        return order.payment_method === 'cod'
+            ? formatPrice(order.total_amount)
+            : order.transaction_id && order.status === 2
+                ? formatPrice(order.total_amount)
+                : formatPrice(0);
+    }, []);
 
     return (
         <div>
@@ -301,21 +309,21 @@ export default function PurchasePage() {
                                             Tổng thanh toán:
                                         </p>
                                         <p className="font-bold">
-                                            {formatPrice(order.total_amount)}
+                                            {orderPaymentSuccessful(order)}
                                         </p>
                                     </div>
                                 </div>
                                 <div className="text-right w-full pt-6">
                                     {(order.status === 0 ||
                                         order.status === 5) && (
-                                        <Button
-                                            onClick={() =>
-                                                handleCancelOrder(order.id)
-                                            }
-                                        >
-                                            Hủy
-                                        </Button>
-                                    )}
+                                            <Button
+                                                onClick={() =>
+                                                    handleCancelOrder(order.id)
+                                                }
+                                            >
+                                                Hủy
+                                            </Button>
+                                        )}
                                     {order.status === 1 && (
                                         <Button
                                             onClick={() =>
@@ -330,14 +338,14 @@ export default function PurchasePage() {
                                     )}
                                     {(order.status === 2 ||
                                         order.status === 3) && (
-                                        <Button
-                                            onClick={() =>
-                                                handleRepurchase(order)
-                                            }
-                                        >
-                                            Mua lại
-                                        </Button>
-                                    )}
+                                            <Button
+                                                onClick={() =>
+                                                    handleRepurchase(order)
+                                                }
+                                            >
+                                                Mua lại
+                                            </Button>
+                                        )}
                                 </div>
                             </CardFooter>
                         </Card>
