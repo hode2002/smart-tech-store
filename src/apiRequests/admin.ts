@@ -22,11 +22,66 @@ export type FetchAllUsersResponseType = {
     data: UserResponseType[];
 };
 
+export type FetchAllBannersResponseType = {
+    statusCode: number;
+    message: string;
+    data: BannersResponseType[];
+};
+
+export type UpdateBannerResponseType = {
+    statusCode: number;
+    message: string;
+    data: BannersResponseType;
+};
+
+export type BannersResponseType = {
+    id: string;
+    title: string;
+    image: string;
+    link: string;
+    slug: string;
+    status: 'show' | 'hide';
+    type: 'big' | 'side' | 'slide';
+    created_at: string;
+    updated_at: string;
+};
+
+export type DeleteBannerResponseType = {
+    statusCode: number;
+    message: string;
+    data: {
+        is_success: boolean;
+    };
+};
+
 export type ActiveUserBodyType = {
     email: string;
     is_active: boolean;
 };
 
+export type UpdateBannerBodyType = {
+    image?: File;
+    link?: string;
+    status?: string;
+    type?: string;
+};
+
+export type UpdateBannerStatusBodyType = {
+    status: 'hide' | 'show';
+};
+
+export type CreateBannerBodyType = {
+    title: string;
+    image: File;
+    link: string;
+    type: string;
+};
+
+export type CreateBannerResponseType = {
+    statusCode: number;
+    message: string;
+    data: BannersResponseType;
+};
 export type ActiveUserResponseType = {
     statusCode: number;
     message: string;
@@ -273,6 +328,27 @@ class AdminApiRequest {
         }
     }
 
+    async getAllBanners(token: string) {
+        try {
+            const response: FetchAllBannersResponseType = await http.get(
+                '/banners/admin',
+                {
+                    headers: {
+                        Authorization: 'Bearer ' + token,
+                    },
+                },
+            );
+            return response;
+        } catch (error: any) {
+            toast({
+                title: 'Error',
+                description: error?.payload?.message ?? 'Lỗi không xác định',
+                variant: 'destructive',
+            });
+            return error;
+        }
+    }
+
     async getAllOrders(token: string) {
         try {
             const response: GetOrderStatusResponseType = await http.get(
@@ -383,6 +459,85 @@ class AdminApiRequest {
             const response: ActiveUserResponseType = await http.post(
                 '/users',
                 body,
+                {
+                    headers: {
+                        Authorization: 'Bearer ' + token,
+                    },
+                },
+            );
+            return response;
+        } catch (error: any) {
+            toast({
+                title: 'Error',
+                description: error?.payload?.message ?? 'Lỗi không xác định',
+                variant: 'destructive',
+            });
+            return error;
+        }
+    }
+
+    async createNewBanner(token: string, body: CreateBannerBodyType) {
+        try {
+            const formData = new FormData();
+            formData.append('title', body.title);
+            formData.append('type', body.type);
+            formData.append('link', body.link);
+            formData.append('image', body.image);
+            const response: CreateBannerResponseType = await http.post(
+                '/banners',
+                formData,
+                {
+                    headers: {
+                        Authorization: 'Bearer ' + token,
+                    },
+                },
+            );
+            return response;
+        } catch (error: any) {
+            toast({
+                title: 'Error',
+                description: error?.payload?.message ?? 'Lỗi không xác định',
+                variant: 'destructive',
+            });
+            return error;
+        }
+    }
+
+    async updateBanner(
+        token: string,
+        bannerId: string,
+        body: UpdateBannerBodyType,
+    ) {
+        try {
+            const formData = new FormData();
+            body?.type && formData.append('type', body.type);
+            body?.link && formData.append('link', body.link);
+            body?.image && formData.append('image', body.image);
+            body?.status && formData.append('status', body.status);
+            const response: UpdateBannerResponseType = await http.patch(
+                `/banners/${bannerId}`,
+                formData,
+                {
+                    headers: {
+                        Authorization: 'Bearer ' + token,
+                    },
+                },
+            );
+            return response;
+        } catch (error: any) {
+            toast({
+                title: 'Error',
+                description: error?.payload?.message ?? 'Lỗi không xác định',
+                variant: 'destructive',
+            });
+            return error;
+        }
+    }
+
+    async deleteBanner(token: string, bannerId: string) {
+        try {
+            const response: DeleteBannerResponseType = await http.delete(
+                `/banners/${bannerId}`,
                 {
                     headers: {
                         Authorization: 'Bearer ' + token,

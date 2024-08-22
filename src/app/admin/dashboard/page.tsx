@@ -17,6 +17,7 @@ import Link from 'next/link';
 import {
     BadgeDollarSign,
     Home,
+    ImagePlus,
     Package,
     Package2,
     Settings,
@@ -183,18 +184,18 @@ export default function Dashboard() {
                         </TooltipTrigger>
                         <TooltipContent side="right">Customers</TooltipContent>
                     </Tooltip>
-                    {/* <Tooltip>
+                    <Tooltip>
                         <TooltipTrigger asChild>
                             <Link
-                                href="#"
+                                href="/admin/banners"
                                 className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
                             >
-                                <LineChart className="h-5 w-5" />
-                                <span className="sr-only">Analytics</span>
+                                <ImagePlus className="h-5 w-5" />
+                                <span className="sr-only">Banners</span>
                             </Link>
                         </TooltipTrigger>
-                        <TooltipContent side="right">Analytics</TooltipContent>
-                    </Tooltip> */}
+                        <TooltipContent side="right">Banners</TooltipContent>
+                    </Tooltip>
                 </nav>
                 <nav className="mt-auto flex flex-col items-center gap-4 px-2 py-4">
                     <Tooltip>

@@ -9,6 +9,7 @@ export const BannerImageResponse = z.object({
             title: z.string(),
             image: z.string(),
             link: z.string(),
+            type: z.string(),
             slug: z.string(),
             status: z.string(),
         }),
@@ -22,6 +23,7 @@ export const BannerImage = z.object({
     image: z.string(),
     link: z.string(),
     slug: z.string(),
+    type: z.string(),
     status: z.string(),
 });
 export type BannerImageType = z.TypeOf<typeof BannerImage>;

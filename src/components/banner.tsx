@@ -15,6 +15,7 @@ import React, { useEffect, useState } from 'react';
 export default function Banner() {
     const [isClient, setIsClient] = useState(false);
 
+    const [bigBanner, setBigBanner] = useState<BannerImageType>();
     const [bannerImages, setBannerImages] = useState<BannerImageType[]>([]);
     const [sideImages, setSideImages] = useState<BannerImageType[]>([]);
     const [carouselImages, setCarouselImages] = useState<BannerImageType[]>([]);
@@ -30,22 +31,25 @@ export default function Banner() {
     }, []);
 
     useEffect(() => {
-        setCarouselImages(bannerImages?.slice(1));
-        setSideImages(bannerImages?.slice(bannerImages.length - 2));
+        setBigBanner(bannerImages.find((image) => image.type === 'big'));
+        setCarouselImages(
+            bannerImages.filter((image) => image.type === 'slide'),
+        );
+        setSideImages(bannerImages.filter((image) => image.type === 'side'));
     }, [bannerImages]);
 
     return (
         <div className="relative">
-            {isClient && bannerImages?.[0] ? (
-                <Link href={bannerImages[0]?.link ?? '#'}>
+            {isClient && bigBanner ? (
+                <Link href={bigBanner?.link ?? '#'}>
                     <Image
                         className="max-w-full lg:w-[1920px]"
-                        src={bannerImages[0]?.image}
+                        src={bigBanner?.image}
                         width={1000}
                         height={500}
                         quality={100}
-                        title={bannerImages[0]?.title}
-                        alt={bannerImages[0]?.title}
+                        title={bigBanner?.title}
+                        alt={bigBanner?.title}
                     />
                 </Link>
             ) : (

@@ -7,7 +7,7 @@ import {
 } from '@/components/ui/tooltip';
 import {
     Home,
-    LineChart,
+    ImagePlus,
     Package,
     Package2,
     Settings,
@@ -53,7 +53,7 @@ const Aside = () => {
                             <span className="sr-only">Orders</span>
                         </Link>
                     </TooltipTrigger>
-                    <TooltipContent side="right">Đơn hàng</TooltipContent>
+                    <TooltipContent side="right">Orders</TooltipContent>
                 </Tooltip>
                 <Tooltip>
                     <TooltipTrigger asChild>
@@ -65,7 +65,7 @@ const Aside = () => {
                             <span className="sr-only">Products</span>
                         </Link>
                     </TooltipTrigger>
-                    <TooltipContent side="right">Sản phẩm</TooltipContent>
+                    <TooltipContent side="right">Products</TooltipContent>
                 </Tooltip>
                 <Tooltip>
                     <TooltipTrigger asChild>
@@ -77,20 +77,20 @@ const Aside = () => {
                             <span className="sr-only">Customers</span>
                         </Link>
                     </TooltipTrigger>
-                    <TooltipContent side="right">Khách hàng</TooltipContent>
+                    <TooltipContent side="right">Customers</TooltipContent>
                 </Tooltip>
-                {/* <Tooltip>
+                <Tooltip>
                     <TooltipTrigger asChild>
                         <Link
-                            href="#"
-                            className={`flex h-9 w-9 items-center justify-center rounded-lg ${isActive('/admin/analytics') ? 'bg-accent text-accent-foreground' : 'text-muted-foreground'} transition-colors hover:text-foreground md:h-8 md:w-8`}
+                            href="/admin/banners"
+                            className={`flex h-9 w-9 items-center justify-center rounded-lg ${isActive('/admin/banners') ? 'bg-accent text-accent-foreground' : 'text-muted-foreground'} transition-colors hover:text-foreground md:h-8 md:w-8`}
                         >
-                            <LineChart className="h-5 w-5" />
-                            <span className="sr-only">Analytics</span>
+                            <ImagePlus className="h-5 w-5" />
+                            <span className="sr-only">Banners</span>
                         </Link>
                     </TooltipTrigger>
-                    <TooltipContent side="right">Analytics</TooltipContent>
-                </Tooltip> */}
+                    <TooltipContent side="right">Banners</TooltipContent>
+                </Tooltip>
             </nav>
             <nav className="mt-auto flex flex-col items-center gap-4 px-2 py-4">
                 <Tooltip>
