@@ -8,4 +8,8 @@ export class UpdateBannerDto {
     @IsOptional()
     @IsString()
     status?: string;
+
+    @IsOptional()
+    @IsString()
+    type?: string;
 }

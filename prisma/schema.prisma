@@ -25,6 +25,7 @@ model Banner {
   image      String
   link       String
   status     String   @default("show")
+  type       String   @default("slide")
   slug       String
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt

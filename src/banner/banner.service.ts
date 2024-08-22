@@ -50,6 +50,10 @@ export class BannerService {
                 image: true,
                 link: true,
                 slug: true,
+                status: true,
+                type: true,
+                created_at: true,
+                updated_at: true,
             },
         });
     }
@@ -69,6 +73,7 @@ export class BannerService {
                 link: true,
                 slug: true,
                 status: true,
+                type: true,
             },
         });
     }
@@ -82,6 +87,7 @@ export class BannerService {
                 link: true,
                 slug: true,
                 status: true,
+                type: true,
                 created_at: true,
                 updated_at: true,
             },
@@ -98,6 +104,7 @@ export class BannerService {
                 link: true,
                 slug: true,
                 status: true,
+                type: true,
             },
         });
     }
@@ -111,6 +118,7 @@ export class BannerService {
                 image: true,
                 link: true,
                 slug: true,
+                type: true,
             },
         });
         if (!banner) {
@@ -123,21 +131,29 @@ export class BannerService {
     async update(
         id: string,
         updateBannerDto: UpdateBannerDto,
-        fileUploadDto: FileUploadDto,
+        fileUploadDto?: FileUploadDto,
     ) {
-        const banner = await this.findById(id);
-
-        const res = await this.mediaService.upload(fileUploadDto);
-        if (!res?.is_success) {
-            throw new InternalServerErrorException('Internal Server Error');
+        const banner = await this.prismaService.banner.findUnique({
+            where: { id },
+        });
+        if (!banner) {
+            throw new NotFoundException('Banner not found');
         }
 
-        const awsKey = res?.key;
+        let awsKey = banner.image;
+
+        if (fileUploadDto?.size) {
+            const res = await this.mediaService.upload(fileUploadDto);
+            if (!res?.is_success) {
+                throw new InternalServerErrorException('Internal Server Error');
+            }
+            awsKey = res?.key;
+            await this.mediaService.deleteFileS3(banner.image);
+        }
+
         if (!awsKey) {
             throw new InternalServerErrorException('Internal Server Error');
         }
-
-        await this.mediaService.deleteFileS3(banner.image);
 
         return await this.prismaService.banner.update({
             where: { id },
@@ -151,28 +167,23 @@ export class BannerService {
                 image: true,
                 link: true,
                 slug: true,
+                type: true,
+                status: true,
             },
         });
     }
 
     async remove(id: string) {
-        const isExist = await this.findById(id);
+        const isExist = await this.prismaService.banner.findUnique({
+            where: { id },
+        });
         if (!isExist) {
             throw new NotFoundException('Banner Not Found');
         }
 
-        const isDeleted = await this.prismaService.banner.update({
+        await this.mediaService.deleteFileS3(isExist.image);
+        const isDeleted = await this.prismaService.banner.delete({
             where: { id },
-            data: {
-                status: 'hide',
-            },
-            select: {
-                id: true,
-                title: true,
-                image: true,
-                link: true,
-                slug: true,
-            },
         });
 
         return {

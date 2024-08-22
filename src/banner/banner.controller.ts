@@ -36,7 +36,7 @@ export class BannerController {
         @UploadedFile() fileUploadDto: FileUploadDto,
     ): Promise<SuccessResponse> {
         return {
-            statusCode: HttpStatus.OK,
+            statusCode: HttpStatus.CREATED,
             message: 'Create success',
             data: await this.bannerService.create(
                 createBannerDto,

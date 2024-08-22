@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsString } from 'class-validator';
+import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 export class CreateBannerDto {
     @IsString()
@@ -8,4 +8,8 @@ export class CreateBannerDto {
     @IsString()
     @IsNotEmpty()
     link: string;
+
+    @IsString()
+    @IsOptional()
+    type?: string;
 }
