@@ -1,9 +1,10 @@
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
-import { S3 } from 'aws-sdk';
 import { ConfigService } from '@nestjs/config';
 import { randomBytes } from 'crypto';
-import { AwsS3DataDto, FileUploadDto } from './dto';
+import { FileUploadDto } from './dto';
 import { generateSlug } from 'src/utils';
+import { Upload } from '@aws-sdk/lib-storage';
+import { S3, ObjectCannedACL } from '@aws-sdk/client-s3';
 
 @Injectable()
 export class MediaService {
@@ -37,20 +38,18 @@ export class MediaService {
             Key: key,
             Body: file_buffer,
             ContentType: content_type,
-            ACL: 'public-read', // comment if private file
+            ACL: 'public-read' as ObjectCannedACL, // comment if private file
         };
 
-        return new Promise((resolve, reject) => {
-            s3.upload(params, (err: Error, data: AwsS3DataDto) => {
-                if (err) {
-                    reject();
-                    throw new InternalServerErrorException(
-                        'Internal Server Error',
-                    );
-                }
-                resolve(data);
-            });
+        const parallelUploads3 = new Upload({
+            client: s3,
+            params,
         });
+
+        const result = await parallelUploads3.done();
+        if (result?.$metadata.httpStatusCode !== 200) {
+            throw new InternalServerErrorException('Internal Server Error');
+        }
     }
 
     async deleteFileS3(key: string) {
@@ -71,8 +70,12 @@ export class MediaService {
     private createInstanceS3() {
         return new S3({
             region: this.configService.get('AWS_REGION'),
-            accessKeyId: this.configService.get('AWS_ACCESS_KEY_ID'),
-            secretAccessKey: this.configService.get('AWS_SECRET_ACCESS_KEY'),
+            credentials: {
+                accessKeyId: this.configService.get('AWS_ACCESS_KEY_ID'),
+                secretAccessKey: this.configService.get(
+                    'AWS_SECRET_ACCESS_KEY',
+                ),
+            },
         });
     }
 }
