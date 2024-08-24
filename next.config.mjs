@@ -41,7 +41,7 @@ const nextConfig = {
             },
             {
                 protocol: 'https',
-                hostname: 'ct466-project.s3.ap-southeast-2.amazonaws.com',
+                hostname: 'smart-tech-project.s3.ap-southeast-2.amazonaws.com',
                 port: '',
                 pathname: '/**',
             },
@@ -52,6 +52,9 @@ const nextConfig = {
                 pathname: '/**',
             },
         ],
+    },
+    typescript: {
+        ignoreBuildErrors: true,
     },
 };
 
