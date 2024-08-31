@@ -1,5 +1,5 @@
 services:
-    ct466-project:
+    smart-tech-db:
         image: mysql:8.0
         container_name: mysql
         ports:
