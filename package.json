@@ -38,6 +38,7 @@
         "@radix-ui/react-tooltip": "^1.0.7",
         "@reduxjs/toolkit": "^2.2.3",
         "@tanstack/react-table": "^8.15.3",
+        "@tinymce/tinymce-react": "^5.1.1",
         "@types/lodash": "^4.17.0",
         "@types/uuid": "^9.0.8",
         "class-variance-authority": "^0.7.0",
