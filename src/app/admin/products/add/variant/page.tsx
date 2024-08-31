@@ -1,84 +1,56 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
-
+import { useCallback, useRef, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { ChevronLeft, Plus, Upload } from 'lucide-react';
+import { ChevronLeft, Upload } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import adminApiRequest, {
     CreateProductBodyType,
-    CreateProductOptionType,
     CreateProductResponseType,
     UploadSingleFileResponseType,
 } from '@/apiRequests/admin';
 import { useAppSelector } from '@/lib/store';
-import {
-    CategoryResponseType,
-    CategoryType,
-} from '@/schemaValidations/category.schema';
-import { BrandResponseType, BrandType } from '@/schemaValidations/brand.schema';
-import categoryApiRequest from '@/apiRequests/category';
+import { CategoryType } from '@/schemaValidations/category.schema';
+import { BrandType } from '@/schemaValidations/brand.schema';
 import AddProductVariantCard from '@/app/admin/products/add/components/add-product-variant-card';
 import { toast } from '@/components/ui/use-toast';
 import { ReloadIcon } from '@radix-ui/react-icons';
 import { ProductDetailType } from '@/schemaValidations/product.schema';
+import SelectAttributeCard from '@/app/admin/products/add/components/select-attribute-card';
+import SelectCategoryCard from '@/app/admin/products/add/components/select-category-card';
+import SelectBrandCard from '@/app/admin/products/add/components/select-brand-card';
+import { Badge } from '@/components/ui/badge';
+import { Editor as TinyMCEEditor } from 'tinymce';
+import dynamic from 'next/dynamic';
+
+const CustomEditor = dynamic(() => import('@/components/custom-editor'), {
+    ssr: false,
+});
+
+export type AttributeType = { id: string; name: string; value: string };
 
 export default function AddVariantProduct() {
     const token = useAppSelector((state) => state.auth.accessToken);
 
     const [productName, setProductName] = useState<string>('');
     const [label, setLabel] = useState<string>('Trả góp 0%');
-    const [selectedCategory, setSelectedCategory] =
-        useState<string>('smartphone');
-    const [selectedBrand, setSelectedBrand] = useState<string>('');
+    const [selectedCategory, setSelectedCategory] = useState<CategoryType>();
+    const [selectedBrand, setSelectedBrand] = useState<BrandType>();
     const [warranties, setWarranties] = useState<string>('');
     const [promotions, setPromotions] = useState<string>('');
     const [mainImageFile, setMainImageFile] = useState<File | undefined>();
     const [price, setPrice] = useState<number>(0);
-    const [description, setDescription] = useState<string>('');
 
-    const [categories, setCategories] = useState<CategoryType[]>([]);
-    const [brands, setBrands] = useState<BrandType[]>([]);
-
-    const fetchBrands = useCallback(async () => {
-        const response = (await adminApiRequest.getAllBrands(
-            token,
-        )) as BrandResponseType;
-        if (response?.statusCode === 200) {
-            return setBrands(response.data);
-        }
-        return setBrands([]);
-    }, [token]);
-
-    const fetchCategories = useCallback(async () => {
-        const response =
-            (await categoryApiRequest.getCategories()) as CategoryResponseType;
-        if (response?.statusCode === 200) {
-            return setCategories(response.data);
-        }
-        return setCategories([]);
-    }, []);
-
-    useEffect(() => {
-        fetchBrands().then();
-        fetchCategories().then();
-    }, [fetchBrands, fetchCategories]);
+    const editorRef = useRef<TinyMCEEditor | null>(null);
 
     const [product, setProduct] = useState<ProductDetailType>();
-
     const [loading, setLoading] = useState<boolean>(false);
+
     const handleSubmit = async () => {
         if (loading) return;
         setLoading(true);
@@ -94,16 +66,11 @@ export default function AddVariantProduct() {
             name: productName,
             price,
             label: label,
-            brand_id: brands.find((brand) => brand.slug === selectedBrand)
-                ?.id as string,
-            category_id: categories.find(
-                (cate) => cate.slug === selectedCategory,
-            )?.id as string,
-            warranties: warranties.split('###'),
-            promotions: promotions.split('###'),
-            descriptions: description
-                .split('###')
-                .map((item) => ({ content: item })),
+            brand_id: selectedBrand!.id,
+            category_id: selectedCategory!.id,
+            warranties: warranties.split(' | '),
+            promotions: promotions.split(' | '),
+            descriptions: [{ content: editorRef.current!.getContent() }],
         };
 
         const response = (await adminApiRequest.createProduct(
@@ -120,21 +87,28 @@ export default function AddVariantProduct() {
             setProduct(response.data);
         }
     };
+    const [attributes, setAttributes] = useState<AttributeType[]>([]);
+    const [skuList, setSkuList] = useState<string[]>([]);
 
-    const [variantLength, setVariantLength] = useState<number>(0);
-    const [productVariants, setProductVariants] = useState<
-        CreateProductOptionType[]
-    >([]);
-
-    const handleAddVariant = (newVariant: CreateProductOptionType) => {
-        setProductVariants([...productVariants, newVariant]);
-    };
-
-    const handleDeleteVariant = (index: number) => {
-        setProductVariants(
-            productVariants.filter((item, idx) => idx !== index),
+    const combineAttribute = useCallback((originArr: string[][]) => {
+        return originArr.reduce(
+            (expectedArr, currArr: string[]) => {
+                return expectedArr.flatMap((prevArr: string[]) =>
+                    currArr.map((currValue) => [...prevArr, currValue]),
+                );
+            },
+            [[]] as string[][],
         );
-        setVariantLength((prev) => --prev);
+    }, []);
+
+    const handleCreateProductAttribute = () => {
+        const results = attributes.map((attr) => {
+            return attr.value.split(' | ');
+        });
+        const productAttrData = combineAttribute(results).map((combination) =>
+            combination.join('-'),
+        );
+        setSkuList(productAttrData);
     };
 
     return (
@@ -154,41 +128,23 @@ export default function AddVariantProduct() {
                     <h1 className="flex-1 shrink-0 whitespace-nowrap text-xl font-semibold tracking-tight sm:grow-0">
                         Thêm sản phẩm
                     </h1>
-                    <div className="hidden items-center gap-2 md:ml-auto md:flex">
-                        <Link href={'/admin/products'}>
-                            <Button
-                                variant="outline"
-                                size="sm"
-                                className="min-w-[100px]"
-                            >
-                                Quay lại
-                            </Button>
-                        </Link>
-                        {loading ? (
-                            <Button
-                                disabled
-                                size="sm"
-                                className="min-w-[100px]"
-                            >
-                                <ReloadIcon className="mr-2 animate-spin" />
-                            </Button>
-                        ) : (
-                            <Button
-                                onClick={handleSubmit}
-                                size="sm"
-                                className="min-w-[100px]"
-                            >
-                                Lưu
-                            </Button>
-                        )}
-                    </div>
                 </div>
 
                 <div className="grid gap-4 md:grid-cols-[1fr_250px] lg:grid-cols-3 lg:gap-8">
                     <div className="grid auto-rows-max items-start gap-4 lg:col-span-2 lg:gap-8">
                         <Card>
                             <CardHeader>
-                                <CardTitle>Thông tin chung</CardTitle>
+                                <CardTitle className="flex items-center gap-2">
+                                    <Badge
+                                        variant="default"
+                                        className="font-extrabold"
+                                    >
+                                        1
+                                    </Badge>
+                                    <span className="font-extrabold">
+                                        Thông tin chung
+                                    </span>
+                                </CardTitle>
                             </CardHeader>
                             <CardContent>
                                 <div className="grid gap-6">
@@ -266,13 +222,11 @@ export default function AddVariantProduct() {
                                         <Label htmlFor="description">
                                             Mô tả
                                         </Label>
-                                        <Textarea
-                                            id="description"
-                                            value={description}
-                                            onChange={(e) =>
-                                                setDescription(e.target.value)
+                                        <CustomEditor
+                                            initialValue={''}
+                                            onInit={(evt, editor) =>
+                                                (editorRef.current = editor)
                                             }
-                                            className="min-h-32"
                                         />
                                     </div>
                                     <div className="grid gap-3">
@@ -281,6 +235,7 @@ export default function AddVariantProduct() {
                                         </Label>
                                         <Textarea
                                             id="warranties"
+                                            placeholder="Các giá trị cách nhau bằng |"
                                             value={warranties}
                                             onChange={(e) =>
                                                 setWarranties(e.target.value)
@@ -294,6 +249,7 @@ export default function AddVariantProduct() {
                                         </Label>
                                         <Textarea
                                             id="promotions"
+                                            placeholder="Các giá trị cách nhau bằng |"
                                             value={promotions}
                                             onChange={(e) =>
                                                 setPromotions(e.target.value)
@@ -350,102 +306,62 @@ export default function AddVariantProduct() {
                                 </div>
                             </CardContent>
                         </Card>
-                        <Card>
-                            <CardHeader>
-                                <CardTitle>Danh mục</CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                                <div className="grid gap-6 sm:grid-cols-3">
-                                    <div className="grid col-span-12 gap-3">
-                                        <Label htmlFor="category">
-                                            Chọn danh mục sản phẩm
-                                        </Label>
-                                        <Select
-                                            value={selectedCategory}
-                                            onValueChange={setSelectedCategory}
-                                        >
-                                            <SelectTrigger
-                                                id="category"
-                                                className="bg-popover capitalize"
-                                            >
-                                                <SelectValue className="capitalize" />
-                                            </SelectTrigger>
-                                            <SelectContent className="capitalize">
-                                                {categories.map((cate) => (
-                                                    <SelectItem
-                                                        key={cate.id}
-                                                        value={cate.slug}
-                                                    >
-                                                        {cate.name}
-                                                    </SelectItem>
-                                                ))}
-                                            </SelectContent>
-                                        </Select>
-                                    </div>
-                                </div>
-                            </CardContent>
-                        </Card>
-                        <Card>
-                            <CardHeader>
-                                <CardTitle>Thương hiệu</CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                                <div className="grid gap-6 sm:grid-cols-3">
-                                    <div className="grid col-span-12 gap-3">
-                                        <Label htmlFor="brand">
-                                            Chọn thương hiệu sản phẩm
-                                        </Label>
-                                        <Select
-                                            value={selectedBrand}
-                                            onValueChange={setSelectedBrand}
-                                        >
-                                            <SelectTrigger
-                                                id="brand"
-                                                className="bg-popover capitalize"
-                                            >
-                                                <SelectValue className="capitalize" />
-                                            </SelectTrigger>
-                                            <SelectContent className="capitalize">
-                                                {brands.map((brand) => (
-                                                    <SelectItem
-                                                        key={brand.id}
-                                                        value={brand.slug}
-                                                    >
-                                                        {brand.name}
-                                                    </SelectItem>
-                                                ))}
-                                            </SelectContent>
-                                        </Select>
-                                    </div>
-                                </div>
-                            </CardContent>
-                        </Card>
+                        <SelectCategoryCard
+                            setSelectedCategory={setSelectedCategory}
+                        />
+                        <SelectBrandCard setSelectedBrand={setSelectedBrand} />
+
+                        <div className="hidden items-center gap-2 md:ml-auto md:flex">
+                            <Link href={'/admin/products'}>
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    className="min-w-[100px]"
+                                >
+                                    Quay lại
+                                </Button>
+                            </Link>
+                            {loading ? (
+                                <Button
+                                    disabled
+                                    size="sm"
+                                    className="min-w-[100px]"
+                                >
+                                    <ReloadIcon className="mr-2 animate-spin" />
+                                </Button>
+                            ) : (
+                                <Button
+                                    onClick={handleSubmit}
+                                    size="sm"
+                                    className="min-w-[100px]"
+                                >
+                                    Lưu
+                                </Button>
+                            )}
+                        </div>
                     </div>
                 </div>
 
                 {product && (
+                    <SelectAttributeCard
+                        attributes={attributes}
+                        setAttributes={setAttributes}
+                        handleCreateProductAttribute={
+                            handleCreateProductAttribute
+                        }
+                    />
+                )}
+
+                {product && skuList && skuList.length > 0 && (
                     <div className="grid gap-4 md:grid-cols-3 lg:gap-8">
-                        {Array.from({ length: variantLength }).map(
-                            (_, index) => (
-                                <AddProductVariantCard
-                                    key={index}
-                                    product={product}
-                                    variantIndex={index}
-                                    handleDeleteVariant={handleDeleteVariant}
-                                    handleAddVariant={handleAddVariant}
-                                />
-                            ),
-                        )}
-                        <div
-                            onClick={() => setVariantLength((prev) => ++prev)}
-                            className="flex aspect-square bg-popover items-center justify-center rounded-md border border-dashed"
-                        >
-                            <div className="flex flex-col items-center">
-                                <Plus className="h-4 w-4 text-muted-foreground" />
-                                <p>Thêm biến thể</p>
-                            </div>
-                            <span className="sr-only">Add</span>
-                        </div>
+                        {skuList.map((sku) => (
+                            <AddProductVariantCard
+                                key={sku}
+                                sku={sku}
+                                attributes={attributes}
+                                product={product}
+                            />
+                        ))}
                     </div>
                 )}
 

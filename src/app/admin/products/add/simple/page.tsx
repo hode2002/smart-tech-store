@@ -4,7 +4,7 @@ import {
     ProductImagesType,
     TechnicalSpecsItem,
 } from '@/schemaValidations/product.schema';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 
 import Image from 'next/image';
 import Link from 'next/link';
@@ -46,6 +46,12 @@ import { Switch } from '@/components/ui/switch';
 import AddTechnicalSpecs from '@/app/admin/products/add/components/add-technical-specs';
 import { arraySpecsToObject, translateSpecs } from '@/lib/utils';
 import { useRouter } from 'next/navigation';
+import { Editor as TinyMCEEditor } from 'tinymce';
+import dynamic from 'next/dynamic';
+
+const CustomEditor = dynamic(() => import('@/components/custom-editor'), {
+    ssr: false,
+});
 
 export default function AddSimpleProduct() {
     const token = useAppSelector((state) => state.auth.accessToken);
@@ -74,32 +80,6 @@ export default function AddSimpleProduct() {
     const [technicalSpecs, setTechnicalSpecs] = useState<TechnicalSpecsItem[]>(
         [],
     );
-
-    // const fetchProduct = useCallback(async () => {
-    //     const response = (await adminApiRequest.getProductById(
-    //         token,
-    //         params.id,
-    //     )) as GetProductDetailResponseType;
-    //     return response.data;
-    // }, [token, params.id]);
-
-    // useEffect(() => {
-    //     fetchProduct().then((data) => {
-    //         setSelectedCategory(data.category.slug);
-    //         setSelectedBrand(data.brand.slug);
-    //         setPromotions(data.promotions.join('###'));
-    //         setWarranties(data.warranties.join('###'));
-    //         setDescription(
-    //             data.descriptions.map((item) => item.content).join('###'),
-    //         );
-    //         setMainImage(data.main_image);
-    //         setProductName(data.name);
-    //         setLabel(data.label);
-    //         setPrice(data.price);
-    //         setProduct(data);
-    //     });
-    // }, [fetchProduct]);
-
     const [categories, setCategories] = useState<CategoryType[]>([]);
     const [brands, setBrands] = useState<BrandType[]>([]);
 
@@ -127,7 +107,8 @@ export default function AddSimpleProduct() {
         fetchCategories().then();
     }, [fetchBrands, fetchCategories]);
 
-    const [description, setDescription] = useState<string>('');
+    const editorRef = useRef<TinyMCEEditor | null>(null);
+
     const [loading, setLoading] = useState(false);
 
     const handleSubmit = async () => {
@@ -181,12 +162,9 @@ export default function AddSimpleProduct() {
             category_id: categories.find(
                 (cate) => cate.slug === selectedCategory,
             )?.id as string,
-            warranties: warranties.split('###'),
-            promotions: promotions.split('###'),
-            descriptions: description
-                .split('###')
-                .map((item) => ({ content: item })),
-
+            warranties: warranties.split(' | '),
+            promotions: promotions.split(' | '),
+            descriptions: [{ content: editorRef.current!.getContent() }],
             product_options: [
                 {
                     sku,
@@ -471,13 +449,11 @@ export default function AddSimpleProduct() {
                                         <Label htmlFor="description">
                                             Mô tả
                                         </Label>
-                                        <Textarea
-                                            id="description"
-                                            value={description}
-                                            onChange={(e) =>
-                                                setDescription(e.target.value)
+                                        <CustomEditor
+                                            initialValue={''}
+                                            onInit={(evt, editor) =>
+                                                (editorRef.current = editor)
                                             }
-                                            className="min-h-32"
                                         />
                                     </div>
                                     <div className="grid gap-3">

@@ -121,16 +121,13 @@ export default function Product() {
 
     useEffect(() => {
         fetchProducts().then();
-        setFilterProducts(products);
-    }, [fetchProducts, setFilterProducts]);
-
-    useEffect(() => {
         fetchBrands().then();
-    }, [fetchBrands]);
+        fetchCategories().then();
+    }, [fetchProducts, fetchBrands, fetchCategories]);
 
     useEffect(() => {
-        fetchCategories().then();
-    }, [fetchCategories]);
+        setFilterProducts(products);
+    }, [products]);
 
     const handlePageTransitions = (page: number) => {
         setCurrPage(page);
@@ -310,7 +307,7 @@ export default function Product() {
                                             onValueChange={setProductType}
                                         >
                                             <AlertDialogDescription>
-                                                <div className="flex items-center space-x-2 my-2">
+                                                <span className="flex items-center space-x-2 my-2">
                                                     <RadioGroupItem
                                                         value="simple"
                                                         id="simple"
@@ -318,8 +315,8 @@ export default function Product() {
                                                     <Label htmlFor="simple">
                                                         Sản phẩm đơn giản
                                                     </Label>
-                                                </div>
-                                                <div className="flex items-center space-x-2 my-2">
+                                                </span>
+                                                <span className="flex items-center space-x-2 my-2">
                                                     <RadioGroupItem
                                                         value="variant"
                                                         id="variant"
@@ -327,7 +324,7 @@ export default function Product() {
                                                     <Label htmlFor="variant">
                                                         Sản phẩm có biến thể
                                                     </Label>
-                                                </div>
+                                                </span>
                                             </AlertDialogDescription>
                                         </RadioGroup>
                                     </AlertDialogHeader>

@@ -5,7 +5,7 @@ import {
     ProductImagesType,
     TechnicalSpecsItem,
 } from '@/schemaValidations/product.schema';
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 
 import Image from 'next/image';
 import { Upload } from 'lucide-react';
@@ -41,37 +41,23 @@ import { toast } from '@/components/ui/use-toast';
 import adminApiRequest, {
     CreateProductOptionResponseType,
     CreateProductOptionType,
-    OptionValueType,
     UploadMultipleFilesResponseType,
     UploadSingleFileResponseType,
 } from '@/apiRequests/admin';
 import { ReloadIcon } from '@radix-ui/react-icons';
-import {
-    AlertDialog,
-    AlertDialogAction,
-    AlertDialogCancel,
-    AlertDialogContent,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogTitle,
-    AlertDialogTrigger,
-} from '@/components/ui/alert-dialog';
+import { AttributeType } from '@/app/admin/products/add/variant/page';
 
 type Props = {
+    sku: string;
+    attributes: AttributeType[];
     product: ProductDetailType;
-    handleAddVariant: (newVariant: CreateProductOptionType) => void;
-    handleDeleteVariant: (index: number) => void;
-    variantIndex: number;
 };
 const AddProductVariantCard = (props: Props) => {
     const token = useAppSelector((state) => state.auth.accessToken);
 
-    const { product, handleAddVariant, variantIndex, handleDeleteVariant } =
-        props;
-    const [optionValues, setOptionValues] = useState<OptionValueType[]>([]);
+    const { sku, attributes, product } = props;
     const [isActive, setIsActive] = useState<boolean>(false);
     const [isSale, setIsSale] = useState<boolean>(false);
-    const [sku, setSku] = useState<string>('');
     const [stock, setStock] = useState<number>(0);
     const [discount, setDiscount] = useState<number>(0);
     const [priceModifier, setPriceModifier] = useState<number>(0);
@@ -81,14 +67,6 @@ const AddProductVariantCard = (props: Props) => {
     const [technicalSpecs, setTechnicalSpecs] = useState<TechnicalSpecsItem[]>(
         [],
     );
-    const [color, setColor] = useState<string>('');
-    const [size, setSize] = useState<string>('');
-
-    useEffect(() => {
-        adminApiRequest.getOptionValue(token).then((res) => {
-            setOptionValues(res.data);
-        });
-    }, [token]);
 
     const handleAddTechnicalSpecs = (updatedSpecs: TechnicalSpecsItem[]) => {
         setTechnicalSpecs(updatedSpecs);
@@ -137,6 +115,17 @@ const AddProductVariantCard = (props: Props) => {
             });
         });
 
+        const productOptionValue = attributes.flatMap((attr: AttributeType) => {
+            const data: { option_id: string; value: string }[] = [];
+            for (const value of attr.value.split(' | ')) {
+                if (sku.split('-').includes(value)) {
+                    data.push({ option_id: attr.id, value });
+                    break;
+                }
+            }
+            return data;
+        });
+
         const newVariant: CreateProductOptionType = {
             sku,
             thumbnail: thumbnailS3,
@@ -148,17 +137,7 @@ const AddProductVariantCard = (props: Props) => {
             is_deleted: isActive,
             is_sale: isSale,
             technical_specs: arraySpecsToObject(translateSpecs(technicalSpecs)),
-            product_option_value: optionValues.map((option) => {
-                return option.name === 'Màu sắc'
-                    ? {
-                          option_id: option.id,
-                          value: color,
-                      }
-                    : {
-                          option_id: option.id,
-                          value: size,
-                      };
-            }),
+            product_option_value: productOptionValue,
         };
 
         const response = (await adminApiRequest.createProductOption(token, {
@@ -173,18 +152,13 @@ const AddProductVariantCard = (props: Props) => {
                 description: response.message,
             });
         }
-        handleAddVariant(newVariant);
-    };
-
-    const handleDelete = () => {
-        handleDeleteVariant(variantIndex);
     };
 
     return (
         <div className="grid auto-rows-max items-start gap-4 lg:gap-8">
             <Card>
-                <Accordion defaultValue="item-1" type="single" collapsible>
-                    <AccordionItem value="item-1">
+                <Accordion defaultValue={sku} type="single" collapsible>
+                    <AccordionItem value={sku}>
                         <CardHeader>
                             <AccordionTrigger>
                                 <CardTitle>Biến thể {sku}</CardTitle>
@@ -201,32 +175,8 @@ const AddProductVariantCard = (props: Props) => {
                                         <Input
                                             type="text"
                                             className="w-full"
-                                            onChange={(e) =>
-                                                setSku(e.target.value)
-                                            }
                                             value={sku}
-                                        />
-                                    </div>
-                                    <div className="grid gap-3">
-                                        <Label>Màu sắc</Label>
-                                        <Input
-                                            type="text"
-                                            className="w-full"
-                                            onChange={(e) =>
-                                                setColor(e.target.value)
-                                            }
-                                            value={color}
-                                        />
-                                    </div>
-                                    <div className="grid gap-3">
-                                        <Label>Kích thước</Label>
-                                        <Input
-                                            type="text"
-                                            className="w-full"
-                                            onChange={(e) =>
-                                                setSize(e.target.value)
-                                            }
-                                            value={size}
+                                            disabled
                                         />
                                     </div>
                                     <div className="grid gap-3">
@@ -483,33 +433,6 @@ const AddProductVariantCard = (props: Props) => {
                             </CardContent>
                             <CardFooter>
                                 <div className="flex items-center justify-end gap-2 w-full">
-                                    <AlertDialog>
-                                        <AlertDialogTrigger asChild>
-                                            <Button
-                                                size="sm"
-                                                className="min-w-[100px]"
-                                            >
-                                                Xóa
-                                            </Button>
-                                        </AlertDialogTrigger>
-                                        <AlertDialogContent>
-                                            <AlertDialogHeader>
-                                                <AlertDialogTitle>
-                                                    Xóa biến thể này?
-                                                </AlertDialogTitle>
-                                            </AlertDialogHeader>
-                                            <AlertDialogFooter>
-                                                <AlertDialogCancel>
-                                                    Quay lại
-                                                </AlertDialogCancel>
-                                                <AlertDialogAction
-                                                    onClick={handleDelete}
-                                                >
-                                                    Xác nhận
-                                                </AlertDialogAction>
-                                            </AlertDialogFooter>
-                                        </AlertDialogContent>
-                                    </AlertDialog>
                                     {loading ? (
                                         <Button
                                             disabled

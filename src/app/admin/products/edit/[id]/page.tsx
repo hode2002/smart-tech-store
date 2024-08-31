@@ -4,11 +4,11 @@ import {
     GetProductDetailResponseType,
     ProductDetailType,
 } from '@/schemaValidations/product.schema';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { ChevronLeft, Plus } from 'lucide-react';
+import { ChevronLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
     Card,
@@ -28,7 +28,6 @@ import {
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import adminApiRequest, {
-    CreateProductOptionType,
     UpdateProductBodyType,
     UpdateProductResponseType,
     UploadSingleFileResponseType,
@@ -43,7 +42,12 @@ import categoryApiRequest from '@/apiRequests/category';
 import ProductVariantCard from '@/app/admin/products/edit/components/product-variant-card';
 import { toast } from '@/components/ui/use-toast';
 import { ReloadIcon } from '@radix-ui/react-icons';
-import AddProductVariantCard from '@/app/admin/products/add/components/add-product-variant-card';
+import { Editor as TinyMCEEditor } from 'tinymce';
+import dynamic from 'next/dynamic';
+
+const CustomEditor = dynamic(() => import('@/components/custom-editor'), {
+    ssr: false,
+});
 
 type Props = {
     params: { id: string };
@@ -76,9 +80,6 @@ export default function EditProduct({ params }: Props) {
             setSelectedBrand(data.brand.slug);
             setPromotions(data.promotions.join('###'));
             setWarranties(data.warranties.join('###'));
-            setDescription(
-                data.descriptions.map((item) => item.content).join('###'),
-            );
             setMainImage(data.main_image);
             setProductName(data.name);
             setLabel(data.label);
@@ -114,7 +115,8 @@ export default function EditProduct({ params }: Props) {
         fetchCategories().then();
     }, [fetchBrands, fetchCategories]);
 
-    const [description, setDescription] = useState<string>('');
+    const editorRef = useRef<TinyMCEEditor | null>(null);
+
     const [loading, setLoading] = useState(false);
     const handleSubmit = async () => {
         if (loading) return;
@@ -140,9 +142,7 @@ export default function EditProduct({ params }: Props) {
                 ?.id as string,
             warranties: warranties.split('###'),
             promotions: promotions.split('###'),
-            descriptions: description
-                .split('###')
-                .map((item) => ({ content: item })),
+            descriptions: [{ content: editorRef.current!.getContent() }],
         };
 
         const response = (await adminApiRequest.updateProduct(
@@ -157,22 +157,6 @@ export default function EditProduct({ params }: Props) {
                 description: response.message,
             });
         }
-    };
-
-    const [variantLength, setVariantLength] = useState<number>(0);
-    const [productVariants, setProductVariants] = useState<
-        CreateProductOptionType[]
-    >([]);
-
-    const handleAddVariant = (newVariant: CreateProductOptionType) => {
-        setProductVariants([...productVariants, newVariant]);
-    };
-
-    const handleDeleteVariant = (index: number) => {
-        setProductVariants(
-            productVariants.filter((item, idx) => idx !== index),
-        );
-        setVariantLength((prev) => --prev);
     };
 
     return (
@@ -306,15 +290,14 @@ export default function EditProduct({ params }: Props) {
                                             <Label htmlFor="description">
                                                 Mô tả
                                             </Label>
-                                            <Textarea
-                                                id="description"
-                                                value={description}
-                                                onChange={(e) =>
-                                                    setDescription(
-                                                        e.target.value,
-                                                    )
+                                            <CustomEditor
+                                                initialValue={
+                                                    product?.descriptions[0]
+                                                        .content
                                                 }
-                                                className="min-h-32"
+                                                onInit={(evt, editor) =>
+                                                    (editorRef.current = editor)
+                                                }
                                             />
                                         </div>
                                         <div className="grid gap-3">
@@ -501,39 +484,6 @@ export default function EditProduct({ params }: Props) {
                                             />
                                         </div>
                                     ),
-                                )}
-                                {product && (
-                                    <>
-                                        {Array.from({
-                                            length: variantLength,
-                                        }).map((_, index) => (
-                                            <AddProductVariantCard
-                                                key={index}
-                                                product={product}
-                                                variantIndex={index}
-                                                handleDeleteVariant={
-                                                    handleDeleteVariant
-                                                }
-                                                handleAddVariant={
-                                                    handleAddVariant
-                                                }
-                                            />
-                                        ))}
-                                        <div
-                                            onClick={() =>
-                                                setVariantLength(
-                                                    (prev) => ++prev,
-                                                )
-                                            }
-                                            className="flex aspect-square bg-popover items-center justify-center rounded-md border border-dashed"
-                                        >
-                                            <div className="flex flex-col items-center">
-                                                <Plus className="h-4 w-4 text-muted-foreground" />
-                                                <p>Thêm biến thể</p>
-                                            </div>
-                                            <span className="sr-only">Add</span>
-                                        </div>
-                                    </>
                                 )}
                             </div>
                         </>
