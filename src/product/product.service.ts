@@ -597,6 +597,11 @@ export class ProductService {
                     },
                 },
                 product_options: {
+                    where: {
+                        stock: { gt: 0 },
+                        is_sale: true,
+                        is_deleted: false,
+                    },
                     select: {
                         id: true,
                         sku: true,
