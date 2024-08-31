@@ -7,7 +7,7 @@ import { ForbiddenException } from '@nestjs/common';
 import { ValidationConfig } from './configs/validation.config';
 import { CorsOptions } from '@nestjs/common/interfaces/external/cors-options.interface';
 
-const allowedOrigins = ['http://localhost:3000'];
+const allowedOrigins = process.env.ALLOWED_ORIGINS;
 
 const corsOptions: CorsOptions = {
     origin: (
@@ -26,6 +26,7 @@ const corsOptions: CorsOptions = {
 
 async function bootstrap() {
     const app = await NestFactory.create(AppModule);
+
     app.enableCors(corsOptions);
 
     // app.use(helmet());
