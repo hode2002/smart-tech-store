@@ -38,7 +38,7 @@ export default function PurchasePage() {
 
     const [currStatus, setCurrStatus] = useState<number>(5);
 
-    const fetchCurrentOrders = async () => {
+    const fetchCurrentOrders = useCallback(async () => {
         const response = await orderApiRequest.getOrdersByStatus(
             token,
             currStatus,
@@ -47,11 +47,11 @@ export default function PurchasePage() {
             return setOrders(response.data);
         }
         setOrders([]);
-    };
+    }, [token, currStatus]);
 
     useEffect(() => {
         fetchCurrentOrders().then();
-    }, [token, currStatus]);
+    }, [fetchCurrentOrders]);
 
     const [orders, setOrders] = useState<OrderResponseType[]>([]);
 
@@ -144,8 +144,8 @@ export default function PurchasePage() {
         return order.payment_method === 'cod'
             ? formatPrice(order.total_amount)
             : order.transaction_id && order.status === 2
-                ? formatPrice(order.total_amount)
-                : formatPrice(0);
+              ? formatPrice(order.total_amount)
+              : formatPrice(0);
     }, []);
 
     return (
@@ -316,14 +316,14 @@ export default function PurchasePage() {
                                 <div className="text-right w-full pt-6">
                                     {(order.status === 0 ||
                                         order.status === 5) && (
-                                            <Button
-                                                onClick={() =>
-                                                    handleCancelOrder(order.id)
-                                                }
-                                            >
-                                                Hủy
-                                            </Button>
-                                        )}
+                                        <Button
+                                            onClick={() =>
+                                                handleCancelOrder(order.id)
+                                            }
+                                        >
+                                            Hủy
+                                        </Button>
+                                    )}
                                     {order.status === 1 && (
                                         <Button
                                             onClick={() =>
@@ -338,14 +338,14 @@ export default function PurchasePage() {
                                     )}
                                     {(order.status === 2 ||
                                         order.status === 3) && (
-                                            <Button
-                                                onClick={() =>
-                                                    handleRepurchase(order)
-                                                }
-                                            >
-                                                Mua lại
-                                            </Button>
-                                        )}
+                                        <Button
+                                            onClick={() =>
+                                                handleRepurchase(order)
+                                            }
+                                        >
+                                            Mua lại
+                                        </Button>
+                                    )}
                                 </div>
                             </CardFooter>
                         </Card>

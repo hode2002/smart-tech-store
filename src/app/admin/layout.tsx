@@ -13,7 +13,7 @@ const inter = Inter({ subsets: ['vietnamese'] });
 
 export const metadata: Metadata = {
     title: 'Admin | Dashboard',
-    description: 'CT466 - Project Admin Dashboard',
+    description: 'Smart Tech Store Admin Dashboard',
 };
 
 export default function AdminLayout({

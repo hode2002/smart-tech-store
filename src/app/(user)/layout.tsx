@@ -3,6 +3,7 @@ import { Inter } from 'next/font/google';
 import { ThemeProvider } from '@/components/theme-provider';
 import ReduxProvider from '@/lib/store/redux-provider';
 import { TooltipProvider } from '@/components/ui/tooltip';
+import { CookiesProvider } from 'next-client-cookies/server';
 
 import '../globals.css';
 import 'swiper/css';
@@ -17,8 +18,8 @@ import { PageFooter } from '@/components/page-footer';
 const inter = Inter({ subsets: ['vietnamese'] });
 
 export const metadata: Metadata = {
-    title: 'CT466-Project',
-    description: 'CT466-Project',
+    title: 'Smart Tech Store',
+    description: 'Smart Tech Store',
 };
 export default function RootLayout({
     children,
@@ -34,16 +35,18 @@ export default function RootLayout({
                     enableSystem
                     disableTransitionOnChange
                 >
-                    <ReduxProvider>
-                        <TooltipProvider>
-                            <PageHeader />
-                            <main className="min-h-screen min-w-[400px]">
-                                {children}
-                            </main>
-                            <Toaster />
-                            <PageFooter />
-                        </TooltipProvider>
-                    </ReduxProvider>
+                    <CookiesProvider>
+                        <ReduxProvider>
+                            <TooltipProvider>
+                                <PageHeader />
+                                <main className="min-h-screen min-w-[400px]">
+                                    {children}
+                                </main>
+                                <Toaster />
+                                <PageFooter />
+                            </TooltipProvider>
+                        </ReduxProvider>
+                    </CookiesProvider>
                 </ThemeProvider>
             </body>
         </html>

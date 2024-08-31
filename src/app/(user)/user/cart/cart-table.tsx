@@ -519,7 +519,7 @@ export default function CartTable() {
     });
 
     const [totalPrice, setTotalPrice] = useState(0);
-
+    // eslint-disable-next-line
     useEffect(() => {
         let totalPrice = 0;
         table.getSelectedRowModel().rows.forEach((row) => {
@@ -583,10 +583,10 @@ export default function CartTable() {
                                                 {header.isPlaceholder
                                                     ? null
                                                     : flexRender(
-                                                        header.column
-                                                            .columnDef.header,
-                                                        header.getContext(),
-                                                    )}
+                                                          header.column
+                                                              .columnDef.header,
+                                                          header.getContext(),
+                                                      )}
                                             </TableHead>
                                         );
                                     })}
