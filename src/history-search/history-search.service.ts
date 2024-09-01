@@ -34,39 +34,30 @@ export class HistorySearchService {
         userId: string,
         createHistorySearchDto: CreateHistorySearchDto,
     ) {
-        const { search_content } = createHistorySearchDto;
-
         const user = await this.userService.findById(userId);
         if (!user) {
             throw new BadRequestException('User does not exist');
         }
 
-        const isExist = await this.findByContent(search_content);
-        if (!isExist) {
-            await this.prismaService.historySearch.create({
-                data: {
-                    user_id: userId,
-                    search_content,
-                },
-            });
-
-            return {
-                search_content: createHistorySearchDto.search_content,
-            };
-        }
-
-        await this.prismaService.historySearch.update({
+        const created = await this.prismaService.historySearch.upsert({
             where: {
-                id: isExist.id,
+                id: createHistorySearchDto.id,
+                search_content: createHistorySearchDto.search_content,
                 user_id: userId,
             },
-            data: {
+            create: {
+                id: createHistorySearchDto.id,
+                user_id: userId,
+                search_content: createHistorySearchDto.search_content,
+            },
+            update: {
                 updated_at: new Date(),
             },
         });
 
         return {
-            search_content: createHistorySearchDto.search_content,
+            id: created.id,
+            search_content: created.search_content,
         };
     }
 
