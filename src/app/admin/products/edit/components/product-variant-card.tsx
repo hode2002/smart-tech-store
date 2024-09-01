@@ -125,6 +125,16 @@ const ProductVariantCard = (props: Props) => {
         labelImageFile,
         otherImageFiles,
         technicalSpecs,
+        productVariant.discount,
+        productVariant.is_deleted,
+        productVariant.is_sale,
+        productVariant.label_image,
+        productVariant.price_modifier,
+        productVariant.product_images,
+        productVariant.sku,
+        productVariant.stock,
+        productVariant.technical_specs,
+        productVariant.thumbnail,
     ]);
 
     function arraySpecsToObject(array: TechnicalSpecsItem[]): {

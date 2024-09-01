@@ -44,26 +44,29 @@ export default function Order() {
     const [orders, setOrders] = useState<OrderResponseType[]>([]);
     const [filterOrders, setFilterOrders] = useState<OrderResponseType[]>([]);
 
-    const getStatistic = (statisticBy: unitOfTime.StartOf = 'week') => {
-        let total = 0;
-        orders?.forEach((order) => {
-            if (
-                order.status === 2 &&
-                moment(order.estimate_date).isSameOrAfter(
-                    moment(new Date()),
-                    statisticBy,
-                )
-            ) {
-                total += order.total_amount;
-            }
-        });
-        return total;
-    };
+    const getStatistic = useCallback(
+        (statisticBy: unitOfTime.StartOf = 'week') => {
+            let total = 0;
+            orders?.forEach((order) => {
+                if (
+                    order.status === 2 &&
+                    moment(order.estimate_date).isSameOrAfter(
+                        moment(new Date()),
+                        statisticBy,
+                    )
+                ) {
+                    total += order.total_amount;
+                }
+            });
+            return total;
+        },
+        [orders],
+    );
 
-    const statisticWeek = useMemo<number>(() => getStatistic(), [orders]);
+    const statisticWeek = useMemo<number>(() => getStatistic(), [getStatistic]);
     const statisticMonth = useMemo<number>(
         () => getStatistic('month'),
-        [orders],
+        [getStatistic],
     );
 
     const fetchOrders = useCallback(async () => {

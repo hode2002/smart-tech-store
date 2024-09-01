@@ -37,7 +37,7 @@ export default function Login() {
                     }
                 });
         }
-    }, []);
+    }, [cookies, dispatch, router]);
 
     return (
         <div className="py-10 bg-popover min-h-screen">

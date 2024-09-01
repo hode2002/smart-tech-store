@@ -26,12 +26,10 @@ export default function Home() {
     const deliveryList = useAppSelector((state) => state.delivery.deliveryList);
     const categories = useAppSelector((state) => state.category.categories);
     const brands = useAppSelector((state) => state.brand.brands);
-    const productList = useAppSelector((state) => state.products.products);
 
     const [laptop, setLaptop] = useState<ProductType[]>([]);
     const [tablet, setTablet] = useState<ProductType[]>([]);
     const [smartphone, setSmartphone] = useState<ProductType[]>([]);
-    const [productBrand, setProductBrand] = useState<ProductType[]>([]);
     const [productSale, setProductSale] = useState<ProductType[]>([]);
 
     useEffect(() => {
@@ -58,26 +56,14 @@ export default function Home() {
                     dispatch(setBrands(response.data)),
                 );
         }
-    }, [dispatch]);
+    }, [dispatch, brands.length, categories.length, deliveryList.length]);
 
     useEffect(() => {
-        // productApiRequest
-        //     .getProducts()
-        //     .then((response: ProductPaginationResponseType) =>
-        //         dispatch(setProductList(response.data.products)),
-        //     );
-
         productApiRequest
             .getProductsByCategory('smartphone')
             .then((response: GetProductsResponseType) =>
                 dispatch(setProductList(response.data)),
             );
-
-        // productApiRequest
-        //     .getProductsSale()
-        //     .then((response: GetProductsResponseType) =>
-        //         setProductSale(response.data.products),
-        //     );
 
         productApiRequest
             .getProductsByCategory('smartphone')
@@ -102,13 +88,7 @@ export default function Home() {
             .then((response: GetProductsResponseType) =>
                 setProductSale(response.data),
             );
-
-        // productApiRequest
-        //     .getProductsByBrand('iphone')
-        //     .then((response: GetProductsResponseType) =>
-        //         setProductBrand(response.data),
-        //     );
-    }, []);
+    }, [dispatch]);
     return (
         <>
             <Banner />

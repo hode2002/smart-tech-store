@@ -4,21 +4,24 @@ import AdminBreadcrumb from '@/app/admin/components/admin-breadcrumb';
 import { UserNav } from '@/app/admin/components/user-nav';
 import { ModeToggle } from '@/components/mode-toggle';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import {
     Home,
+    ImagePlus,
     Package,
     Package2,
     PanelLeft,
-    Search,
     ShoppingCart,
     Users2,
 } from 'lucide-react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { LineChart } from 'recharts';
 
 const Header = () => {
+    const currentPath = usePathname();
+    const isActive = (path: string) => currentPath.includes(path);
+
     return (
         <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6">
             <Sheet>
@@ -39,35 +42,42 @@ const Header = () => {
                         </Link>
                         <Link
                             href="/admin/dashboard"
-                            className="flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground"
+                            className={`flex items-center gap-4 px-2.5 ${isActive('/admin/dashboard') ? 'text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
                         >
                             <Home className="h-5 w-5" />
                             Dashboard
                         </Link>
                         <Link
-                            href="#"
-                            className="flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground"
+                            href="/admin/orders"
+                            className={`flex items-center gap-4 px-2.5 ${isActive('/admin/orders') ? 'text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
                         >
                             <ShoppingCart className="h-5 w-5" />
                             Orders
                         </Link>
                         <Link
-                            href="#"
-                            className="flex items-center gap-4 px-2.5 text-foreground"
+                            href="/admin/products"
+                            className={`flex items-center gap-4 px-2.5 ${isActive('/admin/products') ? 'text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
                         >
                             <Package className="h-5 w-5" />
                             Products
                         </Link>
                         <Link
-                            href="#"
-                            className="flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground"
+                            href="/admin/customers"
+                            className={`flex items-center gap-4 px-2.5 ${isActive('/admin/customers') ? 'text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
                         >
                             <Users2 className="h-5 w-5" />
                             Customers
                         </Link>
                         <Link
+                            href="/admin/banners"
+                            className={`flex items-center gap-4 px-2.5 ${isActive('/admin/banners') ? 'text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
+                        >
+                            <ImagePlus className="h-5 w-5" />
+                            Banners
+                        </Link>
+                        <Link
                             href="#"
-                            className="flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground"
+                            className={`flex items-center gap-4 px-2.5 ${isActive('/admin/settings') ? 'text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
                         >
                             <LineChart className="h-5 w-5" />
                             Settings
@@ -77,12 +87,6 @@ const Header = () => {
             </Sheet>
             <AdminBreadcrumb />
             <div className="relative ml-auto flex-1 md:grow-0 flex gap-2">
-                {/* <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                <Input
-                    type="search"
-                    placeholder="Search..."
-                    className="w-full rounded-lg bg-background pl-8 md:w-[200px] lg:w-[320px]"
-                /> */}
                 <ModeToggle />
             </div>
             <UserNav />

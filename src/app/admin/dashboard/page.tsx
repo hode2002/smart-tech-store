@@ -219,10 +219,6 @@ export default function Dashboard() {
                             <h2 className="text-3xl font-bold tracking-tight">
                                 Dashboard
                             </h2>
-                            {/* <div className="flex items-center space-x-2">
-                                <CalendarDateRangePicker />
-                                <Button>Download</Button>
-                            </div> */}
                         </div>
                         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
                             <DashboardStatisticCard

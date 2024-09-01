@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
     Breadcrumb,
     BreadcrumbItem,
@@ -61,27 +61,30 @@ export default function LaptopDetailPage({ params }: Props) {
     const cartProducts = useAppSelector((state) => state.user.cart);
     const [userOrders, setUserOrders] = useState<OrderResponseType[] | []>([]);
 
-    const fetchProduct = async () => {
+    const fetchProduct = useCallback(async () => {
         const response = (await productApiRequest.getProductsBySlug(
             params.slug,
         )) as GetProductDetailResponseType;
         setProductInfo(response.data);
-    };
+    }, [params.slug]);
 
-    const fetchUserOrder = async () => {
+    const fetchUserOrder = useCallback(async () => {
         const response = (await orderApiRequest.getOrdersByStatus(
             token,
             2,
         )) as GetOrderStatusResponseType;
         setUserOrders(response?.data);
-    };
+    }, [token]);
 
     useEffect(() => {
         fetchProduct().then();
+    }, [fetchProduct]);
+
+    useEffect(() => {
         if (token) {
             fetchUserOrder().then();
         }
-    }, [token]);
+    }, [token, fetchUserOrder]);
 
     const [productInfo, setProductInfo] = useState<ProductDetailType>();
     const [selectedOption, setSelectedOption] = useState<number>(0);
@@ -101,7 +104,7 @@ export default function LaptopDetailPage({ params }: Props) {
                 setSelectedOption(index);
             }
         });
-    }, [productInfo]);
+    }, [productInfo, params.slug]);
 
     const convertProductName = () => {
         return (
@@ -459,19 +462,12 @@ export default function LaptopDetailPage({ params }: Props) {
                             <p className="text-[20px] font-bold">
                                 Thông tin sản phẩm
                             </p>
-                            <ul>
-                                {descriptions &&
-                                    descriptions.map((description) => (
-                                        <li
-                                            key={description.id}
-                                            className="py-4"
-                                        >
-                                            <p className="text-[20px] font-bold">
-                                                {description.content}
-                                            </p>
-                                        </li>
-                                    ))}
-                            </ul>
+                            <div
+                                className="py-4"
+                                dangerouslySetInnerHTML={{
+                                    __html: descriptions[0].content,
+                                }}
+                            ></div>
                         </div>
 
                         <div className="mt-8 border border-solid p-8 rounded-lg">
