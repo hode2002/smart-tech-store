@@ -19,55 +19,46 @@ import {
 } from '@/schemaValidations/account.schema';
 import {
     HistorySearchItem,
+    ProductType,
     setHistorySearchItem,
     setHistorySearchList,
     setLocalSearchItem,
 } from '@/lib/store/slices';
 import accountApiRequest from '@/apiRequests/account';
 import { v4 as uuidv4 } from 'uuid';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import HeaderSearchList from '@/components/header-search-list';
-import { createFuseInstance } from '@/lib/fuse';
 import { useRouter } from 'next/navigation';
+import debounce from 'lodash/debounce';
+import productApiRequest from '@/apiRequests/product';
+import { ProductPaginationResponseType } from '@/schemaValidations/product.schema';
 
 export default function HeaderSearchBar() {
     const dispatch = useAppDispatch();
     const router = useRouter();
 
     const token = useAppSelector((state) => state.auth.accessToken);
-    const products = useAppSelector((state) => state.products.products);
-    const fuse = createFuseInstance(products?.length > 0 ? products : []);
 
     const historySearch =
         useAppSelector((state) => state.user.historySearch) ?? [];
     const localSearch = useAppSelector((state) => state.user.localSearch);
     const [isOpen, setIsOpen] = useState<boolean>(false);
-    const [searchPattern, setSearchPattern] = useState<string>('');
-    const [searchSuggestions, setSearchSuggestions] = useState<
-        HistorySearchItem[]
-    >([]);
+    const [searchTerm, setSearchTerm] = useState<string>('');
+    const [searchSuggestions, setSearchSuggestions] = useState<ProductType[]>(
+        [],
+    );
 
     useEffect(() => {
-        const results = fuse.search(searchPattern);
-        const data = results.map((el) => {
-            const searchItem = {
-                id: uuidv4(),
-                search_content: el.item.name,
-            };
-            return searchItem;
-        });
-        setSearchSuggestions(data);
-    }, [searchPattern]); // eslint-disable-line
-
-    useEffect(() => {
-        if (token && historySearch.length < 1) {
+        if (token && historySearch?.length < 1) {
             accountApiRequest
                 .getHistorySearch(token)
                 .then((response: HistorySearchItem[]) => {
                     dispatch(setHistorySearchList(response));
                 });
         }
+    }, [token, dispatch, historySearch.length]);
 
+    useEffect(() => {
         if (token && localSearch?.length > 0) {
             accountApiRequest
                 .createHistorySearchList(token, localSearch)
@@ -75,11 +66,13 @@ export default function HeaderSearchBar() {
                     dispatch(setHistorySearchList(response));
                 });
         }
+    }, [token, dispatch, localSearch]);
 
+    useEffect(() => {
         const handleClick = () => setIsOpen(false);
         window.addEventListener('click', handleClick);
         () => window.removeEventListener('click', handleClick);
-    }, [token, dispatch]); // eslint-disable-line
+    }, []);
 
     const form = useForm<HistorySearchBodyType>({
         resolver: zodResolver(HistorySearchBody),
@@ -88,26 +81,66 @@ export default function HeaderSearchBar() {
         },
     });
 
+    const getProductSuggestions = useCallback((keyword: string) => {
+        productApiRequest
+            .getProductsByKeyword(keyword)
+            .then((response: ProductPaginationResponseType) => {
+                setSearchSuggestions(response.data.products);
+            });
+    }, []);
+
+    //eslint-disable-next-line
+    const debouncedSearch = useCallback(
+        debounce((query) => {
+            getProductSuggestions(query);
+        }, 500),
+        [],
+    );
+
+    const handleOnChange = (keyword: string) => {
+        setSearchTerm(keyword);
+        if (keyword) {
+            debouncedSearch(keyword);
+        }
+    };
+
     const onSubmit = async (e: any) => {
         e.preventDefault();
-        if (!searchPattern) return;
+        if (!searchTerm) return;
 
         const searchItem = {
             id: uuidv4(),
-            search_content: searchPattern,
+            search_content: searchTerm,
         };
 
         if (token) {
             const searchItemResponse: HistorySearchItem =
                 await accountApiRequest.createHistorySearch(token, searchItem);
-            dispatch(setHistorySearchItem(searchItemResponse));
+
+            const isExist = historySearch.find(
+                (item) =>
+                    item.search_content === searchItemResponse.search_content,
+            );
+            if (!isExist) {
+                dispatch(setHistorySearchItem(searchItemResponse));
+            }
         } else {
-            dispatch(setLocalSearchItem(searchItem));
+            const isExist = localSearch.find(
+                (item) => item.search_content === searchItem.search_content,
+            );
+            if (!isExist) {
+                dispatch(setLocalSearchItem(searchItem));
+            }
         }
 
         form.reset();
 
-        router.push(`/search/${searchItem.search_content}`);
+        setIsOpen(false);
+        setSearchTerm('');
+
+        router.push(
+            `/search?keywords=${searchItem.search_content.replaceAll(' ', '+')}`,
+        );
     };
 
     return (
@@ -132,9 +165,9 @@ export default function HeaderSearchBar() {
                                             type="text"
                                             onClick={(e) => e.preventDefault()}
                                             onChange={(e) =>
-                                                setSearchPattern(e.target.value)
+                                                handleOnChange(e.target.value)
                                             }
-                                            value={searchPattern}
+                                            value={searchTerm}
                                             autoComplete="off"
                                             placeholder="Bạn cần tìm gì..."
                                             className="px-2 py-5 w-full"
@@ -145,11 +178,13 @@ export default function HeaderSearchBar() {
                             )}
                         />
                         <HeaderSearchList
+                            searchTerm={searchTerm}
+                            setSearchTerm={setSearchTerm}
                             searchList={
-                                token
-                                    ? [...historySearch, ...searchSuggestions]
-                                    : [...localSearch, ...searchSuggestions]
+                                token ? [...historySearch] : [...localSearch]
                             }
+                            searchSuggestions={searchSuggestions}
+                            setSearchSuggestions={setSearchSuggestions}
                             isOpen={isOpen}
                             setIsOpen={setIsOpen}
                         />

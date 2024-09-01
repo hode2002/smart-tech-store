@@ -13,24 +13,26 @@ import {
     BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 
-export default function SearchPage({
-    params,
-}: {
-    params: { keyword: string };
-}) {
+export default function SearchPage() {
+    const searchParams = useSearchParams();
+    const keywords = searchParams.get('keywords');
+
     const [isCLient, setIsClient] = useState(false);
     useEffect(() => setIsClient(true), []);
 
     const [products, setProducts] = useState<ProductType[]>([]);
 
     useEffect(() => {
-        productApiRequest
-            .getProductsByKeyword(params.keyword)
-            .then((response: ProductPaginationResponseType) => {
-                setProducts(response.data.products);
-            });
-    }, [params.keyword]);
+        if (keywords) {
+            productApiRequest
+                .getProductsByKeyword(keywords)
+                .then((response: ProductPaginationResponseType) => {
+                    setProducts(response.data.products);
+                });
+        }
+    }, [keywords]);
 
     return (
         isCLient && (
@@ -46,23 +48,21 @@ export default function SearchPage({
                         <BreadcrumbItem>
                             <p>Tìm kiếm</p>
                         </BreadcrumbItem>
-                        {/* <BreadcrumbSeparator />
+                        <BreadcrumbSeparator />
                         <BreadcrumbItem>
                             <BreadcrumbPage className="capitalize">
-                                {params.keyword}
+                                {keywords}
                             </BreadcrumbPage>
-                        </BreadcrumbItem> */}
+                        </BreadcrumbItem>
                     </BreadcrumbList>
                 </Breadcrumb>
                 <div className="my-8 flex">
                     <div className="w-full px-7 border-border bg-background">
                         <div className="w-full py-3">
-                            <div className="flex gap-2 items-center">
-                                <p className="font-bold text-[20px] pb-2">
-                                    Tìm thấy {products.length} kết quả
-                                    {/* với từ
-                                    khóa{' '}
-                                    {`"${params.keyword.replaceAll('-', ' ')}"`} */}
+                            <div className="flex justify-between items-center">
+                                <p className="font-bold text-[20px]">
+                                    Tìm thấy {products.length} kết quả với từ
+                                    khóa {`"${keywords}"`}
                                 </p>
                             </div>
                         </div>

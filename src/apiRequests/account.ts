@@ -245,16 +245,11 @@ class AccountApiRequest {
 
     async createHistorySearch(token: string, body: HistorySearchItem) {
         try {
-            const { search_content } = body;
-            const response = await http.post(
-                '/history-search',
-                { search_content },
-                {
-                    headers: {
-                        Authorization: 'Bearer ' + token,
-                    },
+            const response = await http.post('/history-search', body, {
+                headers: {
+                    Authorization: 'Bearer ' + token,
                 },
-            );
+            });
             return response.data;
         } catch (error: any) {
             toast({
