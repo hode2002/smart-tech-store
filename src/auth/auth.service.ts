@@ -42,9 +42,13 @@ export class AuthService {
         thirdPartyLoginDto: ThirdPartyLoginDto,
         authType: AuthType,
     ) {
-        const { email } = thirdPartyLoginDto;
+        if (!thirdPartyLoginDto?.email) {
+            return res.redirect(
+                this.configService.get<string>('FRONTEND_REDIRECT_URL'),
+            );
+        }
 
-        let user = await this.userService.findByEmail(email);
+        let user = await this.userService.findByEmail(thirdPartyLoginDto.email);
         if (!user) {
             user = await this.userService.create3rdPartyAuthentication(
                 thirdPartyLoginDto,
@@ -56,29 +60,36 @@ export class AuthService {
         }
 
         const tokens = this.createTokenPairs({
-            email,
+            email: thirdPartyLoginDto.email,
             userId: user.id,
             role: user.role,
         });
 
-        const isUpdated = await this.userService.updateByEmail(email, {
-            refresh_token: await bcrypt.hash(tokens.refreshToken, 10),
-        });
+        const isUpdated = await this.userService.updateByEmail(
+            thirdPartyLoginDto.email,
+            {
+                refresh_token: await bcrypt.hash(tokens.refreshToken, 10),
+            },
+        );
         if (!isUpdated) {
             throw new InternalServerErrorException('Internal Server Error');
         }
 
         res.cookie('accessToken', tokens.accessToken, {
-            // path: '/',0
-            // httpOnly: true,
-            // sameSite: 'strict',
-            // secure: false,
+            path: '/',
+            httpOnly: false,
+            sameSite: 'none',
+            secure: true,
+            maxAge: 60 * 60 * 1000,
+            domain: this.configService.get<string>('FRONTEND_DOMAIN'),
         });
         res.cookie('refreshToken', tokens.refreshToken, {
-            // path: '/',
-            // httpOnly: true,
-            // sameSite: 'strict',
-            // secure: false,
+            path: '/',
+            httpOnly: false,
+            sameSite: 'none',
+            secure: true,
+            maxAge: 60 * 60 * 1000,
+            domain: this.configService.get<string>('FRONTEND_DOMAIN'),
         });
 
         return res.redirect(
