@@ -29,10 +29,11 @@ async function bootstrap() {
 
     app.enableCors(corsOptions);
 
-    // app.use(helmet());
     app.use(
         helmet({
-            crossOriginResourcePolicy: false,
+            crossOriginResourcePolicy: {
+                policy: 'cross-origin',
+            },
         }),
     );
     app.use(compression());
