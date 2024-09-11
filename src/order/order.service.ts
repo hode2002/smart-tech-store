@@ -85,7 +85,7 @@ export class OrderService {
 
             const orderDetailPromises = order_details.map(
                 async (orderDetail) => {
-                    const { product_option_id, price, quantity } = orderDetail;
+                    const { product_option_id, quantity } = orderDetail;
 
                     const userCart = await prisma.cart.findFirst({
                         where: {
@@ -104,7 +104,14 @@ export class OrderService {
                     const productOption = await prisma.productOption.findUnique(
                         {
                             where: { id: product_option_id, stock: { gte: 1 } },
-                            select: { stock: true },
+                            select: {
+                                stock: true,
+                                discount: true,
+                                price_modifier: true,
+                                product: {
+                                    select: { price: true },
+                                },
+                            },
                         },
                     );
 
@@ -145,15 +152,26 @@ export class OrderService {
                         data: { stock: productOption.stock - quantity },
                     });
 
-                    totalOrderPrice += quantity * price;
+                    const discount =
+                        ((productOption.product.price +
+                            productOption.price_modifier) *
+                            productOption.discount) /
+                        100;
+                    const modifiedPrice =
+                        productOption.product.price +
+                        productOption.price_modifier -
+                        discount;
+                    const subtotal = quantity * modifiedPrice;
+
+                    totalOrderPrice += subtotal;
 
                     return prisma.orderDetail.create({
                         data: {
                             order_id: order.id,
                             product_option_id,
-                            price,
+                            price: modifiedPrice,
                             quantity,
-                            subtotal: quantity * price,
+                            subtotal,
                         },
                     });
                 },
@@ -191,7 +209,7 @@ export class OrderService {
 
             const updateShippingFee = prisma.order.update({
                 where: { id: order.id },
-                data: { total_amount: totalOrderPrice + GHTKOrder.order.fee },
+                data: { total_amount: totalOrderPrice },
             });
 
             await Promise.all([
@@ -921,14 +939,24 @@ export class OrderService {
         orderId: string,
         orderData: CreateOrderDto,
     ): Promise<GHTKCreateResponse> {
-        const products = orderData.order_details.map(async (item) => {
+        const products: {
+            name: string;
+            weight: number;
+            quantity: number;
+        }[] = [];
+
+        let totalPrice = 0;
+
+        for (const orderDetailItem of orderData.order_details) {
             const productOption =
                 await this.prismaService.productOption.findUnique({
-                    where: { id: item.product_option_id },
+                    where: { id: orderDetailItem.product_option_id },
                     select: {
                         sku: true,
+                        discount: true,
+                        price_modifier: true,
                         product: {
-                            select: { name: true },
+                            select: { name: true, price: true },
                         },
                         technical_specs: {
                             select: { weight: true },
@@ -936,7 +964,18 @@ export class OrderService {
                     },
                 });
 
-            return {
+            const discount =
+                ((productOption.product.price + productOption.price_modifier) *
+                    productOption.discount) /
+                100;
+            const modifiedPrice =
+                productOption.product.price +
+                productOption.price_modifier -
+                discount;
+
+            totalPrice += orderDetailItem.quantity * modifiedPrice;
+
+            const result = {
                 name:
                     productOption.product.name +
                     ' ' +
@@ -948,15 +987,11 @@ export class OrderService {
                             '',
                         ),
                     ) / 1000,
-                quantity: item.quantity,
+                quantity: orderDetailItem.quantity,
             };
-        });
 
-        let totalPrice = 0;
-        orderData.order_details.forEach(
-            (orderDetail) =>
-                (totalPrice += orderDetail.price * orderDetail.quantity),
-        );
+            products.push(result);
+        }
 
         const GHTKOrderObj = {
             id: orderId,
@@ -987,7 +1022,7 @@ export class OrderService {
                 this.configService.get<string>('GHTK_API_URL') +
                 '/services/shipment/order',
             data: {
-                products: await Promise.all(products),
+                products,
                 order: GHTKOrderObj,
             },
             headers: {

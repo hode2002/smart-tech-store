@@ -57,8 +57,4 @@ class OrderDetailDto {
     @IsNumber()
     @IsNotEmpty()
     quantity: number;
-
-    @IsNumber()
-    @IsNotEmpty()
-    price: number;
 }
