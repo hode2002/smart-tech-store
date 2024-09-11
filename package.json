@@ -7,7 +7,8 @@
         "build": "next build",
         "start": "next start",
         "lint": "next lint",
-        "lint:fix": "eslint --fix --ext ts,tsx src"
+        "lint:fix": "eslint --fix --ext ts,tsx src",
+        "dev-https": "next dev --experimental-https"
     },
     "dependencies": {
         "@hookform/resolvers": "^3.3.4",
