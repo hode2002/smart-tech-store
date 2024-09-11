@@ -4,6 +4,7 @@ const configSchema = z.object({
     NEXT_PUBLIC_API_URL: z.string(),
     NEXT_PUBLIC_GHN_URL: z.string(),
     NEXT_PUBLIC_GHN_KEY: z.string(),
+    NEXT_PUBLIC_SUBIZ_ACCOUNT_ID: z.string(),
     NEXT_PUBLIC_TINY_EDITOR_KEY: z.string(),
 });
 
@@ -11,6 +12,7 @@ const configProject = configSchema.safeParse({
     NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL,
     NEXT_PUBLIC_GHN_URL: process.env.NEXT_PUBLIC_GHN_URL,
     NEXT_PUBLIC_GHN_KEY: process.env.NEXT_PUBLIC_GHN_KEY,
+    NEXT_PUBLIC_SUBIZ_ACCOUNT_ID: process.env.NEXT_PUBLIC_SUBIZ_ACCOUNT_ID,
     NEXT_PUBLIC_TINY_EDITOR_KEY: process.env.NEXT_PUBLIC_TINY_EDITOR_KEY,
 });
 
