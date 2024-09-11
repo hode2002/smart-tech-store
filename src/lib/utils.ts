@@ -4,6 +4,7 @@ import {
 } from '@/schemaValidations/product.schema';
 import { type ClassValue, clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
+import slugify from 'slugify';
 
 export function cn(...inputs: ClassValue[]) {
     return twMerge(clsx(inputs));
@@ -108,4 +109,23 @@ export const arraySpecsToObject = (
         result[specs.name] = specs.value;
         return result;
     }, {} as TechnicalSpecsItem);
+};
+
+export const generateSlug = (text: string) => {
+    return slugify(text, {
+        replacement: '-',
+        remove: undefined,
+        lower: true,
+        strict: false,
+        locale: 'vi',
+        trim: true,
+    });
+};
+
+export const obfuscateEmail = (email: string | undefined) => {
+    if (!email) return;
+    const [localPart, domain] = email.split('@');
+    const domainName = domain.split('.')[0];
+    const obfuscatedLocalPart = `${localPart[0]}***`;
+    return `${obfuscatedLocalPart}@${domainName}.com`;
 };
