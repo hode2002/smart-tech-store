@@ -129,3 +129,5 @@ export const obfuscateEmail = (email: string | undefined) => {
     const obfuscatedLocalPart = `${localPart[0]}***`;
     return `${obfuscatedLocalPart}@${domainName}.com`;
 };
+
+export const FRONTEND_URL = process.env.NEXT_PUBLIC_FRONTEND_URL;
