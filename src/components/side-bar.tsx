@@ -37,9 +37,7 @@ export default function SideBar(props: Props) {
             </SheetTrigger>
             <SheetContent>
                 <SheetHeader>
-                    <div className="flex w-[65%] justify-between">
-                        <ModeToggle />
-
+                    <div className="flex gap-2 justify-between items-center">
                         <Link
                             href="/"
                             className="flex justify-center items-center space-x-3"
@@ -56,6 +54,7 @@ export default function SideBar(props: Props) {
                                 Store
                             </span>
                         </Link>
+                        <ModeToggle />
                     </div>
 
                     <div

@@ -76,8 +76,8 @@ export default function Banner() {
                             ))
                         ) : (
                             <>
-                                <Skeleton className="w-[400px] h-[115px] rounded-xl" />
-                                <Skeleton className="w-[400px] h-[115px] rounded-xl" />
+                                <Skeleton className="w-full md:w-[400px] h-[115px] rounded-xl" />
+                                <Skeleton className="w-full md:w-[400px] h-[115px] rounded-xl" />
                             </>
                         )}
                     </div>
