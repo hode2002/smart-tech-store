@@ -40,7 +40,7 @@ export function AddCategoryModal(props: Props) {
                     Thêm danh mục
                 </div>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[425px]">
+            <DialogContent className="max-w-[400px] md:min-w-max rounded-md">
                 <DialogHeader>
                     <DialogTitle>Tạo mới danh mục</DialogTitle>
                 </DialogHeader>

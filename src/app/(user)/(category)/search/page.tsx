@@ -36,7 +36,7 @@ export default function SearchPage() {
 
     return (
         isCLient && (
-            <div className="py-2 bg-popover min-h-screen">
+            <div className="py-2 bg-popover">
                 <Breadcrumb>
                     <BreadcrumbList>
                         <BreadcrumbItem>
@@ -57,7 +57,7 @@ export default function SearchPage() {
                     </BreadcrumbList>
                 </Breadcrumb>
                 <div className="my-8 flex">
-                    <div className="w-full px-7 border-border bg-background">
+                    <div className="w-full border-border bg-background">
                         <div className="w-full py-3">
                             <div className="flex justify-between items-center">
                                 <p className="font-bold text-[20px]">

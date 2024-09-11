@@ -29,6 +29,16 @@ import { useRouter } from 'next/navigation';
 import accountApiRequest, {
     AddToCartResponseType,
 } from '@/apiRequests/account';
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 
 export default function PurchasePage() {
     const dispatch = useAppDispatch();
@@ -69,10 +79,6 @@ export default function PurchasePage() {
     };
 
     const handleUpdateOrderStatus = async (orderId: string, status: number) => {
-        if (status === 2) {
-            const isConfirm = window.confirm('Xác nhận đã nhận được sản phẩm?');
-            if (!isConfirm) return;
-        }
         const response = (await orderApiRequest.updateOrderStatus(
             token,
             orderId,
@@ -87,9 +93,6 @@ export default function PurchasePage() {
     };
 
     const handleCancelOrder = async (orderId: string) => {
-        const isConfirm = window.confirm('Chắc chắn hủy?');
-        if (!isConfirm) return;
-
         const response = (await orderApiRequest.cancelOrder(
             token,
             orderId,
@@ -103,7 +106,7 @@ export default function PurchasePage() {
     };
 
     const handleRepurchase = async (order: OrderResponseType) => {
-        let cartItemsCheckout: CartItem[] = [];
+        const cartItemsCheckout: CartItem[] = [];
         const productsCheckout: ProductCheckout[] = [];
 
         for (const o of order.order_details) {
@@ -115,44 +118,80 @@ export default function PurchasePage() {
             })) as AddToCartResponseType;
 
             if (response?.statusCode === 201) {
-                cartItemsCheckout = cartProducts.filter(
-                    (p) =>
-                        p.selected_option.id !==
-                        response.data.selected_option.id,
-                );
+                cartItemsCheckout.push(response.data);
 
                 const productCheckout: ProductCheckout = {
                     id: productOptionId,
                     name: o.product.name,
                     thumbnail: o.product.thumbnail,
                     unitPrice: o.product.price,
-                    quantity: 1,
-                    total: o.product.price + o.product.price_modifier,
+                    priceModifier: o.product.price_modifier,
+                    quantity: o.quantity,
                     weight: o.product.weight,
+                    discount: o.product.discount,
                 };
 
                 productsCheckout.push(productCheckout);
             }
         }
 
-        dispatch(setCartProducts([...cartItemsCheckout, ...cartProducts]));
+        const cartItems: CartItem[] = cartItemsCheckout.map((item) => {
+            const isExist = cartProducts.find(
+                (product) => product.id === item.id,
+            );
+
+            if (!isExist) {
+                return item;
+            }
+
+            return {
+                ...item,
+                quantity: item.quantity,
+            };
+        });
+
+        dispatch(
+            setCartProducts([
+                ...cartProducts.filter(
+                    (product) =>
+                        !cartItemsCheckout.some(
+                            (item) => item.id === product.id,
+                        ),
+                ),
+                ...cartItems,
+            ]),
+        );
+
         dispatch(setProductCheckout(productsCheckout));
         router.push('/user/checkout');
     };
 
-    const orderPaymentSuccessful = useCallback((order: OrderResponseType) => {
-        return order.payment_method === 'cod'
-            ? formatPrice(order.total_amount)
-            : order.transaction_id && order.status === 2
-              ? formatPrice(order.total_amount)
-              : formatPrice(0);
+    const totalOrderAmount = useCallback((order: OrderResponseType) => {
+        const orderPaymentMethod = order.payment_method;
+        if (orderPaymentMethod === 'cod') {
+            return [
+                formatPrice(order.fee),
+                formatPrice(order.total_amount + order.fee),
+            ];
+        }
+
+        const isPaymentOnlineSuccess = order.transaction_id;
+        const orderStatus = order.status;
+        if (isPaymentOnlineSuccess && orderStatus !== 2) {
+            return [formatPrice(0), formatPrice(0)];
+        }
+
+        return [
+            formatPrice(order.fee),
+            formatPrice(order.total_amount + order.fee),
+        ];
     }, []);
 
     return (
         <div>
             <ScrollArea className="w-96 sm:w-full">
                 <Card className="mb-4">
-                    <div className="flex items-center justify-between font-semibold">
+                    <div className="flex gap-3 md:gap-0 items-center justify-between font-semibold">
                         <Button
                             variant={currStatus === 5 ? 'default' : 'link'}
                             className="w-[20%] text-center text-nowrap rounded"
@@ -201,6 +240,11 @@ export default function PurchasePage() {
                                 <div className="flex justify-end gap-4 items-center">
                                     <p className="font-semibold">
                                         {convertStatus(order.status)}
+                                        {order.status === 2 && (
+                                            <span className="mx-2 uppercase">
+                                                [{order.payment_method}]
+                                            </span>
+                                        )}
                                     </p>
                                     {/* {order.status === 2 && (
                                         <Button
@@ -298,43 +342,79 @@ export default function PurchasePage() {
                                 })}
                             <CardFooter className="flex flex-col pt-6">
                                 <div className="justify-end w-full">
-                                    <div className="flex gap-16 items-center justify-end">
+                                    <div className="flex gap-6 items-center justify-end">
                                         <p className="text-right">
                                             Phí vận chuyển:
                                         </p>
-                                        <p>{formatPrice(order.fee)}</p>
+                                        <p>{totalOrderAmount(order)[0]}</p>
                                     </div>
                                     <div className="flex gap-6 items-center justify-end">
                                         <p className="text-right">
                                             Tổng thanh toán:
                                         </p>
                                         <p className="font-bold">
-                                            {orderPaymentSuccessful(order)}
+                                            {totalOrderAmount(order)[1]}
                                         </p>
                                     </div>
                                 </div>
                                 <div className="text-right w-full pt-6">
                                     {(order.status === 0 ||
                                         order.status === 5) && (
-                                        <Button
-                                            onClick={() =>
-                                                handleCancelOrder(order.id)
-                                            }
-                                        >
-                                            Hủy
-                                        </Button>
+                                        <AlertDialog>
+                                            <AlertDialogTrigger asChild>
+                                                <Button>Hủy</Button>
+                                            </AlertDialogTrigger>
+                                            <AlertDialogContent>
+                                                <AlertDialogHeader>
+                                                    <AlertDialogTitle>
+                                                        Xác nhận hủy đặt hàng?
+                                                    </AlertDialogTitle>
+                                                </AlertDialogHeader>
+                                                <AlertDialogFooter>
+                                                    <AlertDialogCancel>
+                                                        Hủy
+                                                    </AlertDialogCancel>
+                                                    <AlertDialogAction
+                                                        onClick={() =>
+                                                            handleCancelOrder(
+                                                                order.id,
+                                                            )
+                                                        }
+                                                    >
+                                                        Xác nhận
+                                                    </AlertDialogAction>
+                                                </AlertDialogFooter>
+                                            </AlertDialogContent>
+                                        </AlertDialog>
                                     )}
                                     {order.status === 1 && (
-                                        <Button
-                                            onClick={() =>
-                                                handleUpdateOrderStatus(
-                                                    order.id,
-                                                    2,
-                                                )
-                                            }
-                                        >
-                                            Đã nhận hàng
-                                        </Button>
+                                        <AlertDialog>
+                                            <AlertDialogTrigger asChild>
+                                                <Button>Đã nhận hàng</Button>
+                                            </AlertDialogTrigger>
+                                            <AlertDialogContent>
+                                                <AlertDialogHeader>
+                                                    <AlertDialogTitle>
+                                                        Bạn đã nhận được hàng?
+                                                    </AlertDialogTitle>
+                                                </AlertDialogHeader>
+                                                <AlertDialogFooter>
+                                                    <AlertDialogCancel>
+                                                        Hủy
+                                                    </AlertDialogCancel>
+                                                    <AlertDialogAction
+                                                        onClick={() =>
+                                                            handleUpdateOrderStatus(
+                                                                order.id,
+                                                                2,
+                                                            )
+                                                        }
+                                                    >
+                                                        Xác nhận
+                                                    </AlertDialogAction>
+                                                </AlertDialogFooter>
+                                            </AlertDialogContent>
+                                        </AlertDialog>
                                     )}
                                     {(order.status === 2 ||
                                         order.status === 3) && (

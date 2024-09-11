@@ -145,7 +145,7 @@ export default function HeaderSearchBar() {
 
     return (
         <div
-            className="mx-4 items-center w-full"
+            className="mx-4 items-center w-[94%] md:w-full"
             onClick={(e) => e.stopPropagation()}
         >
             <Form {...form}>

@@ -38,7 +38,7 @@ export default function CartPage() {
 
     return (
         <div>
-            <div className="flex items-center gap-4 py-4">
+            <div className="flex items-center gap-4 px-2 md:px-0 py-4">
                 <p className="font-bold text-[32px] flex gap-2 items-center">
                     <ShoppingBag />
                     <span>Giỏ hàng</span>

@@ -77,10 +77,10 @@ export default function HomeProductCard(props: Props) {
     };
 
     return (
-        <div className="max-w-[300px]">
+        <div className="w-[200px] lg:w-auto lg:max-w-[300px]">
             <ContextMenu>
                 <ContextMenuTrigger>
-                    <div className="h-[650px] bg-card hover:shadow-2xl hover:cursor-pointer sm:hover:scale-[1.05] hover:scale-[1.1] transition-all duration-300 border-[1px] border-[#ccc] rounded-md px-2 py-3 max-w-[300px] shadow-md m-3 flex flex-col justify-between">
+                    <div className="min-h-[410px] lg:h-[650px] bg-card hover:shadow-2xl hover:cursor-pointer hover:scale-[1.00] md:hover:scale-[1.1] transition-all duration-300 border-[1px] border-[#ccc] rounded-md px-2 py-3 max-w-[300px] shadow-md m-3 flex flex-col justify-between">
                         {product?.label && (
                             <p className="mb-4 opacity-70 text-sm">
                                 <span className="bg-[#f1f1f1] text-[#333] rounded-lg animate-pulse">
@@ -93,28 +93,30 @@ export default function HomeProductCard(props: Props) {
                             className="relative flex flex-col justify-center items-center gap-2 object-contain"
                         >
                             <Image
-                                height={70}
-                                width={70}
+                                loading="lazy"
+                                height={500}
+                                width={500}
                                 src={productOption.label_image}
                                 alt="product sticker"
-                                className="absolute top-2 left-3 z-10 animate-bounce"
+                                className="h-auto w-[55px] md:w-[70px] absolute top-2 left-3 z-10 animate-bounce"
                             />
 
                             <div>
                                 <Image
+                                    loading="lazy"
                                     height={500}
                                     width={200}
                                     src={productOption.thumbnail}
                                     alt={productName}
-                                    className="hover:scale-[1.1] transition-all duration-300"
+                                    className="w-[150px] md:w-[200px] hover:scale-[1.0] md:hover:scale-[1.1] transition-all duration-300"
                                 />
                             </div>
 
                             <div className="flex flex-col gap-2 capitalize">
-                                <p className="text-center font-bold capitalize">
+                                <p className="text-center font-bold capitalize text-pretty">
                                     {productName}
                                 </p>
-                                <div className="flex gap-3 mt-2 justify-center items-center">
+                                <div className="flex flex-col lg:flex-row gap-3 mt-2 justify-center items-center">
                                     {productOption.discount === 0 ? (
                                         <p className="text-[#E83A45] font-semibold text-[18px]">
                                             {price}
@@ -159,12 +161,13 @@ export default function HomeProductCard(props: Props) {
                                 </div>
                             )}
 
-                            <div className="text-center text-[12px]">
+                            <div className="text-center text-[12px] hidden lg:block">
                                 <div className="text-[#E83A45] font-semibold flex justify-around items-center gap-2">
                                     <Image
+                                        priority
                                         height={15}
                                         width={15}
-                                        className="animate-ping h-[15px]"
+                                        className="animate-ping"
                                         src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAcCAYAAAB75n/uAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAGVSURBVHgB7VbRTcMwFDyHfvCB2oyQDegIZQM2gE5QOgFlAroB3QCYoGWClAnIBkSCD5Cg5vyS0tR1HAuRH+hJjq28892Lo1wLOKC7uNQ9PMvgGjVgbVThXSMEpbjWMSZcz2TdxYWHN5VR8CbNBj2kJN5UhKbSYYzk+x7X6yYsXmrrRQ6PHApxhTGRe3pjipUcW6byrY57wrOg7Bvs6rwUu+P8WLKOeT3lfIIPrg4w53XB+oMIK/Q5D2g8VC+YeQ0qJmdcJlY7Y15j1kYyb7Ck+L0tLlsoFrOrPkLQwZLHkusjdhsA9YqF4ot52um0Du/kHfI5tOwJwSIKFv8ZBhFaxl8wULhCW2hTe+OBIlv4LSRORkciIXOVGvbl3LcsiOvU3B2pfIg1MDXhuPaWgel7yZnJHvPl1hGkZvIJ7if0GeyIS0SbjouRhJq4DVYYV89dBDUT9E0i2YTd3DLJ8IlhuEGEW/MjsyW+HSlJ1cSceRnhgQYFzFH0HeK2iTeJO74iBVL4kTRx9mH3bwyiMpR+V1n+8nwB+DO/44jWMeQAAAAASUVORK5CYII="
                                         alt="product promotion"
                                     />
@@ -172,9 +175,10 @@ export default function HomeProductCard(props: Props) {
                                         {randomElement(product.promotions)}
                                     </p>
                                     <Image
+                                        priority
                                         height={15}
                                         width={15}
-                                        className="animate-ping h-[15px]"
+                                        className="animate-ping"
                                         src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAcCAYAAAB75n/uAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAGVSURBVHgB7VbRTcMwFDyHfvCB2oyQDegIZQM2gE5QOgFlAroB3QCYoGWClAnIBkSCD5Cg5vyS0tR1HAuRH+hJjq28892Lo1wLOKC7uNQ9PMvgGjVgbVThXSMEpbjWMSZcz2TdxYWHN5VR8CbNBj2kJN5UhKbSYYzk+x7X6yYsXmrrRQ6PHApxhTGRe3pjipUcW6byrY57wrOg7Bvs6rwUu+P8WLKOeT3lfIIPrg4w53XB+oMIK/Q5D2g8VC+YeQ0qJmdcJlY7Y15j1kYyb7Ck+L0tLlsoFrOrPkLQwZLHkusjdhsA9YqF4ot52um0Du/kHfI5tOwJwSIKFv8ZBhFaxl8wULhCW2hTe+OBIlv4LSRORkciIXOVGvbl3LcsiOvU3B2pfIg1MDXhuPaWgel7yZnJHvPl1hGkZvIJ7if0GeyIS0SbjouRhJq4DVYYV89dBDUT9E0i2YTd3DLJ8IlhuEGEW/MjsyW+HSlJ1cSceRnhgQYFzFH0HeK2iTeJO74iBVL4kTRx9mH3bwyiMpR+V1n+8nwB+DO/44jWMeQAAAAASUVORK5CYII="
                                         alt="product promotion"
                                     />
@@ -193,7 +197,7 @@ export default function HomeProductCard(props: Props) {
                         </Button>
                     </div>
                 </ContextMenuTrigger>
-                <ContextMenuContent className="w-64">
+                <ContextMenuContent className="w-64 hidden lg:block">
                     {product.warranties?.map((warranty) => (
                         <ContextMenuItem inset key={warranty} className="px-0">
                             <li className="py-1 flex w-full items-start gap-2">

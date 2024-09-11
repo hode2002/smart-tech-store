@@ -11,13 +11,13 @@ export default function ProductList(props: Props) {
     return (
         <>
             {products?.length > 0 ? (
-                <div className="flex flex-wrap justify-self-stretch">
+                <div className="flex flex-wrap justify-center">
                     {products.map((product) => (
                         <HomeProductCard key={product.id} product={product} />
                     ))}
                 </div>
             ) : (
-                <div className="flex justify-between flex-wrap">
+                <div className="flex justify-center flex-wrap">
                     <ProductSkeletonCard />
                     <ProductSkeletonCard />
                     <ProductSkeletonCard />

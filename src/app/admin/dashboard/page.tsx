@@ -213,8 +213,8 @@ export default function Dashboard() {
                 </nav>
             </aside>
             <div className="flex flex-col">
-                <div className="hidden flex-col md:flex">
-                    <div className="flex-1 space-y-4 p-8 pt-6">
+                <div className="flex flex-col m">
+                    <div className="flex-1 space-y-4 p-2 md:p-8 pt-6">
                         <div className="flex items-center justify-between space-y-2">
                             <h2 className="text-3xl font-bold tracking-tight">
                                 Dashboard
@@ -247,7 +247,7 @@ export default function Dashboard() {
                                 description={`+${products.filter((product) => moment(product.created_at).isSame(moment(new Date()), 'month')).length} so với tháng trước`}
                             />
                         </div>
-                        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
+                        <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-7">
                             <Card className="col-span-12">
                                 <CardHeader>
                                     <CardTitle>Đơn vị (triệu đồng)</CardTitle>
@@ -256,7 +256,7 @@ export default function Dashboard() {
                                     <Overview orders={orders} />
                                 </CardContent>
                             </Card>
-                            <Card className="col-span-3">
+                            <Card className="col-span-12 md:col-span-3">
                                 <CardHeader>
                                     <CardTitle>Đơn hàng gần đây</CardTitle>
                                     <CardDescription>
@@ -280,7 +280,7 @@ export default function Dashboard() {
                                     <RecentSales orders={orders} />
                                 </CardContent>
                             </Card>
-                            <Card className="col-span-9">
+                            <Card className="col-span-12 md:col-span-9">
                                 <CardHeader>
                                     <CardTitle>Khách hàng mới</CardTitle>
                                     <CardDescription>

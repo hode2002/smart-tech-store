@@ -23,7 +23,7 @@ import {
     BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb';
 import Link from 'next/link';
-import { Menu } from 'lucide-react';
+import { Filter, ListFilter, Menu } from 'lucide-react';
 
 import {
     Select,
@@ -220,9 +220,41 @@ export default function TabletPage() {
         }
     };
 
+    const filterBy = (): string => {
+        return Object.values(form.getValues())
+            .reduce((items: string[], values: any) => {
+                if (!values.includes('all')) {
+                    const hasPriceFilter = values.some(
+                        (v: string) => v.includes('pf') || v.includes('pt'),
+                    );
+
+                    if (hasPriceFilter) {
+                        prices.forEach((p) => {
+                            if (values.includes(p.id)) {
+                                items.push(p.label);
+                            }
+                        });
+                    } else {
+                        items.push(...values);
+                    }
+                }
+                return items;
+            }, [])
+            .join(',');
+    };
+
+    const handleClearFilter = () => {
+        form.reset();
+        productApiRequest
+            .getProductsByCategory('tablet')
+            .then((response: GetProductsResponseType) => {
+                setProducts(response.data);
+            });
+    };
+
     return (
         isCLient && (
-            <div className="py-2 bg-popover min-h-screen">
+            <div className="bg-popover">
                 <Breadcrumb>
                     <BreadcrumbList>
                         <BreadcrumbItem>
@@ -231,9 +263,7 @@ export default function TabletPage() {
                             </Link>
                         </BreadcrumbItem>
                         <BreadcrumbSeparator />
-                        <BreadcrumbItem>
-                            <Link href="#">Danh mục</Link>
-                        </BreadcrumbItem>
+                        <BreadcrumbItem>Danh mục</BreadcrumbItem>
                         <BreadcrumbSeparator />
                         <BreadcrumbItem>
                             <BreadcrumbPage>Máy tính bảng</BreadcrumbPage>
@@ -241,12 +271,12 @@ export default function TabletPage() {
                     </BreadcrumbList>
                 </Breadcrumb>
 
-                <div className="my-8 flex">
-                    <div className="w-0 md:w-[25%] pr-4 ">
-                        <Sheet key={'left'}>
+                <Sheet key={'left'}>
+                    <div className="my-8 flex">
+                        <div className="w-0 md:w-[25%] md:pr-4">
                             <SheetTrigger
                                 asChild
-                                className="block md:hidden fixed left-8 bottom-8 py-2 bg-popover"
+                                className="block md:hidden fixed left-8 bottom-8 py-2 bg-popover z-50 shadow-lg"
                             >
                                 <Button
                                     variant="outline"
@@ -266,67 +296,97 @@ export default function TabletPage() {
                                     />
                                 </ScrollArea>
                             </SheetContent>
-                        </Sheet>
-                        <div className="hidden md:block">
-                            <CheckboxMultiple
-                                form={form}
-                                handleFilterProduct={handleFilterProduct}
-                                productFilterBox={productFilterBox}
-                            />
-                        </div>
-                    </div>
 
-                    <div className="w-full md:w-[75%] px-7 border-0 md:border-l border-border bg-background">
-                        <div className="w-full py-3">
-                            <div className="flex gap-2 items-center">
-                                <h1 className="font-bold text-[28px] pb-2">
-                                    Máy tính bảng
-                                </h1>
-                                <span className="opacity-90 font-semibold text-md">
-                                    ({products.length} sản phẩm)
-                                </span>
+                            <div className="hidden md:block">
+                                <div>
+                                    <p className="flex items-center justify-between py-3 font-bold text-xl">
+                                        <span className="flex items-center">
+                                            <ListFilter className="mr-1" />
+                                            Bộ lọc tìm kiếm
+                                        </span>
+                                    </p>
+                                </div>
+                                <CheckboxMultiple
+                                    form={form}
+                                    handleFilterProduct={handleFilterProduct}
+                                    productFilterBox={productFilterBox}
+                                />
                             </div>
                         </div>
-                        <div>
-                            <div className="flex flex-col-reverse md:flex-row justify-between md:items-center gap-4">
-                                <div className="flex flex-col md:flex-row gap-2">
-                                    {/* <p className="whitespace-nowrap">
-                                        Lọc theo:
-                                    </p>
-                                    <div className="flex flex-wrap capitalize">
-                                        <span className="me-1 font-bold">
-                                            Samsung
-                                        </span>
-                                    </div> */}
-                                </div>
-                                <div className="flex justify-end">
-                                    <Select>
-                                        <SelectTrigger className="w-[180px]">
-                                            <SelectValue placeholder="Sắp xếp theo" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            <SelectGroup>
-                                                <SelectItem value="new">
-                                                    Mới
-                                                </SelectItem>
-                                                <SelectItem value="discount">
-                                                    % Giảm
-                                                </SelectItem>
-                                                <SelectItem value="decrease">
-                                                    Giá cao đến thấp
-                                                </SelectItem>
-                                                <SelectItem value="increase">
-                                                    Giá thấp đến cao
-                                                </SelectItem>
-                                            </SelectGroup>
-                                        </SelectContent>
-                                    </Select>
+
+                        <div className="w-full md:w-[75%] px-0 md:px-7 border-0 md:border-l border-border bg-background">
+                            <div className="w-full py-3">
+                                <div className="flex gap-2 items-center">
+                                    <h1 className="font-bold text-[28px] pb-2">
+                                        Máy tính bảng
+                                    </h1>
+                                    <span className="opacity-90 font-semibold text-md">
+                                        ({products.length} sản phẩm)
+                                    </span>
                                 </div>
                             </div>
-                            <CategoryProductList products={products} />
+                            <div>
+                                <div className="flex flex-col-reverse md:flex-row justify-between md:items-center gap-4">
+                                    <div className="flex flex-row flex-wrap gap-2">
+                                        {Object.values(form.getValues()).some(
+                                            (v) => !v.includes('all'),
+                                        ) && (
+                                            <div className="flex items-center gap-2">
+                                                <p>Lọc theo:</p>
+                                                <p className="font-bold capitalize">
+                                                    {filterBy()}
+                                                </p>
+                                                <Button
+                                                    variant={'link'}
+                                                    className="text-red-500"
+                                                    onClick={handleClearFilter}
+                                                >
+                                                    Xóa tất cả
+                                                </Button>
+                                            </div>
+                                        )}
+                                    </div>
+                                    <div className="flex justify-between md:justify-end">
+                                        <SheetTrigger asChild>
+                                            <Button
+                                                variant={'outline'}
+                                                className="flex md:hidden items-center gap-2"
+                                            >
+                                                <Filter />
+                                                Lọc
+                                                <strong className="number count-total hidden">
+                                                    0
+                                                </strong>
+                                            </Button>
+                                        </SheetTrigger>
+                                        <Select>
+                                            <SelectTrigger className="w-[180px]">
+                                                <SelectValue placeholder="Sắp xếp theo" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectGroup>
+                                                    <SelectItem value="new">
+                                                        Mới
+                                                    </SelectItem>
+                                                    <SelectItem value="discount">
+                                                        % Giảm
+                                                    </SelectItem>
+                                                    <SelectItem value="decrease">
+                                                        Giá cao đến thấp
+                                                    </SelectItem>
+                                                    <SelectItem value="increase">
+                                                        Giá thấp đến cao
+                                                    </SelectItem>
+                                                </SelectGroup>
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+                                </div>
+                                <CategoryProductList products={products} />
+                            </div>
                         </div>
                     </div>
-                </div>
+                </Sheet>
             </div>
         )
     );

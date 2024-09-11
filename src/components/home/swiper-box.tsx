@@ -8,16 +8,27 @@ import { ProductType } from '@/lib/store/slices';
 import ProductSkeletonCard from '@/components/home/product-skeleton-card';
 
 type Props = {
-    slidesPerView?: number;
+    slidesPerView?: number | 'auto';
+    spaceBetween?: number;
     title: string;
     link: string;
     products: ProductType[];
+    className?: string;
 };
 
 export default function SwiperBox(props: Props) {
-    const { title, link, products, slidesPerView = 4 } = props;
+    const {
+        title,
+        link,
+        products,
+        spaceBetween = 50,
+        slidesPerView = 4,
+        className,
+    } = props;
     return (
-        <div className="rounded-md shadow-md bg-white dark:bg-secondary my-[10%]">
+        <div
+            className={`rounded-md shadow-md bg-white dark:bg-secondary my-[15%] md:my-[10%] ${className}`}
+        >
             <div className="flex shadow-lg justify-between items-center p-4 bg-primary w-full text-white dark:bg-gray-900 rounded-lg">
                 <p className="capitalize text-[20px]">{title}</p>
                 <Link
@@ -30,14 +41,14 @@ export default function SwiperBox(props: Props) {
             {products?.length > 0 ? (
                 <Swiper
                     modules={[Scrollbar, A11y]}
-                    spaceBetween={50}
+                    spaceBetween={spaceBetween}
                     slidesPerView={slidesPerView}
                     scrollbar={{ draggable: true }}
                 >
                     {products.map((product) => (
                         <SwiperSlide
                             key={product.id}
-                            className="object-contain"
+                            className="object-contain my-6"
                         >
                             <HomeProductCard product={product} />
                         </SwiperSlide>

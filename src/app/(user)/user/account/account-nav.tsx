@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useAppSelector } from '@/lib/store';
-import { useEffect, useState } from 'react';
+import { useLayoutEffect, useState } from 'react';
 import { toast } from '@/components/ui/use-toast';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -16,7 +16,8 @@ export default function AccountNav() {
     const currentPath = usePathname();
     const isActive = (path: string) => currentPath.includes(path);
     const [isCLient, setIsClient] = useState(false);
-    useEffect(() => {
+
+    useLayoutEffect(() => {
         setIsClient(true);
         if (!token) {
             toast({
@@ -25,22 +26,24 @@ export default function AccountNav() {
             });
             router.push('/login');
         }
-    }, []); //eslint-disable-line
+    }, [router, token]);
 
     return (
         <nav className="grid gap-2 text-sm text-muted-foreground">
             <div className="mx-auto grid w-full max-w-6xl gap-2">
                 {isCLient ? (
-                    <div className="flex items-center gap-2 py-2 pr-4 pl-3 text-gray-700 text-[14px] md:text-[16px] hover:bg-gray-50 lg:hover:bg-transparent lg:hover:text-primary-700 lg:p-0 dark:text-gray-400 lg:dark:hover:text-white dark:hover:bg-gray-700 dark:hover:text-white lg:dark:hover:bg-transparent dark:border-gray-700">
+                    <div className="flex items-center gap-4 py-2">
                         <Avatar>
                             <AvatarImage
                                 width={50}
                                 height={50}
                                 src={profile?.avatar}
+                                alt="Avatar"
                             />
                             <AvatarFallback>avatar</AvatarFallback>
                         </Avatar>
-                        <p className="font-bold truncate w-[50%]">
+
+                        <p className="font-bold md:truncate w-[50%] text-black text-[14px]">
                             {profile.email}
                         </p>
                     </div>

@@ -33,18 +33,18 @@ const ProductTable = (props: Props) => {
         <Table>
             <TableHeader>
                 <TableRow>
-                    <TableHead className="hidden w-[100px] sm:table-cell">
-                        <span className="sr-only">Image</span>
+                    <TableHead className="w-[100px] table-cell">
+                        <span className="md:sr-only text-nowrap">Hình ảnh</span>
                     </TableHead>
                     <TableHead>Tên sản phẩm</TableHead>
                     <TableHead>Giá</TableHead>
-                    <TableHead className="hidden md:table-cell">
+                    <TableHead className="table-cell text-nowrap">
                         Danh mục
                     </TableHead>
-                    <TableHead className="hidden md:table-cell">
+                    <TableHead className="table-cell text-nowrap">
                         Thương hiệu
                     </TableHead>
-                    <TableHead className="hidden md:table-cell">
+                    <TableHead className="table-cell text-nowrap">
                         Ngày tạo
                     </TableHead>
                     <TableHead>
@@ -57,7 +57,7 @@ const ProductTable = (props: Props) => {
                     products?.map((product) => {
                         return (
                             <TableRow key={product.id}>
-                                <TableCell className="hidden sm:table-cell">
+                                <TableCell className="table-cell">
                                     <Image
                                         alt="Product image"
                                         className="aspect-square rounded-md object-cover"
@@ -70,7 +70,7 @@ const ProductTable = (props: Props) => {
                                         width="64"
                                     />
                                 </TableCell>
-                                <TableCell className="font-medium capitalize">
+                                <TableCell className="font-medium capitalize text-nowrap">
                                     {product.name}
                                 </TableCell>
                                 <TableCell>
@@ -86,7 +86,7 @@ const ProductTable = (props: Props) => {
                                 >
                                     {product.brand.name}
                                 </TableCell>
-                                <TableCell className="hidden md:table-cell">
+                                <TableCell className="table-cell text-nowrap">
                                     {moment(product.created_at).format(
                                         'DD-MM-YYYY HH:mm:ss',
                                     )}

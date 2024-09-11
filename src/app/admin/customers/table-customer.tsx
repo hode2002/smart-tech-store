@@ -40,6 +40,7 @@ import {
     GetOrderStatusResponseType,
     OrderResponseType,
 } from '@/apiRequests/order';
+import { ScrollBar } from '@/components/ui/scroll-area';
 
 type Props = {
     status: string;
@@ -97,14 +98,26 @@ const TableCustomers = (props: Props) => {
         <Table>
             <TableHeader>
                 <TableRow>
-                    <TableHead className="hidden w-[100px] sm:table-cell">
-                        <span className="sr-only">Image</span>
+                    <TableHead className="table-cell">
+                        <span className="not-sr-only md:sr-only text-nowrap">
+                            Avatar
+                        </span>
                     </TableHead>
-                    <TableHead>Email</TableHead>
-                    <TableHead>Họ tên</TableHead>
-                    <TableHead>Số điện thoại</TableHead>
-                    <TableHead>Địa chỉ</TableHead>
-                    <TableHead>Trạng thái</TableHead>
+                    <TableHead className="table-cell text-nowrap">
+                        Email
+                    </TableHead>
+                    <TableHead className="table-cell text-nowrap">
+                        Họ tên
+                    </TableHead>
+                    <TableHead className="table-cell text-nowrap">
+                        Số điện thoại
+                    </TableHead>
+                    <TableHead className="table-cell text-nowrap">
+                        Địa chỉ
+                    </TableHead>
+                    <TableHead className="table-cell text-nowrap">
+                        Trạng thái
+                    </TableHead>
                     <TableHead className="hidden md:table-cell">
                         Created at
                     </TableHead>
@@ -117,7 +130,7 @@ const TableCustomers = (props: Props) => {
                 {filterUsers?.map((user) => {
                     return (
                         <TableRow key={user.email}>
-                            <TableCell className="hidden sm:table-cell">
+                            <TableCell className="table-cell">
                                 <Image
                                     alt="Product image"
                                     className="aspect-square rounded-md object-cover"
@@ -126,14 +139,16 @@ const TableCustomers = (props: Props) => {
                                     width="40"
                                 />
                             </TableCell>
-                            <TableCell className="font-medium">
+                            <TableCell className="font-medium text-nowrap">
                                 {user.email}
                             </TableCell>
-                            <TableCell className="font-medium">
+                            <TableCell className="font-medium text-nowrap">
                                 {user?.name}
                             </TableCell>
-                            <TableCell>{user?.phone}</TableCell>
-                            <TableCell className="hidden md:table-cell">
+                            <TableCell className="font-medium text-nowrap">
+                                {user?.phone}
+                            </TableCell>
+                            <TableCell className="table-cell text-nowrap">
                                 {user?.address &&
                                     Object.values(user?.address)
                                         .reverse()
@@ -148,7 +163,7 @@ const TableCustomers = (props: Props) => {
                                     </Badge>
                                 )}
                             </TableCell>
-                            <TableCell className="hidden md:table-cell">
+                            <TableCell className="table-cell text-nowrap">
                                 {moment(user.created_at).format('DD-MM-YYYY')}
                             </TableCell>
                             <TableCell>
@@ -263,6 +278,7 @@ const TableCustomers = (props: Props) => {
                     );
                 })}
             </TableBody>
+            <ScrollBar orientation="horizontal" />
         </Table>
     ) : (
         <p className="text-center">Không tìm thấy</p>

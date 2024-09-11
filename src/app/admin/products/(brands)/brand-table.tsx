@@ -137,13 +137,13 @@ const BrandTable = (props: Props) => {
         <Table>
             <TableHeader>
                 <TableRow>
-                    <TableHead className="table-cell w-[200px]">Logo</TableHead>
+                    <TableHead className="table-cell not-sr-only md:sr-only">
+                        Logo
+                    </TableHead>
                     <TableHead className="table-cell">Tên</TableHead>
                     <TableHead className="table-cell">Mô tả</TableHead>
                     <TableHead className="table-cell">Trạng thái</TableHead>
-                    <TableHead className="hidden md:table-cell">
-                        Ngày tạo
-                    </TableHead>
+                    <TableHead className="table-cell">Ngày tạo</TableHead>
                     <TableHead>
                         <span className="sr-only">Actions</span>
                     </TableHead>
@@ -154,7 +154,7 @@ const BrandTable = (props: Props) => {
                     filterBrand?.map((brand) => {
                         return (
                             <TableRow key={brand.id}>
-                                <TableCell className="hidden sm:table-cell">
+                                <TableCell className="table-cell">
                                     <Image
                                         alt={brand.name}
                                         height="64"
@@ -162,13 +162,13 @@ const BrandTable = (props: Props) => {
                                         width="100"
                                     />
                                 </TableCell>
-                                <TableCell className="font-medium capitalize">
+                                <TableCell className="table-cell text-nowrap font-medium capitalize">
                                     {brand.name}
                                 </TableCell>
-                                <TableCell>
+                                <TableCell className="table-cell text-nowrap">
                                     {brand.description ?? '--'}
                                 </TableCell>
-                                <TableCell>
+                                <TableCell className="table-cell text-nowrap">
                                     {brand.is_deleted ? (
                                         <Badge variant="destructive">
                                             Đã xóa
@@ -179,7 +179,7 @@ const BrandTable = (props: Props) => {
                                         </Badge>
                                     )}
                                 </TableCell>
-                                <TableCell>
+                                <TableCell className="table-cell text-nowrap">
                                     {moment(brand.created_at).format(
                                         'DD-MM-YYYY',
                                     )}

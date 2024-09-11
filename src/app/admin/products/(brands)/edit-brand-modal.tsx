@@ -46,7 +46,7 @@ export function EditBrandModal(props: Props) {
                     Chỉnh sửa
                 </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[425px]">
+            <DialogContent className="max-w-[400px] md:min-w-max rounded-md">
                 <DialogHeader>
                     <DialogTitle>Chỉnh sửa thông tin thương hiệu</DialogTitle>
                 </DialogHeader>

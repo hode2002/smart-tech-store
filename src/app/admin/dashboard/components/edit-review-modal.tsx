@@ -43,7 +43,7 @@ export function ReplyReviewModal(props: Props) {
                     Phản hồi
                 </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[425px] min-w-[825px]">
+            <DialogContent className="max-w-[400px] md:min-w-[825px] rounded-md">
                 <DialogHeader>
                     <DialogTitle>Phản hồi đánh giá của khách hàng</DialogTitle>
                 </DialogHeader>

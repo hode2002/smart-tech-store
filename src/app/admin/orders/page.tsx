@@ -35,6 +35,7 @@ import { formatPrice } from '@/lib/utils';
 import moment, { unitOfTime } from 'moment';
 import { toast } from '@/components/ui/use-toast';
 import { Input } from '@/components/ui/input';
+import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 
 export default function Order() {
     const [selectedOrder, setSelectedOrder] = useState<OrderResponseType>();
@@ -55,7 +56,7 @@ export default function Order() {
                         statisticBy,
                     )
                 ) {
-                    total += order.total_amount;
+                    total += order.total_amount + order.fee;
                 }
             });
             return total;
@@ -149,125 +150,134 @@ export default function Order() {
                         subtitle="Tháng này"
                     />
                 </div>
-                <Tabs defaultValue="week">
-                    <div className="flex items-center">
-                        <TabsList>
-                            <TabsTrigger value="week">Tuần</TabsTrigger>
-                            <TabsTrigger value="month">Tháng</TabsTrigger>
-                            <TabsTrigger value="year">Năm</TabsTrigger>
-                        </TabsList>
-                        <div className="relative ml-auto md:grow-0 flex gap-2">
-                            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                            <Input
-                                value={searchText}
-                                onChange={(e) => setSearchText(e.target.value)}
-                                type="search"
-                                placeholder="Nhập số điện thoại để tìm đơn hàng"
-                                className="w-full rounded-lg bg-background pl-8 md:w-[200px] lg:w-[320px]"
+                <ScrollArea>
+                    <Tabs defaultValue="week">
+                        <div className="flex flex-col md:flex-row justify-between items-start md:items-center">
+                            <TabsList>
+                                <TabsTrigger value="week">Tuần</TabsTrigger>
+                                <TabsTrigger value="month">Tháng</TabsTrigger>
+                                <TabsTrigger value="year">Năm</TabsTrigger>
+                            </TabsList>
+                            <div className="flex mt-4 gap-6">
+                                <div className="relative px-2 md:px-0">
+                                    <Search className="absolute left-3.5 md:left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                                    <Input
+                                        value={searchText}
+                                        onChange={(e) =>
+                                            setSearchText(e.target.value)
+                                        }
+                                        type="search"
+                                        placeholder="Nhập số điện thoại để tìm đơn hàng"
+                                        className="rounded-lg bg-background pl-7 md:pl-8 w-[290px] md:w-[300px]"
+                                    />
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <DropdownMenu>
+                                        <DropdownMenuTrigger asChild>
+                                            <Button
+                                                variant="outline"
+                                                size="sm"
+                                                className="h-7 gap-1 text-sm py-4"
+                                            >
+                                                <ListFilter className="h-3.5 w-3.5" />
+                                                <span className="not-sr-only">
+                                                    Lọc
+                                                </span>
+                                            </Button>
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent align="end">
+                                            <DropdownMenuLabel>
+                                                Trạng thái
+                                            </DropdownMenuLabel>
+                                            <DropdownMenuSeparator />
+                                            <DropdownMenuCheckboxItem
+                                                onClick={() => setStatus(5)}
+                                                checked={status === 5}
+                                            >
+                                                Tất cả
+                                            </DropdownMenuCheckboxItem>
+                                            <DropdownMenuCheckboxItem
+                                                onClick={() => setStatus(0)}
+                                                checked={status === 0}
+                                            >
+                                                Chờ xác nhận
+                                            </DropdownMenuCheckboxItem>
+                                            <DropdownMenuCheckboxItem
+                                                onClick={() => setStatus(1)}
+                                                checked={status === 1}
+                                            >
+                                                Đang giao
+                                            </DropdownMenuCheckboxItem>
+                                            <DropdownMenuCheckboxItem
+                                                onClick={() => setStatus(2)}
+                                                checked={status === 2}
+                                            >
+                                                Thành công
+                                            </DropdownMenuCheckboxItem>
+                                            <DropdownMenuCheckboxItem
+                                                onClick={() => setStatus(3)}
+                                                checked={status === 3}
+                                            >
+                                                Đã bị hủy
+                                            </DropdownMenuCheckboxItem>
+                                        </DropdownMenuContent>
+                                    </DropdownMenu>
+                                </div>
+                            </div>
+                        </div>
+                        <TabsContent value="week">
+                            <OrderTable
+                                status={status}
+                                orders={filterOrders.filter((order) =>
+                                    moment(order.order_date).isSame(
+                                        moment(new Date()),
+                                        'week',
+                                    ),
+                                )}
+                                selectedOrder={selectedOrder}
+                                setSelectedOrder={setSelectedOrder}
+                                open={open}
+                                setOpen={setOpen}
+                                handleEditOrder={handleEditOrder}
                             />
-                        </div>
-                        <div className="flex items-center gap-2 ms-4">
-                            <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                    <Button
-                                        variant="outline"
-                                        size="sm"
-                                        className="h-7 gap-1 text-sm py-4"
-                                    >
-                                        <ListFilter className="h-3.5 w-3.5" />
-                                        <span className="sr-only sm:not-sr-only">
-                                            Lọc
-                                        </span>
-                                    </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end">
-                                    <DropdownMenuLabel>
-                                        Trạng thái
-                                    </DropdownMenuLabel>
-                                    <DropdownMenuSeparator />
-                                    <DropdownMenuCheckboxItem
-                                        onClick={() => setStatus(5)}
-                                        checked={status === 5}
-                                    >
-                                        Tất cả
-                                    </DropdownMenuCheckboxItem>
-                                    <DropdownMenuCheckboxItem
-                                        onClick={() => setStatus(0)}
-                                        checked={status === 0}
-                                    >
-                                        Chờ xác nhận
-                                    </DropdownMenuCheckboxItem>
-                                    <DropdownMenuCheckboxItem
-                                        onClick={() => setStatus(1)}
-                                        checked={status === 1}
-                                    >
-                                        Đang giao
-                                    </DropdownMenuCheckboxItem>
-                                    <DropdownMenuCheckboxItem
-                                        onClick={() => setStatus(2)}
-                                        checked={status === 2}
-                                    >
-                                        Thành công
-                                    </DropdownMenuCheckboxItem>
-                                    <DropdownMenuCheckboxItem
-                                        onClick={() => setStatus(3)}
-                                        checked={status === 3}
-                                    >
-                                        Đã bị hủy
-                                    </DropdownMenuCheckboxItem>
-                                </DropdownMenuContent>
-                            </DropdownMenu>
-                        </div>
-                    </div>
-                    <TabsContent value="week">
-                        <OrderTable
-                            status={status}
-                            orders={filterOrders.filter((order) =>
-                                moment(order.order_date).isSame(
-                                    moment(new Date()),
-                                    'week',
-                                ),
-                            )}
-                            selectedOrder={selectedOrder}
-                            setSelectedOrder={setSelectedOrder}
-                            open={open}
-                            setOpen={setOpen}
-                            handleEditOrder={handleEditOrder}
-                        />
-                    </TabsContent>
-                    <TabsContent value="month">
-                        <OrderTable
-                            status={status}
-                            orders={filterOrders.filter((order) =>
-                                moment(order.order_date).isSame(
-                                    moment(new Date()),
-                                    'month',
-                                ),
-                            )}
-                            selectedOrder={selectedOrder}
-                            setSelectedOrder={setSelectedOrder}
-                            open={open}
-                            setOpen={setOpen}
-                            handleEditOrder={handleEditOrder}
-                        />
-                    </TabsContent>
-                    <TabsContent value="year">
-                        <OrderTable
-                            status={status}
-                            orders={filterOrders.filter((order) =>
-                                moment(order.order_date).isSame(
-                                    moment(new Date()),
-                                    'year',
-                                ),
-                            )}
-                            selectedOrder={selectedOrder}
-                            setSelectedOrder={setSelectedOrder}
-                            open={open}
-                            setOpen={setOpen}
-                            handleEditOrder={handleEditOrder}
-                        />
-                    </TabsContent>
-                </Tabs>
+                            <ScrollBar orientation="horizontal" />
+                        </TabsContent>
+                        <TabsContent value="month">
+                            <OrderTable
+                                status={status}
+                                orders={filterOrders.filter((order) =>
+                                    moment(order.order_date).isSame(
+                                        moment(new Date()),
+                                        'month',
+                                    ),
+                                )}
+                                selectedOrder={selectedOrder}
+                                setSelectedOrder={setSelectedOrder}
+                                open={open}
+                                setOpen={setOpen}
+                                handleEditOrder={handleEditOrder}
+                            />
+                            <ScrollBar orientation="horizontal" />
+                        </TabsContent>
+                        <TabsContent value="year">
+                            <OrderTable
+                                status={status}
+                                orders={filterOrders.filter((order) =>
+                                    moment(order.order_date).isSame(
+                                        moment(new Date()),
+                                        'year',
+                                    ),
+                                )}
+                                selectedOrder={selectedOrder}
+                                setSelectedOrder={setSelectedOrder}
+                                open={open}
+                                setOpen={setOpen}
+                                handleEditOrder={handleEditOrder}
+                            />
+                            <ScrollBar orientation="horizontal" />
+                        </TabsContent>
+                    </Tabs>
+                </ScrollArea>
             </div>
             <div>
                 <OrderDetailInfo

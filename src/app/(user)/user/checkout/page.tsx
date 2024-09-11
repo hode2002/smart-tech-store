@@ -40,7 +40,13 @@ export default function CheckoutPage() {
             let value = 0;
             let weight = 0;
             productCheckout.forEach((product) => {
-                value += product.total;
+                const discount =
+                    ((product.unitPrice + product.priceModifier) *
+                        product.discount) /
+                    100;
+                const modifiedPrice =
+                    product.unitPrice + +product.priceModifier - discount;
+                value += product.quantity * modifiedPrice;
                 weight += product.weight;
             });
             const shippingInfo: CalculateShippingFeeType = {
@@ -74,7 +80,16 @@ export default function CheckoutPage() {
 
     const productPrice = useMemo(() => {
         let productPrice = 0;
-        productCheckout.forEach((product) => (productPrice += product.total));
+        productCheckout.forEach(
+            (product) =>
+                (productPrice +=
+                    product.quantity *
+                    (product.unitPrice +
+                        product.priceModifier -
+                        ((product.unitPrice + product.priceModifier) *
+                            product.discount) /
+                            100)),
+        );
         return productPrice;
     }, [productCheckout]);
 
@@ -98,7 +113,6 @@ export default function CheckoutPage() {
             order_details: productCheckout.map((product) => ({
                 product_option_id: product.id,
                 quantity: product.quantity,
-                price: product.total,
             })),
         };
 
@@ -179,7 +193,6 @@ export default function CheckoutPage() {
                                             </Button>
                                         ))}
                                 </div>
-                                <div>Ngày giao hàng dự kiến: {}</div>
                             </div>
 
                             <div className="border-b px-4 py-6 gap-4">
@@ -188,7 +201,7 @@ export default function CheckoutPage() {
                                     <Button
                                         onClick={() => setPaymentMethod('cod')}
                                         variant={'outline'}
-                                        className={`${paymentMethod === 'cod' ? 'border-popover-foreground' : ''} w-full md:w-[48%] hover:border-popover-foreground`}
+                                        className={`${paymentMethod === 'cod' ? 'border-popover-foreground' : ''} w-full md:w-[48%] md:min-w-max hover:border-popover-foreground`}
                                     >
                                         Thanh toán khi nhận hàng
                                     </Button>
@@ -197,7 +210,7 @@ export default function CheckoutPage() {
                                             setPaymentMethod('vnpay')
                                         }
                                         variant={'outline'}
-                                        className={`${paymentMethod === 'vnpay' ? 'border-popover-foreground' : ''} w-full md:w-[48%] hover:border-popover-foreground`}
+                                        className={`${paymentMethod === 'vnpay' ? 'border-popover-foreground' : ''} w-full md:w-[48%] md:min-w-max hover:border-popover-foreground`}
                                     >
                                         Thanh toán qua VNPAY
                                     </Button>

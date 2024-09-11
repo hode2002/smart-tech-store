@@ -2,68 +2,68 @@
 
 import bannerImageApiRequest from '@/apiRequests/banner-images';
 import { CarouselPlugin } from '@/components/carousel';
-import {
-    BannerImageResponseType,
-    BannerImageType,
-} from '@/schemaValidations/banner.schema';
 import { Skeleton } from '@/components/ui/skeleton';
 
 import Image from 'next/image';
 import Link from 'next/link';
-import React, { useEffect, useState } from 'react';
+import React, { useLayoutEffect, useState } from 'react';
+import {
+    BannersResponseType,
+    FetchAllBannersResponseType,
+} from '@/apiRequests/admin';
 
 export default function Banner() {
-    const [isClient, setIsClient] = useState(false);
+    const [bigBanner, setBigBanner] = useState<BannersResponseType>();
+    const [sideImages, setSideImages] = useState<BannersResponseType[]>([]);
+    const [carouselImages, setCarouselImages] = useState<BannersResponseType[]>(
+        [],
+    );
 
-    const [bigBanner, setBigBanner] = useState<BannerImageType>();
-    const [bannerImages, setBannerImages] = useState<BannerImageType[]>([]);
-    const [sideImages, setSideImages] = useState<BannerImageType[]>([]);
-    const [carouselImages, setCarouselImages] = useState<BannerImageType[]>([]);
-
-    useEffect(() => {
-        setIsClient(true);
-
+    useLayoutEffect(() => {
         bannerImageApiRequest
             .getImages()
-            .then((response: BannerImageResponseType) =>
-                setBannerImages(response.data),
-            );
+            .then((response: FetchAllBannersResponseType) => {
+                const bannerImages = response.data;
+                setBigBanner(
+                    bannerImages?.find((image) => image.type === 'big'),
+                );
+                setCarouselImages(
+                    bannerImages?.filter((image) => image.type === 'slide'),
+                );
+                setSideImages(
+                    bannerImages?.filter((image) => image.type === 'side'),
+                );
+            });
     }, []);
-
-    useEffect(() => {
-        setBigBanner(bannerImages.find((image) => image.type === 'big'));
-        setCarouselImages(
-            bannerImages.filter((image) => image.type === 'slide'),
-        );
-        setSideImages(bannerImages.filter((image) => image.type === 'side'));
-    }, [bannerImages]);
 
     return (
         <div className="relative">
-            {isClient && bigBanner ? (
+            {bigBanner ? (
                 <Link href={bigBanner?.link ?? '#'}>
                     <Image
-                        className="max-w-full lg:w-[1920px]"
+                        priority
                         src={bigBanner?.image}
-                        width={1000}
-                        height={500}
+                        width={1920}
+                        height={1000}
                         quality={100}
                         title={bigBanner?.title}
                         alt={bigBanner?.title}
+                        className="w-auto h-auto"
                     />
                 </Link>
             ) : (
                 <Skeleton className="w-full h-[425px] rounded-xl" />
             )}
             <div className="container">
-                <div className="flex justify-around mt-[-5%]">
+                <div className="md:flex justify-around mt-2 md:mt-[-5%]">
                     <CarouselPlugin items={carouselImages} />
 
-                    <div className="hidden lg:flex flex-col gap-3">
+                    <div className="flex flex-col gap-3">
                         {sideImages?.length ? (
                             sideImages.map((item) => (
                                 <Link href={item?.link} key={item?.id}>
                                     <Image
+                                        priority
                                         className="rounded-lg w-full lg:w-[400px]"
                                         src={item?.image}
                                         width={500}

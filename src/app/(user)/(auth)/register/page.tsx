@@ -1,6 +1,5 @@
 import Link from 'next/link';
 
-import { Button } from '@/components/ui/button';
 import {
     Card,
     CardContent,
@@ -8,10 +7,15 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
-import { FaGoogle, FaFacebookF } from 'react-icons/fa6';
 import { RegisterForm } from '@/app/(user)/(auth)/register/register-form';
+import {
+    FacebookLoginButton,
+    GoogleLoginButton,
+} from 'react-social-login-buttons';
 
 export default function Register() {
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+
     return (
         <Card className="mx-auto max-w-sm my-10">
             <CardHeader>
@@ -35,13 +39,27 @@ export default function Register() {
                             </span>
                         </div>
                     </div>
-                    <div className="flex my-2">
-                        <Button variant="outline" className="w-[50%]">
-                            <FaFacebookF />
-                        </Button>
-                        <Button variant="outline" className="w-[50%]">
-                            <FaGoogle />
-                        </Button>
+                    <div className="flex">
+                        <Link
+                            href={apiUrl + '/auth/facebook'}
+                            className="w-[50%]"
+                        >
+                            <FacebookLoginButton
+                                text="Facebook"
+                                align="center"
+                                size="41px"
+                            />
+                        </Link>
+                        <Link
+                            href={apiUrl + '/auth/google'}
+                            className="w-[50%]"
+                        >
+                            <GoogleLoginButton
+                                text="Google"
+                                align="center"
+                                size="41px"
+                            />
+                        </Link>
                     </div>
                 </div>
                 <div className="mt-4 text-center text-sm">

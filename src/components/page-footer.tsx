@@ -13,10 +13,11 @@ export function PageFooter() {
                         className="hidden md:flex items-center space-x-3 w-[25%] mb-0 md:mb-4"
                     >
                         <Image
+                            priority
                             src={'/images/site-logo.png'}
                             width={50}
                             height={50}
-                            className="h-8"
+                            className="h-auto w-auto rounded-[50%]"
                             alt="Store"
                         />
                         <span className="self-center text-2xl font-semibold whitespace-nowrap dark:text-white">
@@ -28,11 +29,12 @@ export function PageFooter() {
                     </p>
                     <div className="flex justify-center md:justify-start">
                         <Image
+                            priority
                             width={200}
                             height={200}
                             src="https://cdn0.fahasa.com/media/wysiwyg/Logo-NCC/logo-bo-cong-thuong-da-thong-bao1.png"
                             alt="Logo bo cong thuong da thong bao"
-                            className="w-50 my-2"
+                            className="w-auto h-auto w-50 my-2"
                         />
                     </div>
                     <div className="flex justify-between my-4">

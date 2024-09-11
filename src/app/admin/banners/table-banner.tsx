@@ -41,6 +41,7 @@ import { useEffect, useState } from 'react';
 import { EditBannerModal } from './edit-banner-modal';
 import { useAppSelector } from '@/lib/store';
 import { toast } from '@/components/ui/use-toast';
+import { ScrollBar } from '@/components/ui/scroll-area';
 
 type Props = {
     status: string;
@@ -116,14 +117,24 @@ const TableBanners = (props: Props) => {
         <Table>
             <TableHeader>
                 <TableRow>
-                    <TableHead className="hidden w-[100px] sm:table-cell">
-                        <span className="sr-only">Image</span>
+                    <TableHead className="table-cell">
+                        <span className="not-sr-only md:sr-only text-nowrap">
+                            Hình ảnh
+                        </span>
                     </TableHead>
-                    <TableHead>Tiêu đề</TableHead>
-                    <TableHead>Link</TableHead>
-                    <TableHead>Type</TableHead>
-                    <TableHead>Trạng thái</TableHead>
-                    <TableHead className="hidden md:table-cell">
+                    <TableHead className="table-cell text-nowrap">
+                        Tiêu đề
+                    </TableHead>
+                    <TableHead className="table-cell text-nowrap">
+                        Link
+                    </TableHead>
+                    <TableHead className="table-cell text-nowrap">
+                        Type
+                    </TableHead>
+                    <TableHead className="table-cell text-nowrap">
+                        Trạng thái
+                    </TableHead>
+                    <TableHead className="table-cell text-nowrap">
                         Created at
                     </TableHead>
                     <TableHead>
@@ -135,7 +146,7 @@ const TableBanners = (props: Props) => {
                 {filterBanners?.map((banner) => {
                     return (
                         <TableRow key={banner.id}>
-                            <TableCell className="hidden sm:table-cell">
+                            <TableCell className="table-cell">
                                 <Image
                                     alt="Banner image"
                                     className="aspect-square rounded-md object-cover"
@@ -144,13 +155,15 @@ const TableBanners = (props: Props) => {
                                     width="300"
                                 />
                             </TableCell>
-                            <TableCell className="font-medium">
+                            <TableCell className="font-medium text-nowrap">
                                 {banner.title}
                             </TableCell>
-                            <TableCell className="font-medium">
+                            <TableCell className="font-medium text-nowrap">
                                 {banner?.link}
                             </TableCell>
-                            <TableCell>{banner?.type}</TableCell>
+                            <TableCell className="font-medium text-nowrap">
+                                {banner?.type}
+                            </TableCell>
                             <TableCell>
                                 <Badge
                                     variant={
@@ -162,7 +175,7 @@ const TableBanners = (props: Props) => {
                                     {banner.status}
                                 </Badge>
                             </TableCell>
-                            <TableCell className="hidden md:table-cell">
+                            <TableCell className="table-cell text-nowrap">
                                 {moment(banner.created_at).format('DD-MM-YYYY')}
                             </TableCell>
                             <TableCell>
@@ -292,6 +305,7 @@ const TableBanners = (props: Props) => {
                     );
                 })}
             </TableBody>
+            <ScrollBar orientation="horizontal" />
         </Table>
     ) : (
         <p className="text-center">Không tìm thấy</p>

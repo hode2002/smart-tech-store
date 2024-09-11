@@ -3,5 +3,5 @@ export default function CategoryLayout({
 }: {
     children: React.ReactNode;
 }) {
-    return <div className="min-h-screen container">{children}</div>;
+    return <div className="md:container">{children}</div>;
 }

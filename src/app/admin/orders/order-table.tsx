@@ -86,20 +86,22 @@ const OrderTable = (props: Props) => {
                     <Table>
                         <TableHeader>
                             <TableRow>
-                                <TableHead>Khách hàng</TableHead>
-                                <TableHead className="hidden sm:table-cell">
+                                <TableHead className="table-cell text-nowrap">
+                                    Khách hàng
+                                </TableHead>
+                                <TableHead className="table-cell text-nowrap">
                                     Địa chỉ
                                 </TableHead>
-                                <TableHead className="hidden md:table-cell">
+                                <TableHead className="table-cell text-nowrap">
                                     Ngày đặt hàng
                                 </TableHead>
-                                <TableHead className="hidden md:table-cell">
+                                <TableHead className="table-cell text-nowrap">
                                     Ngày giao dự kiến
                                 </TableHead>
-                                <TableHead className="hidden sm:table-cell text-center">
+                                <TableHead className="table-cell text-center text-nowrap">
                                     Trạng thái
                                 </TableHead>
-                                <TableHead className="text-right">
+                                <TableHead className="text-right text-nowrap">
                                     Thành tiền
                                 </TableHead>
                                 <TableHead>
@@ -129,11 +131,11 @@ const OrderTable = (props: Props) => {
                                             <div className="font-medium">
                                                 {order.name}
                                             </div>
-                                            <div className="hidden text-sm text-muted-foreground md:inline">
+                                            <div className="text-sm text-muted-foreground inline">
                                                 {order.phone}
                                             </div>
                                         </TableCell>
-                                        <TableCell className="hidden sm:table-cell">
+                                        <TableCell className="table-cell text-nowrap">
                                             {order.address +
                                                 ', ' +
                                                 order.ward +
@@ -142,17 +144,17 @@ const OrderTable = (props: Props) => {
                                                 ', ' +
                                                 order.province}
                                         </TableCell>
-                                        <TableCell className="hidden md:table-cell text-center">
+                                        <TableCell className="table-cell text-center text-nowrap">
                                             {moment(order.order_date).format(
                                                 'DD-MM-YYYY',
                                             )}
                                         </TableCell>
-                                        <TableCell className="hidden md:table-cell text-center">
+                                        <TableCell className="table-cell text-center text-nowrap">
                                             {moment(order.estimate_date).format(
                                                 'DD-MM-YYYY',
                                             )}
                                         </TableCell>
-                                        <TableCell className="hidden sm:table-cell">
+                                        <TableCell className="table-cell text-nowrap">
                                             <Badge
                                                 className="font-bold text-md"
                                                 variant="outline"
@@ -160,10 +162,11 @@ const OrderTable = (props: Props) => {
                                                 {convertStatus(order.status)}
                                             </Badge>
                                         </TableCell>
-                                        <TableCell className="text-right">
+                                        <TableCell className="text-right text-nowrap">
                                             <span className="font-bold">
                                                 {formatPrice(
-                                                    order.total_amount,
+                                                    order.total_amount +
+                                                        order.fee,
                                                 )}
                                             </span>
                                         </TableCell>

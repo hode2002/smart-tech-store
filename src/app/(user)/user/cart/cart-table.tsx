@@ -48,6 +48,7 @@ import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { useAppDispatch, useAppSelector } from '@/lib/store';
 import Link from 'next/link';
 import {
+    CartItem,
     ProductCheckout,
     ProductOption,
     removeCartItem,
@@ -96,7 +97,7 @@ export default function CartTable() {
 
     const data: Column[] = useMemo(
         () =>
-            cartProducts.map((cartItem) => {
+            cartProducts.map((cartItem: CartItem) => {
                 const selectedOption = cartItem.selected_option;
                 return {
                     id: cartItem.id,
@@ -111,10 +112,12 @@ export default function CartTable() {
                         cartItem.quantity < selectedOption.stock
                             ? cartItem.quantity
                             : selectedOption.stock,
-                    unitPrice: cartItem.price + selectedOption.price_modifier,
+                    unitPrice: cartItem.price,
                     total:
-                        cartItem.quantity * cartItem.price +
-                        selectedOption.price_modifier,
+                        cartItem.quantity *
+                        (cartItem.price -
+                            (cartItem.price * selectedOption.discount) / 100 +
+                            selectedOption.price_modifier),
                     selectedOption: {
                         id: selectedOption.id,
                         price_modifier: selectedOption.price_modifier,
@@ -295,7 +298,9 @@ export default function CartTable() {
                 const selectedOption = row.original?.selectedOption;
                 const unitPrice = parseFloat(row.getValue('unitPrice'));
                 const priceModifier =
-                    unitPrice - (unitPrice * selectedOption.discount) / 100;
+                    unitPrice -
+                    (unitPrice * selectedOption.discount) / 100 +
+                    selectedOption.price_modifier;
                 return (
                     <>
                         <div className="text-center font-medium">
@@ -304,7 +309,10 @@ export default function CartTable() {
                         {selectedOption.discount !== 0 && (
                             <div className="text-center font-medium">
                                 <span className="line-through">
-                                    {formatPrice(unitPrice)}
+                                    {formatPrice(
+                                        unitPrice +
+                                            selectedOption.price_modifier,
+                                    )}
                                 </span>
                                 <span> - {selectedOption.discount} %</span>
                             </div>
@@ -413,15 +421,10 @@ export default function CartTable() {
             accessorKey: 'total',
             header: () => <div className="text-right">Thành tiền</div>,
             cell: ({ row }) => {
-                const quantity = row.getValue<number>('quantity');
-                const unitPrice = row.getValue<number>('unitPrice');
-                const total = quantity * unitPrice;
-                const discount = row.original.selectedOption.discount;
-                const priceModifier = total - (total * discount) / 100;
-
+                const total = row.getValue<number>('total');
                 return (
                     <div className="text-right font-extrabold text-popover-foreground">
-                        {formatPrice(priceModifier)}
+                        {formatPrice(total)}
                     </div>
                 );
             },
@@ -444,58 +447,57 @@ export default function CartTable() {
                 };
 
                 return (
-                    <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" className="h-8 w-8 p-0">
-                                <span className="sr-only">Open menu</span>
-                                <DotsHorizontalIcon className="h-4 w-4" />
-                            </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                            <DropdownMenuLabel>Thao tác</DropdownMenuLabel>
-
-                            <DropdownMenuItem asChild>
-                                <Link
-                                    href={'/'}
-                                    className="block cursor-default select-none rounded-sm px-2 text-start py-1.5 text-sm outline-none"
-                                >
-                                    Xem thông tin chi tiết
-                                </Link>
-                            </DropdownMenuItem>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem asChild className="w-full">
-                                <AlertDialog>
-                                    <AlertDialogTrigger>
+                    <AlertDialog>
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" className="h-8 w-8 p-0">
+                                    <span className="sr-only">Open menu</span>
+                                    <DotsHorizontalIcon className="h-4 w-4" />
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                                <DropdownMenuLabel>Thao tác</DropdownMenuLabel>
+                                <DropdownMenuItem asChild>
+                                    <Button variant={'ghost'} asChild>
+                                        <Link
+                                            href={'/'}
+                                            className="text-blue-gray-700 hover:text-black block cursor-default select-none rounded-sm px-2 text-start py-1.5 text-sm outline-none"
+                                        >
+                                            Xem thông tin chi tiết
+                                        </Link>
+                                    </Button>
+                                </DropdownMenuItem>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem asChild className="w-full">
+                                    <AlertDialogTrigger asChild>
                                         <Button
                                             variant={'ghost'}
-                                            className="block select-none rounded-sm px-2 text-start py-1.5 text-sm outline-none"
+                                            className="text-blue-gray-700 hover:text-black block cursor-default select-none rounded-sm px-2 text-start py-1.5 text-sm outline-none"
                                         >
                                             Xóa sản phẩm
                                         </Button>
                                     </AlertDialogTrigger>
-                                    <AlertDialogContent>
-                                        <AlertDialogHeader>
-                                            <AlertDialogTitle>
-                                                Bạn chắc chắn xóa sản phẩm này
-                                                khỏi giỏ hàng?
-                                            </AlertDialogTitle>
-                                        </AlertDialogHeader>
-                                        <AlertDialogFooter>
-                                            <AlertDialogCancel>
-                                                Hủy
-                                            </AlertDialogCancel>
-                                            <Button
-                                                variant={'outline'}
-                                                onClick={handleDeleteProduct}
-                                            >
-                                                Xác nhận
-                                            </Button>
-                                        </AlertDialogFooter>
-                                    </AlertDialogContent>
-                                </AlertDialog>
-                            </DropdownMenuItem>
-                        </DropdownMenuContent>
-                    </DropdownMenu>
+                                </DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                        <AlertDialogContent>
+                            <AlertDialogHeader>
+                                <AlertDialogTitle>
+                                    Bạn chắc chắn xóa sản phẩm này khỏi giỏ
+                                    hàng?
+                                </AlertDialogTitle>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                                <AlertDialogCancel>Hủy</AlertDialogCancel>
+                                <Button
+                                    variant={'outline'}
+                                    onClick={handleDeleteProduct}
+                                >
+                                    Xác nhận
+                                </Button>
+                            </AlertDialogFooter>
+                        </AlertDialogContent>
+                    </AlertDialog>
                 );
             },
         },
@@ -523,10 +525,7 @@ export default function CartTable() {
     useEffect(() => {
         let totalPrice = 0;
         table.getSelectedRowModel().rows.forEach((row) => {
-            const total = row.original.quantity * row.original.unitPrice;
-            const discount = row.original.selectedOption.discount;
-            const priceModifier = total - (total * discount) / 100;
-            totalPrice += priceModifier;
+            totalPrice += row.original.total;
         });
         setTotalPrice(totalPrice);
     });
@@ -550,27 +549,28 @@ export default function CartTable() {
         const productCheckout: ProductCheckout[] = selectedRows.map((row) => {
             const data = row.original;
             const quantity = data.quantity;
+            const priceModifier = data.selectedOption.price_modifier;
             const unitPrice = data.unitPrice;
-            const total = quantity * unitPrice;
             const discount = data.selectedOption.discount;
-            const priceModifier = total - (total * discount) / 100;
 
             return {
                 id: data.selectedOption.id,
                 name: data.product.name,
                 thumbnail: data.selectedOption.thumbnail,
-                unitPrice: data.unitPrice,
-                quantity: data.quantity,
-                total: priceModifier,
+                unitPrice,
+                priceModifier,
+                quantity,
                 weight: data.selectedOption.weight,
+                discount,
             };
         });
+
         dispatch(setProductCheckout(productCheckout));
         router.push('/user/checkout');
     };
 
     return (
-        <div>
+        <div className="px-2 md:px-0">
             <ScrollArea>
                 <div className="rounded-md border min-w-[1180px]">
                     <Table>
@@ -618,7 +618,7 @@ export default function CartTable() {
                                         colSpan={columns.length}
                                         className="h-24 text-center"
                                     >
-                                        No results.
+                                        Chưa có đơn hàng
                                     </TableCell>
                                 </TableRow>
                             )}
@@ -642,7 +642,7 @@ export default function CartTable() {
                                     }
                                 </span>
                                 <span className="whitespace-nowrap">
-                                    sản phẩm ):
+                                    sản phẩm):
                                 </span>
                             </p>
                             <p className="whitespace-nowrap ml-2 font-bold text-[20px] md:text-[24px] text-popover-foreground">

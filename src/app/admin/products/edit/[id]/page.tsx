@@ -177,8 +177,11 @@ export default function EditProduct({ params }: Props) {
                         <h1 className="flex-1 shrink-0 whitespace-nowrap text-xl font-semibold tracking-tight sm:grow-0">
                             Chỉnh sửa sản phẩm
                         </h1>
-                        <div className="hidden items-center gap-2 md:ml-auto md:flex">
-                            <Link href={'/admin/products'}>
+                        <div className="items-center gap-2 ml-auto flex">
+                            <Link
+                                className="hidden md:block"
+                                href={'/admin/products'}
+                            >
                                 <Button
                                     variant="outline"
                                     size="sm"
@@ -236,7 +239,7 @@ export default function EditProduct({ params }: Props) {
                                             />
                                         </div>
                                         <div className="grid gap-3">
-                                            <div className="flex justify-between gap-3">
+                                            <div className="flex items-center justify-between gap-3">
                                                 <Label htmlFor="main-image">
                                                     Ảnh thông số
                                                 </Label>
@@ -488,25 +491,6 @@ export default function EditProduct({ params }: Props) {
                             </div>
                         </>
                     )}
-                    <div className="flex items-center justify-center gap-2 md:hidden">
-                        {loading ? (
-                            <Button
-                                disabled
-                                size="sm"
-                                className="min-w-[100px]"
-                            >
-                                <ReloadIcon className="mr-2 min-w-[100px] animate-spin" />
-                            </Button>
-                        ) : (
-                            <Button
-                                onClick={handleSubmit}
-                                size="sm"
-                                className="min-w-[100px]"
-                            >
-                                Lưu
-                            </Button>
-                        )}
-                    </div>
                 </div>
             </section>
         )

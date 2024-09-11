@@ -1,13 +1,11 @@
 'use client';
 
 import Link from 'next/link';
-import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { FaGoogle, FaFacebookF } from 'react-icons/fa6';
 import { LoginForm } from '@/app/(user)/(auth)/login/login-form';
 import { useCookies } from 'next-client-cookies';
 import { useEffect } from 'react';
-import accountApiRequest from '../../../../apiRequests/account';
+import accountApiRequest from '@/apiRequests/account';
 import { useRouter } from 'next/navigation';
 import { useAppDispatch } from '@/lib/store';
 import {
@@ -16,23 +14,31 @@ import {
     setRefreshToken,
 } from '@/lib/store/slices';
 import { GetProfileResponseType } from '@/schemaValidations/account.schema';
+import {
+    FacebookLoginButton,
+    GoogleLoginButton,
+} from 'react-social-login-buttons';
 
 export default function Login() {
     const cookies = useCookies();
     const router = useRouter();
     const dispatch = useAppDispatch();
 
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+
     useEffect(() => {
-        const token = cookies.get('accessToken');
-        if (token) {
+        const accessToken = cookies.get('accessToken');
+        const refreshToken = cookies.get('refreshToken');
+        if (accessToken && refreshToken) {
             accountApiRequest
-                .getUserProfile(token)
+                .getUserProfile(accessToken)
                 .then((res: GetProfileResponseType) => {
                     if (res.statusCode === 200) {
-                        const refreshToken = cookies.get('refreshToken');
-                        dispatch(setAccessToken(token));
-                        dispatch(setRefreshToken(refreshToken as string));
+                        dispatch(setAccessToken(accessToken));
+                        dispatch(setRefreshToken(refreshToken));
                         dispatch(setProfile(res.data));
+                        cookies.remove('accessToken');
+                        cookies.remove('refreshToken');
                         router.push('/');
                     }
                 });
@@ -58,35 +64,26 @@ export default function Login() {
                                 </span>
                             </div>
                         </div>
-                        <div className="flex my-2">
+                        <div className="flex">
                             <Link
-                                href={
-                                    process.env.NEXT_PUBLIC_API_URL +
-                                    '/auth/facebook'
-                                }
+                                href={apiUrl + '/auth/facebook'}
                                 className="w-[50%]"
                             >
-                                <Button
-                                    variant="outline"
-                                    className="w-full text-center"
-                                >
-                                    <FaFacebookF />
-                                </Button>
+                                <FacebookLoginButton
+                                    text="Facebook"
+                                    align="center"
+                                    size="41px"
+                                />
                             </Link>
-
                             <Link
-                                href={
-                                    process.env.NEXT_PUBLIC_API_URL +
-                                    '/auth/google'
-                                }
+                                href={apiUrl + '/auth/google'}
                                 className="w-[50%]"
                             >
-                                <Button
-                                    variant="outline"
-                                    className="w-full text-center"
-                                >
-                                    <FaGoogle />
-                                </Button>
+                                <GoogleLoginButton
+                                    text="Google"
+                                    align="center"
+                                    size="41px"
+                                />
                             </Link>
                         </div>
                     </div>

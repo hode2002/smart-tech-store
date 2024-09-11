@@ -80,16 +80,16 @@ export function EditOrderModal(props: Props) {
                     Xem chi tiết
                 </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[425px] min-w-[825px]">
-                <ScrollArea className="h-[700px] w-full p-3">
-                    <DialogHeader>
+            <DialogContent className="p-0 md:p-6 max-w-[400px] md:min-w-max rounded-md">
+                <ScrollArea className="p-3 h-[700px]">
+                    <DialogHeader className="w-fit">
                         <DialogTitle>Cập nhật trạng thái đơn hàng</DialogTitle>
                     </DialogHeader>
-                    <div className="grid gap-4 py-4">
+                    <div className="flex flex-col md:grid gap-4 py-4 px-2 max-w-[400px] md:min-w-max">
                         <div className="flex justify-center font-bold text-xl">
                             Thông tin khách hàng
                         </div>
-                        <div className="grid grid-cols-4 items-center gap-4">
+                        <div className="w-11/12 grid-cols-4 md:grid md:w-full items-center gap-4">
                             <Label className="text-right">Tên</Label>
                             <Input
                                 readOnly
@@ -97,7 +97,7 @@ export function EditOrderModal(props: Props) {
                                 className="col-span-3"
                             />
                         </div>
-                        <div className="grid grid-cols-4 items-center gap-4">
+                        <div className="w-11/12 grid-cols-4 md:grid md:w-full items-center gap-4">
                             <Label className="text-right">Số điện thoại</Label>
                             <Input
                                 readOnly
@@ -105,7 +105,7 @@ export function EditOrderModal(props: Props) {
                                 className="col-span-3"
                             />
                         </div>
-                        <div className="grid grid-cols-4 items-center gap-4">
+                        <div className="w-11/12 grid-cols-4 md:grid md:w-full items-center gap-4">
                             <Label className="text-right">Địa chỉ</Label>
                             <Input
                                 readOnly
@@ -122,24 +122,26 @@ export function EditOrderModal(props: Props) {
                             />
                         </div>
                         <DropdownMenuSeparator />
-                        <div className="flex flex-col gap-4 ms-10">
+                        <div className="flex flex-col gap-4 ms-0 md:ms-10">
                             <div className="flex justify-center font-bold text-xl">
                                 Chi tiết đơn hàng
                             </div>
-                            <Table>
+                            <Table className="mr-4 md:m-0">
                                 <TableHeader>
                                     <TableRow>
-                                        <TableHead className="hidden w-[100px] sm:table-cell">
-                                            <span className="sr-only">
-                                                Image
+                                        <TableHead className="table-cell">
+                                            <span className="not-sr-only md:sr-only text-nowrap">
+                                                Hình ảnh
                                             </span>
                                         </TableHead>
-                                        <TableHead>Tên sản phẩm</TableHead>
+                                        <TableHead className="table-cell text-nowrap">
+                                            Tên sản phẩm
+                                        </TableHead>
                                         <TableHead>Giá</TableHead>
-                                        <TableHead className="table-cell">
+                                        <TableHead className="table-cell text-nowrap">
                                             Số lượng
                                         </TableHead>
-                                        <TableHead className="table-cell">
+                                        <TableHead className="table-cell text-nowrap">
                                             Thành tiền
                                         </TableHead>
                                     </TableRow>
@@ -153,7 +155,7 @@ export function EditOrderModal(props: Props) {
                                                     <TableRow
                                                         key={orderDetail.id}
                                                     >
-                                                        <TableCell className="hidden sm:table-cell">
+                                                        <TableCell className="table-cell">
                                                             <Image
                                                                 alt="Product image"
                                                                 className="aspect-square rounded-md object-cover"
@@ -166,7 +168,7 @@ export function EditOrderModal(props: Props) {
                                                                 width="64"
                                                             />
                                                         </TableCell>
-                                                        <TableCell className="font-medium capitalize">
+                                                        <TableCell className="font-medium capitalize table-cell text-nowrap">
                                                             {orderDetail.product
                                                                 .name +
                                                                 ' ' +
@@ -177,17 +179,17 @@ export function EditOrderModal(props: Props) {
                                                                         ' ',
                                                                     )}
                                                         </TableCell>
-                                                        <TableCell>
+                                                        <TableCell className="table-cell text-nowrap">
                                                             {formatPrice(
                                                                 orderDetail.price,
                                                             )}
                                                         </TableCell>
-                                                        <TableCell className="text-center">
+                                                        <TableCell className="text-center table-cell">
                                                             {
                                                                 orderDetail.quantity
                                                             }
                                                         </TableCell>
-                                                        <TableCell className="font-bold">
+                                                        <TableCell className="font-bold table-cell text-nowrap">
                                                             {formatPrice(
                                                                 orderDetail.subtotal,
                                                             )}
@@ -199,22 +201,22 @@ export function EditOrderModal(props: Props) {
                                 </TableBody>
                             </Table>
                         </div>
-                        <div className="flex gap-16 items-center justify-end">
+                        <div className="w-fit md:w-full flex gap-6 items-center justify-end">
                             <Label className="text-right">
                                 Phí vận chuyển:
                             </Label>
                             <p>{formatPrice(order.fee)}</p>
                         </div>
-                        <div className="flex gap-6 items-center justify-end">
+                        <div className="w-fit md:w-full flex gap-6 items-center justify-end">
                             <Label className="text-right">
                                 Tổng thanh toán:
                             </Label>
                             <p className="font-bold">
-                                {formatPrice(order.total_amount)}
+                                {formatPrice(order.total_amount + order.fee)}
                             </p>
                         </div>
                         <DropdownMenuSeparator />
-                        <div className="flex items-center gap-4 justify-end">
+                        <div className="w-fit md:w-full flex items-center gap-4 justify-end">
                             <Label className="text-right">Trạng thái</Label>
                             <Select
                                 value={selectedStatus}
@@ -247,7 +249,7 @@ export function EditOrderModal(props: Props) {
                             </Select>
                         </div>
                     </div>
-                    <DialogFooter>
+                    <DialogFooter className="flex-row w-fit md:w-full gap-2 px-0 md:px-2">
                         <Button
                             variant={'outline'}
                             onClick={() => setOpen(false)}

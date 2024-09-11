@@ -164,7 +164,7 @@ export default function AddVariantProduct() {
                                         />
                                     </div>
                                     <div className="grid gap-3">
-                                        <div className="flex justify-between gap-3">
+                                        <div className="flex items-center justify-between gap-3">
                                             <Label htmlFor="main-image">
                                                 Ảnh thông số
                                             </Label>

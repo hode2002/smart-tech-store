@@ -128,11 +128,7 @@ const OrderDetailInfo = (props: Props) => {
                                 <span className="text-muted-foreground">
                                     Tiền hàng
                                 </span>
-                                <span>
-                                    {formatPrice(
-                                        order.total_amount - order.fee,
-                                    )}
-                                </span>
+                                <span>{formatPrice(order.total_amount)}</span>
                             </li>
                             <li className="flex items-center justify-between">
                                 <span className="text-muted-foreground">
@@ -144,7 +140,11 @@ const OrderDetailInfo = (props: Props) => {
                                 <span className="text-muted-foreground">
                                     Tổng thanh toán
                                 </span>
-                                <span>{formatPrice(order.total_amount)}</span>
+                                <span>
+                                    {formatPrice(
+                                        order.total_amount + order.fee,
+                                    )}
+                                </span>
                             </li>
                         </ul>
                     </div>

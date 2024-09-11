@@ -31,6 +31,7 @@ import TableBanners from '@/app/admin/banners/table-banner';
 import { Input } from '@/components/ui/input';
 import { toast } from '@/components/ui/use-toast';
 import { AddBannerModal } from '@/app/admin/banners/add-banner-modal';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 export default function Banner() {
     const token = useAppSelector((state) => state.auth.accessToken);
@@ -97,73 +98,72 @@ export default function Banner() {
     }, [banners, setFilterBanners, searchText]);
 
     return (
-        <section className="grid flex-1 items-start gap-4 p-4 mt-4 sm:px-6 sm:py-0 md:gap-8 bg-muted/40">
-            <Tabs defaultValue="all">
-                <div className="flex items-center justify-end">
-                    <div className="flex items-center">
-                        <div className="relative ml-auto md:grow-0 flex gap-2">
-                            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                            <Input
-                                value={searchText}
-                                onChange={(e) => setSearchText(e.target.value)}
-                                type="text"
-                                placeholder="Tìm kiếm"
-                                className="w-full rounded-lg bg-background pl-8 md:w-[200px] lg:w-[320px]"
-                            />
-                        </div>
-                        <div className="flex items-center gap-2 ms-4">
-                            <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                    <Button
-                                        variant="outline"
-                                        size="sm"
-                                        className="h-7 gap-1 text-sm py-4"
-                                    >
-                                        <ListFilter className="h-3.5 w-3.5" />
-                                        <span className="sr-only sm:not-sr-only">
-                                            Lọc
-                                        </span>
-                                    </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end">
-                                    <DropdownMenuLabel>
-                                        Trạng thái
-                                    </DropdownMenuLabel>
-                                    <DropdownMenuSeparator />
-                                    <DropdownMenuCheckboxItem
-                                        onClick={() => setStatus('all')}
-                                        checked={status === 'all'}
-                                    >
-                                        Tất cả
-                                    </DropdownMenuCheckboxItem>
-                                    <DropdownMenuCheckboxItem
-                                        onClick={() => setStatus('show')}
-                                        checked={status === 'show'}
-                                    >
-                                        Đang hiển thị
-                                    </DropdownMenuCheckboxItem>
-                                    <DropdownMenuCheckboxItem
-                                        onClick={() => setStatus('hide')}
-                                        checked={status === 'hide'}
-                                    >
-                                        Đã ẩn
-                                    </DropdownMenuCheckboxItem>
-                                </DropdownMenuContent>
-                            </DropdownMenu>
-                        </div>
-                        <Button
-                            size="sm"
-                            className="h-7 py-4 flex items-center gap-2 ms-4"
-                        >
-                            <PlusCircle className="h-3.5 w-3.5" />
-                            <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
-                                <AddBannerModal
-                                    handleAddBanner={handleAddBanner}
-                                />
-                            </span>
-                        </Button>
+        <Tabs
+            defaultValue="all"
+            className="flex flex-col gap-4 px-6 bg-muted/40 p-4"
+        >
+            <div className="flex items-center w-full md:justify-end">
+                <div className="flex items-center w-full justify-between">
+                    <div className="relative md:ml-auto md:grow-0 flex gap-2">
+                        <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                        <Input
+                            value={searchText}
+                            onChange={(e) => setSearchText(e.target.value)}
+                            type="text"
+                            placeholder="Tìm kiếm"
+                            className="w-full rounded-lg bg-background pl-8 md:w-[200px] lg:w-[320px]"
+                        />
                     </div>
+                    <div className="flex items-center gap-2 ms-4">
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    className="h-7 gap-1 text-sm py-4"
+                                >
+                                    <ListFilter className="h-3.5 w-3.5" />
+                                    <span>Lọc</span>
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                                <DropdownMenuLabel>
+                                    Trạng thái
+                                </DropdownMenuLabel>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuCheckboxItem
+                                    onClick={() => setStatus('all')}
+                                    checked={status === 'all'}
+                                >
+                                    Tất cả
+                                </DropdownMenuCheckboxItem>
+                                <DropdownMenuCheckboxItem
+                                    onClick={() => setStatus('show')}
+                                    checked={status === 'show'}
+                                >
+                                    Đang hiển thị
+                                </DropdownMenuCheckboxItem>
+                                <DropdownMenuCheckboxItem
+                                    onClick={() => setStatus('hide')}
+                                    checked={status === 'hide'}
+                                >
+                                    Đã ẩn
+                                </DropdownMenuCheckboxItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                    </div>
+                    <Button
+                        size="sm"
+                        className="h-7 py-4 flex items-center gap-2 ms-4"
+                    >
+                        <PlusCircle className="h-3.5 w-3.5" />
+                        <span className="whitespace-nowrap">
+                            <AddBannerModal handleAddBanner={handleAddBanner} />
+                        </span>
+                    </Button>
                 </div>
+            </div>
+            <ScrollArea>
                 <TabsContent value="all">
                     <Card x-chunk="dashboard-06-chunk-0">
                         <CardHeader>
@@ -180,7 +180,7 @@ export default function Banner() {
                         </CardContent>
                     </Card>
                 </TabsContent>
-            </Tabs>
-        </section>
+            </ScrollArea>
+        </Tabs>
     );
 }

@@ -68,6 +68,7 @@ import {
     AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { useRouter } from 'next/navigation';
+import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 
 export default function Product() {
     const token = useAppSelector((state) => state.auth.accessToken);
@@ -210,31 +211,32 @@ export default function Product() {
     };
 
     return (
-        <section className="grid flex-1 items-start gap-4 p-4 sm:px-6 sm:py-0 md:gap-8 bg-muted/40">
-            <Tabs defaultValue="all">
-                <div className="flex items-center">
-                    <TabsList>
-                        <TabsTrigger value="all">Sản phẩm</TabsTrigger>
-                        <TabsTrigger value="category">Danh mục</TabsTrigger>
-                        <TabsTrigger value="brand">Thương hiệu</TabsTrigger>
-                    </TabsList>
-                    <div className="ml-auto flex items-center">
-                        <TabsContent
-                            value="all"
-                            className="flex items-center gap-2 capitalize"
-                        >
-                            <div className="relative ml-auto md:grow-0 flex gap-2">
-                                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                                <Input
-                                    value={searchText}
-                                    onChange={(e) =>
-                                        setSearchText(e.target.value)
-                                    }
-                                    type="search"
-                                    placeholder="Nhập tên sản phẩm"
-                                    className="w-full rounded-lg bg-background pl-8 md:w-[200px] lg:w-[320px]"
-                                />
-                            </div>
+        <Tabs
+            defaultValue="all"
+            className="flex flex-col gap-4 px-6 bg-muted/40 p-4"
+        >
+            <div className="md:flex items-center">
+                <TabsList>
+                    <TabsTrigger value="all">Sản phẩm</TabsTrigger>
+                    <TabsTrigger value="category">Danh mục</TabsTrigger>
+                    <TabsTrigger value="brand">Thương hiệu</TabsTrigger>
+                </TabsList>
+                <div className="md:ml-auto md:flex items-center mt-4 md:mt-0">
+                    <TabsContent
+                        value="all"
+                        className="md:flex items-center gap-2 capitalize mt-0"
+                    >
+                        <div className="relative ml-auto md:grow-0 flex gap-2">
+                            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                            <Input
+                                value={searchText}
+                                onChange={(e) => setSearchText(e.target.value)}
+                                type="search"
+                                placeholder="Nhập tên sản phẩm"
+                                className="w-full rounded-lg bg-background pl-8 md:w-[200px] lg:w-[320px]"
+                            />
+                        </div>
+                        <div className="flex justify-between gap-2 my-2 md:my-0">
                             <Select
                                 value={selectedCategory}
                                 onValueChange={setSelectedCategory}
@@ -285,90 +287,85 @@ export default function Product() {
                                     </SelectGroup>
                                 </SelectContent>
                             </Select>
-                            <AlertDialog>
-                                <AlertDialogTrigger asChild>
-                                    <Button
-                                        size="sm"
-                                        className="h-7 gap-1 py-4"
+                        </div>
+                        <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                                <Button size="sm" className="h-7 gap-1 py-4">
+                                    <PlusCircle className="h-3.5 w-3.5" />
+                                    <span className="not-sr-only whitespace-nowrap">
+                                        Thêm sản phẩm
+                                    </span>
+                                </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent className="max-w-[400px] md:min-w-max rounded-md">
+                                <AlertDialogHeader>
+                                    <AlertDialogTitle>
+                                        Loại sản phẩm
+                                    </AlertDialogTitle>
+                                    <RadioGroup
+                                        value={productType}
+                                        onValueChange={setProductType}
                                     >
-                                        <PlusCircle className="h-3.5 w-3.5" />
-                                        <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
-                                            Thêm sản phẩm
-                                        </span>
-                                    </Button>
-                                </AlertDialogTrigger>
-                                <AlertDialogContent>
-                                    <AlertDialogHeader>
-                                        <AlertDialogTitle>
-                                            Loại sản phẩm
-                                        </AlertDialogTitle>
-                                        <RadioGroup
-                                            value={productType}
-                                            onValueChange={setProductType}
-                                        >
-                                            <AlertDialogDescription>
-                                                <span className="flex items-center space-x-2 my-2">
-                                                    <RadioGroupItem
-                                                        value="simple"
-                                                        id="simple"
-                                                    />
-                                                    <Label htmlFor="simple">
-                                                        Sản phẩm đơn giản
-                                                    </Label>
-                                                </span>
-                                                <span className="flex items-center space-x-2 my-2">
-                                                    <RadioGroupItem
-                                                        value="variant"
-                                                        id="variant"
-                                                    />
-                                                    <Label htmlFor="variant">
-                                                        Sản phẩm có biến thể
-                                                    </Label>
-                                                </span>
-                                            </AlertDialogDescription>
-                                        </RadioGroup>
-                                    </AlertDialogHeader>
-                                    <AlertDialogFooter>
-                                        <AlertDialogCancel>
-                                            Hủy
-                                        </AlertDialogCancel>
-                                        <AlertDialogAction
-                                            onClick={handleRedirect}
-                                        >
-                                            Tiếp tục
-                                        </AlertDialogAction>
-                                    </AlertDialogFooter>
-                                </AlertDialogContent>
-                            </AlertDialog>
-                        </TabsContent>
-                        <TabsContent
-                            value="category"
-                            className="flex items-center gap-2 capitalize"
-                        >
-                            <Button size="sm" className="h-7 gap-1 py-4">
-                                <PlusCircle className="h-3.5 w-3.5" />
-                                <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
-                                    <AddCategoryModal
-                                        handleAddCategory={handleAddCategory}
-                                    />
-                                </span>
-                            </Button>
-                        </TabsContent>
-                        <TabsContent
-                            value="brand"
-                            className="flex items-center gap-2 capitalize"
-                        >
-                            <Button size="sm" className="h-7 gap-1 py-4">
-                                <PlusCircle className="h-3.5 w-3.5" />
-                                <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
-                                    <AddBrandModal
-                                        handleAddBrand={handleAddBrand}
-                                    />
-                                </span>
-                            </Button>
-                        </TabsContent>
-                    </div>
+                                        <AlertDialogDescription>
+                                            <span className="flex items-center space-x-2 my-2">
+                                                <RadioGroupItem
+                                                    value="simple"
+                                                    id="simple"
+                                                />
+                                                <Label htmlFor="simple">
+                                                    Sản phẩm đơn giản
+                                                </Label>
+                                            </span>
+                                            <span className="flex items-center space-x-2 my-2">
+                                                <RadioGroupItem
+                                                    value="variant"
+                                                    id="variant"
+                                                />
+                                                <Label htmlFor="variant">
+                                                    Sản phẩm có biến thể
+                                                </Label>
+                                            </span>
+                                        </AlertDialogDescription>
+                                    </RadioGroup>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                    <AlertDialogCancel>Hủy</AlertDialogCancel>
+                                    <AlertDialogAction onClick={handleRedirect}>
+                                        Tiếp tục
+                                    </AlertDialogAction>
+                                </AlertDialogFooter>
+                            </AlertDialogContent>
+                        </AlertDialog>
+                    </TabsContent>
+                    <TabsContent
+                        value="category"
+                        className="flex items-center gap-2 capitalize mt-0"
+                    >
+                        <Button size="sm" className="h-7 gap-1 py-4">
+                            <PlusCircle className="h-3.5 w-3.5" />
+                            <span className="not-sr-only whitespace-nowrap">
+                                <AddCategoryModal
+                                    handleAddCategory={handleAddCategory}
+                                />
+                            </span>
+                        </Button>
+                    </TabsContent>
+                    <TabsContent
+                        value="brand"
+                        className="flex items-center gap-2 capitalize mt-0"
+                    >
+                        <Button size="sm" className="h-7 gap-1 py-4">
+                            <PlusCircle className="h-3.5 w-3.5" />
+                            <span className="not-sr-only whitespace-nowrap">
+                                <AddBrandModal
+                                    handleAddBrand={handleAddBrand}
+                                />
+                            </span>
+                        </Button>
+                    </TabsContent>
                 </div>
+            </div>
+            <ScrollArea>
                 <TabsContent value="all">
                     <Card>
                         <CardHeader>
@@ -376,7 +373,10 @@ export default function Product() {
                         </CardHeader>
                         <CardContent>
                             {filterProducts && filterProducts?.length > 0 ? (
-                                <ProductTable products={filterProducts} />
+                                <>
+                                    <ProductTable products={filterProducts} />
+                                    <ScrollBar orientation="horizontal" />
+                                </>
                             ) : (
                                 <p className="text-center">Không tìm thấy</p>
                             )}
@@ -463,6 +463,7 @@ export default function Product() {
                         </CardHeader>
                         <CardContent>
                             <CategoryTable categories={categories} />
+                            <ScrollBar orientation="horizontal" />
                         </CardContent>
                     </Card>
                 </TabsContent>
@@ -473,10 +474,11 @@ export default function Product() {
                         </CardHeader>
                         <CardContent>
                             <BrandTable brands={brands} />
+                            <ScrollBar orientation="horizontal" />
                         </CardContent>
                     </Card>
                 </TabsContent>
-            </Tabs>
-        </section>
+            </ScrollArea>
+        </Tabs>
     );
 }

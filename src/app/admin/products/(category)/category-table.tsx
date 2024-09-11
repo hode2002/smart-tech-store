@@ -129,9 +129,7 @@ const CategoryTable = (props: Props) => {
                     <TableHead className="table-cell">Tên</TableHead>
                     <TableHead className="table-cell">Mô tả</TableHead>
                     <TableHead className="table-cell">Trạng thái</TableHead>
-                    <TableHead className="hidden md:table-cell">
-                        Ngày tạo
-                    </TableHead>
+                    <TableHead className="table-cell">Ngày tạo</TableHead>
                     <TableHead>
                         <span className="sr-only">Actions</span>
                     </TableHead>
@@ -142,13 +140,13 @@ const CategoryTable = (props: Props) => {
                     categories?.map((category) => {
                         return (
                             <TableRow key={category.id}>
-                                <TableCell className="font-medium capitalize">
+                                <TableCell className="text-nowrap font-medium capitalize">
                                     {category.name}
                                 </TableCell>
-                                <TableCell>
+                                <TableCell className="text-nowrap">
                                     {category?.description ?? '--'}
                                 </TableCell>
-                                <TableCell>
+                                <TableCell className="table-cell text-nowrap">
                                     {category.is_deleted ? (
                                         <Badge variant="destructive">
                                             Đã xóa
@@ -159,7 +157,7 @@ const CategoryTable = (props: Props) => {
                                         </Badge>
                                     )}
                                 </TableCell>
-                                <TableCell>
+                                <TableCell className="table-cell text-nowrap">
                                     {moment(category.created_at).format(
                                         'DD-MM-YYYY',
                                     )}

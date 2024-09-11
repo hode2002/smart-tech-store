@@ -13,10 +13,10 @@ import {
 import Image from 'next/image';
 import { Skeleton } from '@/components/ui/skeleton';
 import Link from 'next/link';
-import { BannerImageType } from '@/schemaValidations/banner.schema';
+import { BannersResponseType } from '@/apiRequests/admin';
 
 type Props = {
-    items: BannerImageType[];
+    items: BannersResponseType[];
 };
 
 export function CarouselPlugin(props: Props) {
@@ -27,7 +27,7 @@ export function CarouselPlugin(props: Props) {
     return (
         <Carousel
             plugins={[plugin.current]}
-            className="w-[700px] md:w-[800px] h-[150px] md:h-[257px]"
+            className="md:w-[800px] h-[150px] md:h-[257px]"
             onMouseEnter={plugin.current.stop}
             onMouseLeave={plugin.current.reset}
         >
@@ -37,6 +37,7 @@ export function CarouselPlugin(props: Props) {
                         <CarouselItem key={item.id} className="pr-2 rounded-lg">
                             <Link href={item?.link}>
                                 <Image
+                                    priority
                                     src={item?.image}
                                     className="rounded-lg max-w-full lg:w-[800px]"
                                     height={1000}

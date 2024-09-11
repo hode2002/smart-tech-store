@@ -29,15 +29,16 @@ import Image from 'next/image';
 
 import { Avatar } from '@/components/ui/avatar';
 import { setDeliveryList } from '@/lib/store/slices/delivery-slice';
-import { useCookies } from 'next-client-cookies';
+import { ShoppingCart } from 'lucide-react';
 
 export default function HeaderUserAccount() {
     const router = useRouter();
     const dispatch = useAppDispatch();
-    const cookies = useCookies();
 
     const token = useAppSelector((state) => state.auth.accessToken);
     const profile = useAppSelector((state) => state.user.profile);
+    const cartProducts = useAppSelector((state) => state.user.cart);
+
     const [loading, setLoading] = useState(false);
     const handleLogout = async () => {
         if (loading) return;
@@ -50,24 +51,31 @@ export default function HeaderUserAccount() {
             dispatch(setDeliveryList([]));
             dispatch(setCategories([]));
             dispatch(setBrands([]));
-            const atToken = cookies.get('accessToken');
-            const rfToken = cookies.get('refreshToken');
-            if (atToken || rfToken) {
-                cookies.remove('accessToken');
-                cookies.remove('refreshToken');
-            }
             return router.push('/login');
         }
     };
 
     return (
         <div className="bg-popover items-center justify-around flex font-medium p-2 md:p-0">
+            <div className="md:hidden px-4 dark:bg-popover">
+                <div className="relative flex justify-center items-center">
+                    <div className="absolute left-5 bottom-4">
+                        <p className="flex h-2 w-2 items-center justify-center rounded-full bg-red-500 p-3 text-xs text-popover dark:text-popover-foreground">
+                            {cartProducts?.length ?? 0}
+                        </p>
+                    </div>
+                    <Link href={'/user/cart'}>
+                        <ShoppingCart width={'35px'} height={'35px'} />
+                    </Link>
+                </div>
+            </div>
+
             {token ? (
                 <NavigationMenu style={{ zIndex: 41 }}>
                     <NavigationMenuList>
                         <NavigationMenuItem>
-                            <NavigationMenuTrigger className="bg-transparent">
-                                <div className="flex flex-col md:flex-row pr-1 md:gap-2">
+                            <NavigationMenuTrigger className="bg-transparent flex items-center">
+                                <span className="flex flex-col md:flex-row pr-1 md:gap-2">
                                     <Link href="/user/account/profile">
                                         <Avatar>
                                             <Image
@@ -85,7 +93,7 @@ export default function HeaderUserAccount() {
                                     >
                                         <p>{profile?.email}</p>
                                     </Link>
-                                </div>
+                                </span>
                             </NavigationMenuTrigger>
                             <NavigationMenuContent>
                                 <div className="left-0 p-4">
@@ -182,12 +190,13 @@ export default function HeaderUserAccount() {
                     </div>
                 </>
             )}
+
             <div>
-                <Link href="#" className="hidden md:block py-2 px-4 ">
+                <Link href="#" className="hidden md:block py-2 px-4">
                     <ModeToggle />
                 </Link>
 
-                <SideBar token={token} />
+                <SideBar handleLogout={handleLogout} />
             </div>
         </div>
     );

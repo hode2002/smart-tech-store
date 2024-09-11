@@ -47,7 +47,7 @@ export function AddBrandModal(props: Props) {
                     Thêm thương hiệu
                 </div>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[425px]">
+            <DialogContent className="max-w-[400px] md:min-w-max rounded-md">
                 <DialogHeader>
                     <DialogTitle>Tạo mới thương hiệu</DialogTitle>
                 </DialogHeader>

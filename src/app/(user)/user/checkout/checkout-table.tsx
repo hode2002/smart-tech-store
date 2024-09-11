@@ -25,6 +25,7 @@ import Image from 'next/image';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { useAppSelector } from '@/lib/store';
 import { formatPrice } from '@/lib/utils';
+import { ProductCheckout } from '@/lib/store/slices';
 
 export type Column = {
     id: string;
@@ -35,13 +36,17 @@ export type Column = {
     unitPrice: number;
     quantity: number;
     total: number;
+    discount: number;
+    priceModifier: number;
     // selectedOption: ProductOption;
 };
 
 export default function CheckoutTable() {
     const [isClient, setIsClient] = useState(false);
 
-    const products = useAppSelector((state) => state.user.checkout);
+    const products = useAppSelector<ProductCheckout[]>(
+        (state) => state.user.checkout,
+    );
 
     const [sorting, setSorting] = useState<SortingState>([]);
     const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
@@ -58,7 +63,15 @@ export default function CheckoutTable() {
                     },
                     unitPrice: product.unitPrice,
                     quantity: product.quantity,
-                    total: product.total,
+                    total:
+                        product.quantity *
+                        (product.unitPrice +
+                            product.priceModifier -
+                            ((product.unitPrice + product.priceModifier) *
+                                product.discount) /
+                                100),
+                    discount: product.discount,
+                    priceModifier: product.priceModifier,
                 };
             }),
         [products],
@@ -91,9 +104,37 @@ export default function CheckoutTable() {
                 accessorKey: 'unitPrice',
                 header: () => <div className="text-right">Đơn giá</div>,
                 cell: ({ row }) => {
+                    const unitPrice = row.original.unitPrice;
+                    const priceModifier =
+                        unitPrice -
+                        (unitPrice * row.original.discount) / 100 +
+                        row.original.priceModifier;
                     return (
                         <div className="text-right font-medium">
-                            {formatPrice(row.original.total)}
+                            {row.original.discount === 0 ? (
+                                <div>{formatPrice(unitPrice)}</div>
+                            ) : (
+                                <>
+                                    <div className="text-center font-medium">
+                                        {formatPrice(priceModifier)}
+                                    </div>
+                                    {row.original.discount !== 0 && (
+                                        <div className="text-center font-medium">
+                                            <span className="line-through">
+                                                {formatPrice(
+                                                    unitPrice +
+                                                        row.original
+                                                            .priceModifier,
+                                                )}
+                                            </span>
+                                            <span>
+                                                {' '}
+                                                - {row.original.discount} %
+                                            </span>
+                                        </div>
+                                    )}
+                                </>
+                            )}
                         </div>
                     );
                 },
@@ -117,7 +158,6 @@ export default function CheckoutTable() {
                 header: () => <div className="text-right">Thành tiền</div>,
                 cell: ({ row }) => {
                     const total = parseFloat(row.getValue('total'));
-
                     return (
                         <div className="text-right font-extrabold text-popover-foreground">
                             {formatPrice(total)}

@@ -11,12 +11,12 @@ import {
     Package,
     Package2,
     PanelLeft,
+    Settings,
     ShoppingCart,
     Users2,
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LineChart } from 'recharts';
 
 const Header = () => {
     const currentPath = usePathname();
@@ -79,7 +79,7 @@ const Header = () => {
                             href="#"
                             className={`flex items-center gap-4 px-2.5 ${isActive('/admin/settings') ? 'text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
                         >
-                            <LineChart className="h-5 w-5" />
+                            <Settings className="h-5 w-5" />
                             Settings
                         </Link>
                     </nav>

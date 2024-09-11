@@ -92,15 +92,16 @@ export default function Navbar() {
             <div className="flex pt-2 items-center mx-auto max-w-screen-xl">
                 <div className="hidden md:block w-[25%]">
                     <Link
-                        className="flex items-center space-x-3 w-[50px] h-[50px]"
+                        className="animate-jump-in animate-once animate-duration-1000 animate-ease-out flex items-center space-x-3 w-[50px] h-[50px]"
                         href="/"
                     >
                         <Image
+                            priority
                             src={'/images/site-logo.png'}
                             width={500}
                             height={500}
                             quality={100}
-                            className="h-8"
+                            className="h-auto w-auto rounded-[50%]"
                             alt="Store"
                         />
                         <span className="self-center text-2xl font-semibold whitespace-nowrap dark:text-white">
@@ -108,7 +109,7 @@ export default function Navbar() {
                         </span>
                     </Link>
                 </div>
-                <div className="w-[75%]">
+                <div className="w-full md:w-[75%]">
                     {isClient ? (
                         <HeaderSearchBar />
                     ) : (
@@ -118,7 +119,7 @@ export default function Navbar() {
                         </div>
                     )}
                 </div>
-                <div className="w-[25%] flex justify-center">
+                <div className="w-0 md:w-[25%] hidden md:flex justify-center">
                     <NavigationMenu>
                         <NavigationMenuList>
                             <NavigationMenuItem>
@@ -126,12 +127,22 @@ export default function Navbar() {
                                     <NavigationMenuTrigger
                                         disabled={token ? false : true}
                                     >
-                                        <Link href={'/user/cart'}>
-                                            <ShoppingCart
-                                                width={'35px'}
-                                                height={'35px'}
-                                            />
-                                        </Link>
+                                        <div className="dark:bg-popover flex justify-center items-center">
+                                            <div className="relative">
+                                                <div className="absolute left-5 bottom-4">
+                                                    <p className="flex h-2 w-2 items-center justify-center rounded-full bg-red-500 p-3 text-xs text-white">
+                                                        {cartProducts?.length ??
+                                                            0}
+                                                    </p>
+                                                </div>
+                                                <Link href={'/user/cart'}>
+                                                    <ShoppingCart
+                                                        width={'35px'}
+                                                        height={'35px'}
+                                                    />
+                                                </Link>
+                                            </div>
+                                        </div>
                                     </NavigationMenuTrigger>
                                 )}
                                 {cartProducts.length > 0 ? (

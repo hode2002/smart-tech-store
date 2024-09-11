@@ -35,7 +35,7 @@ import {
     ReviewItem,
 } from '@/schemaValidations/product.schema';
 import { useAppDispatch, useAppSelector } from '@/lib/store';
-import { formatPrice } from '@/lib/utils';
+import { formatPrice, generateSlug, obfuscateEmail } from '@/lib/utils';
 import { useRouter } from 'next/navigation';
 import { toast } from '@/components/ui/use-toast';
 import accountApiRequest, {
@@ -87,21 +87,25 @@ export default function LaptopDetailPage({ params }: Props) {
     }, [token, fetchUserOrder]);
 
     const [productInfo, setProductInfo] = useState<ProductDetailType>();
-    const [selectedOption, setSelectedOption] = useState<number>(0);
+    const [selectedOptionIndex, setSelectedOptionIndex] = useState<number>(0);
+    const [selectedOptionObj, setSelectedOptionObj] = useState<
+        { name: string; value: string; adjust_price: number }[]
+    >([]);
     const warranties = productInfo?.warranties as string[];
     const promotions = productInfo?.promotions as string[];
     const descriptions = productInfo?.descriptions as ProductDescriptionType[];
-    const technicalSpecs = productInfo?.product_options?.[selectedOption]
+    const technicalSpecs = productInfo?.product_options?.[selectedOptionIndex]
         ?.technical_specs as TechnicalSpecsItem[];
-    const rating = productInfo?.product_options?.[selectedOption]
+    const rating = productInfo?.product_options?.[selectedOptionIndex]
         ?.rating as RatingType;
-    const reviews = productInfo?.product_options?.[selectedOption]
+    const reviews = productInfo?.product_options?.[selectedOptionIndex]
         ?.reviews as ReviewItem[];
 
     useEffect(() => {
         productInfo?.product_options?.forEach((item, index) => {
             if (item.slug === params.slug) {
-                setSelectedOption(index);
+                setSelectedOptionIndex(index);
+                setSelectedOptionObj(item.options);
             }
         });
     }, [productInfo, params.slug]);
@@ -110,11 +114,11 @@ export default function LaptopDetailPage({ params }: Props) {
         return (
             productInfo?.name +
             ' ' +
-            productInfo?.product_options[selectedOption].sku.replaceAll(
+            productInfo?.product_options[selectedOptionIndex].sku.replaceAll(
                 '-',
                 ' ',
             )
-        ).toLowerCase();
+        ).toLocaleLowerCase();
     };
 
     const handleAddToCart = async () => {
@@ -127,7 +131,7 @@ export default function LaptopDetailPage({ params }: Props) {
         }
 
         const response = (await accountApiRequest.addToCart(token, {
-            productOptionId: productInfo?.product_options[selectedOption]
+            productOptionId: productInfo?.product_options[selectedOptionIndex]
                 .id as string,
             quantity: 1,
         })) as AddToCartResponseType;
@@ -155,8 +159,9 @@ export default function LaptopDetailPage({ params }: Props) {
         if (!comment) return;
 
         const reviewObject: CreateProductReviewType = {
-            product_option_id: productInfo?.product_options?.[selectedOption]
-                .id as string,
+            product_option_id: productInfo?.product_options?.[
+                selectedOptionIndex
+            ].id as string,
             comment,
             star: rated,
         };
@@ -181,8 +186,9 @@ export default function LaptopDetailPage({ params }: Props) {
     const handleEditReview = async () => {
         setEditMode(!editMode);
         const reviewObject: CreateProductReviewType = {
-            product_option_id: productInfo?.product_options?.[selectedOption]
-                .id as string,
+            product_option_id: productInfo?.product_options?.[
+                selectedOptionIndex
+            ].id as string,
             comment,
             star: rated,
         };
@@ -236,6 +242,55 @@ export default function LaptopDetailPage({ params }: Props) {
         setRated(5);
     };
 
+    const handleSelectOption = (optionName: string, optionValue: string) => {
+        const results = selectedOptionObj.map((el) => {
+            if (el.name === optionName) {
+                return {
+                    ...el,
+                    value: optionValue,
+                };
+            }
+            return el;
+        });
+
+        const optionString = generateSlug(
+            results.map((el) => el.value).join(' '),
+        );
+        const optionStringReverse = generateSlug(
+            results
+                .map((el) => el.value)
+                .reverse()
+                .join(' '),
+        );
+
+        const url = productInfo?.product_options.find(
+            (p) =>
+                p.slug.includes(optionString) ||
+                p.slug.includes(optionStringReverse),
+        )?.slug;
+
+        if (url) {
+            router.push(url);
+        }
+    };
+
+    const [isShowMore, setIsShowMore] = useState<boolean>(false);
+
+    const calculateProductPrice = useCallback((): number => {
+        if (!productInfo) return 0;
+
+        const selectedOption = productInfo.product_options[selectedOptionIndex];
+        const selectedOptionPriceModifier = selectedOption.price_modifier;
+        const discount =
+            ((productInfo.price + selectedOptionPriceModifier) *
+                selectedOption.discount) /
+            100;
+        const productModifiedPrice =
+            productInfo.price + selectedOptionPriceModifier - discount;
+
+        return productModifiedPrice;
+    }, [productInfo, selectedOptionIndex]);
+
     return (
         productInfo && (
             <div className="py-2 bg-popover min-h-screen">
@@ -266,7 +321,7 @@ export default function LaptopDetailPage({ params }: Props) {
                         {convertProductName()}
                     </p>
                     {rating && rating?.total_reviews !== 0 && (
-                        <div className="flex justify-start items-center gap-2">
+                        <div className="flex justify-start items-center gap-2 mt-2 md:mt-0">
                             <span className="font-bold text-[24px]">
                                 {rating.overall}
                             </span>
@@ -296,7 +351,7 @@ export default function LaptopDetailPage({ params }: Props) {
                         >
                             {productInfo &&
                                 productInfo?.product_options[
-                                    selectedOption
+                                    selectedOptionIndex
                                 ].product_images.map((item) => {
                                     return (
                                         <SwiperSlide key={item.id}>
@@ -319,29 +374,20 @@ export default function LaptopDetailPage({ params }: Props) {
                         <div>
                             <div className="mb-10">
                                 <p className="text-[#E83A45] font-bold text-[32px]">
-                                    {formatPrice(
-                                        productInfo.price -
-                                            (productInfo.price *
-                                                productInfo.product_options[
-                                                    selectedOption
-                                                ].discount) /
-                                                100 +
-                                            productInfo.product_options[
-                                                selectedOption
-                                            ].price_modifier,
-                                    )}
+                                    {formatPrice(calculateProductPrice())}
                                 </p>
 
                                 <p className="opacity-80 text-[20px]">
-                                    {productInfo.product_options[selectedOption]
-                                        .discount !== 0 && (
+                                    {productInfo.product_options[
+                                        selectedOptionIndex
+                                    ].discount !== 0 && (
                                         <>
                                             <span className="line-through ">
                                                 {formatPrice(
                                                     productInfo.price +
                                                         productInfo
                                                             .product_options[
-                                                            selectedOption
+                                                            selectedOptionIndex
                                                         ].price_modifier,
                                                 )}
                                             </span>
@@ -349,7 +395,7 @@ export default function LaptopDetailPage({ params }: Props) {
                                                 -
                                                 {
                                                     productInfo.product_options[
-                                                        selectedOption
+                                                        selectedOptionIndex
                                                     ].discount
                                                 }
                                                 %
@@ -359,52 +405,53 @@ export default function LaptopDetailPage({ params }: Props) {
                                 </p>
                             </div>
 
-                            {productInfo?.product_options?.[0]?.options
-                                ?.length > 0 && (
-                                <div className="w-full">
-                                    <div className="flex gap-2 items-center my-4">
-                                        <div className="flex gap-2 flex-wrap">
-                                            {productInfo?.product_options?.map(
-                                                (productOption, index) => (
-                                                    <Link
-                                                        key={index}
-                                                        href={
-                                                            productOption.slug
-                                                        }
-                                                    >
-                                                        <Button
-                                                            className="capitalize"
-                                                            variant={
-                                                                index ===
-                                                                selectedOption
-                                                                    ? 'default'
-                                                                    : 'outline'
-                                                            }
-                                                        >
-                                                            {productOption.options.map(
-                                                                (el, elIdx) => {
-                                                                    return (
-                                                                        <span
-                                                                            className="capitalize mx-1 min-w-[80px]"
-                                                                            key={
-                                                                                elIdx
+                            {productInfo?.options &&
+                                productInfo?.options?.length > 0 && (
+                                    <div className="w-full flex flex-col gap-6 my-8 md:my-4">
+                                        {productInfo.options?.map(
+                                            (option, index) => (
+                                                <div key={index}>
+                                                    <p className="mb-1 font-semibold">
+                                                        {option.name}
+                                                    </p>
+                                                    <div className="flex gap-2">
+                                                        {option?.values
+                                                            .sort()
+                                                            ?.map((el) => {
+                                                                return (
+                                                                    <div
+                                                                        key={el}
+                                                                        onClick={() =>
+                                                                            handleSelectOption(
+                                                                                option.name,
+                                                                                el,
+                                                                            )
+                                                                        }
+                                                                        className="min-w-max"
+                                                                    >
+                                                                        <Button
+                                                                            className="capitalize"
+                                                                            variant={
+                                                                                params.slug.includes(
+                                                                                    generateSlug(
+                                                                                        el.toLowerCase(),
+                                                                                    ),
+                                                                                )
+                                                                                    ? 'default'
+                                                                                    : 'outline'
                                                                             }
                                                                         >
-                                                                            {
-                                                                                el.value
-                                                                            }
-                                                                        </span>
-                                                                    );
-                                                                },
-                                                            )}
-                                                        </Button>
-                                                    </Link>
-                                                ),
-                                            )}
-                                        </div>
+                                                                            {el}
+                                                                        </Button>
+                                                                    </div>
+                                                                );
+                                                            })}
+                                                    </div>
+                                                </div>
+                                            ),
+                                        )}
                                     </div>
-                                </div>
-                            )}
+                                )}
                         </div>
 
                         <div>
@@ -458,16 +505,31 @@ export default function LaptopDetailPage({ params }: Props) {
                             />
                         </div>
 
-                        <div className="mt-8">
-                            <p className="text-[20px] font-bold">
+                        <div className="mt-8 w-full flex flex-col items-center relative">
+                            <p className="self-start text-[20px] font-bold">
                                 Thông tin sản phẩm
                             </p>
                             <div
-                                className="py-4"
+                                className={`py-4 ${isShowMore ? 'animate-fade-down' : 'max-h-[50vh] overflow-hidden'}`}
                                 dangerouslySetInnerHTML={{
                                     __html: descriptions[0].content,
                                 }}
                             ></div>
+                            {!isShowMore && (
+                                <div
+                                    className="bottom-4 h-32 left-0 absolute w-full"
+                                    style={{
+                                        background:
+                                            'linear-gradient(to bottom,rgba(255 255 255/0),rgba(255 255 255/62.5),rgba(255 255 255/1))',
+                                    }}
+                                ></div>
+                            )}
+                            <Button
+                                className="w-max mt-4 z-30"
+                                onClick={() => setIsShowMore(!isShowMore)}
+                            >
+                                {isShowMore ? 'Thu gọn' : 'Xem thêm'}
+                            </Button>
                         </div>
 
                         <div className="mt-8 border border-solid p-8 rounded-lg">
@@ -477,10 +539,10 @@ export default function LaptopDetailPage({ params }: Props) {
 
                             {rating && rating?.total_reviews !== 0 ? (
                                 <div>
-                                    <div className="flex justify-start items-center gap-2">
-                                        <span className="font-bold">
+                                    <div className="flex gap-2">
+                                        <p className="font-bold text-lg align-bottom">
                                             {rating?.overall}
-                                        </span>
+                                        </p>
                                         <Rating
                                             value={Math.floor(rating.overall)}
                                             readonly
@@ -560,11 +622,18 @@ export default function LaptopDetailPage({ params }: Props) {
 
                                                                 <p className="flex flex-col md:flex-row">
                                                                     <span className="font-bold mr-4">
-                                                                        {
-                                                                            review
-                                                                                .user
-                                                                                .email
-                                                                        }
+                                                                        {userProfile.email !==
+                                                                        review
+                                                                            .user
+                                                                            .email
+                                                                            ? obfuscateEmail(
+                                                                                  review
+                                                                                      .user
+                                                                                      .email,
+                                                                              )
+                                                                            : review
+                                                                                  .user
+                                                                                  .email}
                                                                     </span>
                                                                     <span>
                                                                         {moment(
@@ -649,7 +718,7 @@ export default function LaptopDetailPage({ params }: Props) {
                                                                 .email ===
                                                             userProfile.email
                                                                 ? !editMode && (
-                                                                      <>
+                                                                      <div className="flex gap-2">
                                                                           <PencilIcon
                                                                               className="cursor-pointer"
                                                                               onClick={() => {
@@ -671,7 +740,7 @@ export default function LaptopDetailPage({ params }: Props) {
                                                                               }}
                                                                               color="#000000"
                                                                           />
-                                                                      </>
+                                                                      </div>
                                                                   )
                                                                 : token && (
                                                                       <MessageSquareQuote
@@ -715,11 +784,11 @@ export default function LaptopDetailPage({ params }: Props) {
 
                                                                                 <p className="flex flex-col md:flex-row">
                                                                                     <span className="font-bold mr-4">
-                                                                                        {
+                                                                                        {obfuscateEmail(
                                                                                             child
-                                                                                                .user
-                                                                                                .email
-                                                                                        }
+                                                                                                ?.user
+                                                                                                .email,
+                                                                                        )}
                                                                                     </span>
                                                                                     <span>
                                                                                         {moment(
@@ -775,7 +844,7 @@ export default function LaptopDetailPage({ params }: Props) {
                                         (item) =>
                                             item.product.id ===
                                             productInfo?.product_options?.[
-                                                selectedOption
+                                                selectedOptionIndex
                                             ].id,
                                     ),
                                 ) && (
@@ -811,7 +880,7 @@ export default function LaptopDetailPage({ params }: Props) {
                                             onChange={(e) =>
                                                 setComment(e.target.value)
                                             }
-                                            placeholder={`Phản hồi ${replyReview?.user.email}`}
+                                            placeholder={`Phản hồi ${obfuscateEmail(replyReview?.user.email)}`}
                                         />
                                         <Button onClick={handleReplyReview}>
                                             Gửi
@@ -822,7 +891,7 @@ export default function LaptopDetailPage({ params }: Props) {
                         </div>
                     </div>
 
-                    <div className="w-full md:w-[40%] py-4 md:py-0 md:px-7">
+                    <div className="flex md:block flex-col-reverse w-full md:w-[40%] py-4 md:py-0 md:px-7">
                         <div>
                             <p className="border border-solid p-2 rounded-t-lg">
                                 Khuyến mãi
