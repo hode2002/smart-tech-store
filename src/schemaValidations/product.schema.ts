@@ -155,6 +155,12 @@ export const ProductDetail = z.object({
     category: Category,
     created_at: z.string().optional(),
     product_options: z.array(ProductOption),
+    options: z.array(
+        z.object({
+            name: z.string(),
+            values: z.array(z.string()),
+        }),
+    ),
 });
 
 export type ProductDetailType = z.TypeOf<typeof ProductDetail>;

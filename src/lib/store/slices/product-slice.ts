@@ -79,6 +79,10 @@ export type ProductType = {
             overall: number;
         };
     }[];
+    options: {
+        name: string;
+        values: string[];
+    }[];
 };
 
 export interface IProductState {

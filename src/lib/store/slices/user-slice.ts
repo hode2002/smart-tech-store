@@ -67,9 +67,10 @@ export type ProductCheckout = {
     name: string;
     thumbnail: string;
     unitPrice: number;
+    priceModifier: number;
     quantity: number;
-    total: number;
     weight: number;
+    discount: number;
 };
 
 export interface IUserState {
