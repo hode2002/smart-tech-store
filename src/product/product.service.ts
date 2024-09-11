@@ -1991,6 +1991,8 @@ export class ProductService {
     private convertProductResponse(
         product: ProductDetailDB,
     ): ProductDetailResponse {
+        let options: { name: string; values: string[] }[] = [];
+
         return {
             ...product,
             product_options: product?.product_options.map((productOption) => {
@@ -2017,11 +2019,29 @@ export class ProductService {
                     technical_specs: translateSpecs(
                         productOption.technical_specs,
                     ),
-                    options: product_option_value.map((el) => ({
-                        name: el.option.name,
-                        value: el.value,
-                        adjust_price: el.adjust_price,
-                    })),
+                    options: product_option_value.map((el) => {
+                        const isExist = options.find((o) =>
+                            o.name.includes(el.option.name),
+                        );
+                        if (!isExist) {
+                            options = [
+                                ...options,
+                                {
+                                    name: el.option.name,
+                                    values: [el.value],
+                                },
+                            ];
+                        } else {
+                            !isExist.values.includes(el.value) &&
+                                isExist.values.push(el.value);
+                        }
+
+                        return {
+                            name: el.option.name,
+                            value: el.value,
+                            adjust_price: el.adjust_price,
+                        };
+                    }),
                     rating: {
                         total_reviews: productOption.reviews.length,
                         details: rating,
@@ -2030,6 +2050,7 @@ export class ProductService {
                     reviews: productOption.reviews,
                 };
             }),
+            options,
         };
     }
 }

@@ -79,4 +79,8 @@ export interface ProductDetailResponse {
             }[];
         }[];
     }[];
+    options: {
+        name: string;
+        values: string[];
+    }[];
 }
