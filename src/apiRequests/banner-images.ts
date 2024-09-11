@@ -1,12 +1,11 @@
+import { FetchAllBannersResponseType } from '@/apiRequests/admin';
 import { toast } from '@/components/ui/use-toast';
 import http from '@/lib/http';
-
-import { BannerImageResponseType } from '@/schemaValidations/banner.schema';
 
 class BannerImageApiRequest {
     async getImages() {
         try {
-            const response: BannerImageResponseType =
+            const response: FetchAllBannersResponseType =
                 await http.get('/banners');
             return response;
         } catch (error: any) {
