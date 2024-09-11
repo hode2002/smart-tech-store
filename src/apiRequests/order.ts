@@ -15,7 +15,6 @@ export type CreateOrderType = {
     order_details: {
         product_option_id: string;
         quantity: number;
-        price: number;
     }[];
 };
 
