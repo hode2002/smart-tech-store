@@ -3,47 +3,13 @@
 import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { LoginForm } from '@/app/(user)/(auth)/login/login-form';
-import { useCookies } from 'next-client-cookies';
-import { useEffect } from 'react';
-import accountApiRequest from '@/apiRequests/account';
-import { useRouter } from 'next/navigation';
-import { useAppDispatch } from '@/lib/store';
-import {
-    setAccessToken,
-    setProfile,
-    setRefreshToken,
-} from '@/lib/store/slices';
-import { GetProfileResponseType } from '@/schemaValidations/account.schema';
 import {
     FacebookLoginButton,
     GoogleLoginButton,
 } from 'react-social-login-buttons';
 
 export default function Login() {
-    const cookies = useCookies();
-    const router = useRouter();
-    const dispatch = useAppDispatch();
-
     const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-
-    useEffect(() => {
-        const accessToken = cookies.get('accessToken');
-        const refreshToken = cookies.get('refreshToken');
-        if (accessToken && refreshToken) {
-            accountApiRequest
-                .getUserProfile(accessToken)
-                .then((res: GetProfileResponseType) => {
-                    if (res.statusCode === 200) {
-                        dispatch(setAccessToken(accessToken));
-                        dispatch(setRefreshToken(refreshToken));
-                        dispatch(setProfile(res.data));
-                        cookies.remove('accessToken');
-                        cookies.remove('refreshToken');
-                        router.push('/');
-                    }
-                });
-        }
-    }, [cookies, dispatch, router]);
 
     return (
         <div className="py-10 bg-popover min-h-screen">

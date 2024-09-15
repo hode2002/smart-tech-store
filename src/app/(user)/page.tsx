@@ -11,10 +11,13 @@ import productApiRequest from '@/apiRequests/product';
 import { GetProductsResponseType } from '@/schemaValidations/product.schema';
 import {
     ProductType,
+    setAccessToken,
     setAddress,
     setBrands,
     setCategories,
     setProductList,
+    setProfile,
+    setRefreshToken,
 } from '@/lib/store/slices';
 import categoryApiRequest from '@/apiRequests/category';
 import { CategoryResponseType } from '@/schemaValidations/category.schema';
@@ -24,10 +27,34 @@ import ProductBox from '@/components/home/product-box';
 import SubizChat from '@/components/subiz-chat';
 import useScreen from '@/hooks/use-screen';
 import accountApiRequest from '@/apiRequests/account';
-import { UpdateAddressResponseType } from '@/schemaValidations/account.schema';
+import {
+    GetProfileResponseType,
+    UpdateAddressResponseType,
+} from '@/schemaValidations/account.schema';
+import { useCookies } from 'next-client-cookies';
 
 export default function Home() {
     const dispatch = useAppDispatch();
+    const cookies = useCookies();
+
+    useLayoutEffect(() => {
+        const accessToken = cookies.get('accessToken');
+        const refreshToken = cookies.get('refreshToken');
+        if (accessToken && refreshToken) {
+            accountApiRequest
+                .getUserProfile(accessToken)
+                .then((res: GetProfileResponseType) => {
+                    if (res.statusCode === 200) {
+                        dispatch(setAccessToken(accessToken));
+                        dispatch(setRefreshToken(refreshToken));
+                        dispatch(setProfile(res.data));
+                        cookies.remove('accessToken');
+                        cookies.remove('refreshToken');
+                    }
+                });
+        }
+    }, [cookies, dispatch]);
+
     const { isMobile, isDesktop } = useScreen();
 
     const deliveryList = useAppSelector((state) => state.delivery.deliveryList);
