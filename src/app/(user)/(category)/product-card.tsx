@@ -155,10 +155,10 @@ export default function ProductCard(props: Props) {
     );
 
     return (
-        <div className="w-[185px] lg:w-auto lg:max-w-[300px]">
+        <div className="w-[180px] lg:w-auto lg:max-w-[300px]">
             <ContextMenu>
                 <ContextMenuTrigger>
-                    <div className="min-h-[550px] lg:max-w-[300px] bg-card w-[185px] md:w-[360px] hover:shadow-2xl hover:cursor-pointer hover:scale-[1.01] transition-all duration-300 border-[1px] border-[#ccc] rounded-md px-2 py-3 shadow-md flex flex-col justify-between">
+                    <div className="min-h-[550px] lg:max-w-[300px] bg-card w-[180px] md:w-[360px] hover:shadow-2xl hover:cursor-pointer hover:scale-[1.01] transition-all duration-300 border-[1px] border-[#ccc] rounded-md px-2 py-3 shadow-md flex flex-col justify-between">
                         <div>
                             {product?.label && (
                                 <p className="mb-4 opacity-70 text-sm">
@@ -212,7 +212,7 @@ export default function ProductCard(props: Props) {
                                                         key={index}
                                                         className="flex gap-2"
                                                     >
-                                                        {option?.values
+                                                        {[...option?.values]
                                                             ?.sort((a, b) => {
                                                                 const numA =
                                                                     parseInt(
