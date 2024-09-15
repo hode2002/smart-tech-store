@@ -117,6 +117,13 @@ def create_annoy_tree():
             'message': 'Invalid token',
         }),401
 
+@app.route('/', methods=['GET'])
+def hello():
+    jsonify({
+        'statusCode': 200,
+        'message': 'Hello World',
+    }),200
+
 # Chạy server
 if __name__ == '__main__':
     app.run(port= 3002, debug=True)
