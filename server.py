@@ -119,7 +119,7 @@ def create_annoy_tree():
 
 @app.route('/', methods=['GET'])
 def hello():
-    jsonify({
+    return jsonify({
         'statusCode': 200,
         'message': 'Hello World',
     }),200
