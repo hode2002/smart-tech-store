@@ -39,6 +39,30 @@ export class ProductController {
         };
     }
 
+    @Get('images')
+    @Permission(Role.ADMIN)
+    @UseGuards(AtJwtGuard, RoleGuard)
+    @HttpCode(HttpStatus.OK)
+    async getProductImages(): Promise<SuccessResponse> {
+        return {
+            statusCode: HttpStatus.OK,
+            message: 'Get product images success',
+            data: await this.productService.getProductImages(),
+        };
+    }
+
+    @Post('get-by-array')
+    @HttpCode(HttpStatus.OK)
+    async getByArrayIds(
+        @Body('product_option_ids') product_option_ids: string[],
+    ): Promise<SuccessResponse> {
+        return {
+            statusCode: HttpStatus.OK,
+            message: 'Get products success',
+            data: await this.productService.getByArrayIds(product_option_ids),
+        };
+    }
+
     @Get(':id/management')
     @HttpCode(HttpStatus.OK)
     async findDetailManagement(

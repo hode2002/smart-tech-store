@@ -550,6 +550,31 @@ export class ProductService {
         };
     }
 
+    async getProductImages() {
+        const productImages = await this.prismaService.productImage.findMany({
+            select: {
+                product_option_id: true,
+                image_url: true,
+            },
+        });
+
+        const productOptions = await this.prismaService.productOption.findMany({
+            select: {
+                id: true,
+                thumbnail: true,
+            },
+        });
+
+        const productThumbs = productOptions.map((productOption) => {
+            return {
+                product_option_id: productOption.id,
+                image_url: productOption.thumbnail,
+            };
+        });
+
+        return [...productThumbs, ...productImages];
+    }
+
     async getProductSale() {
         const products = await this.prismaService.product.findMany({
             where: {
@@ -1803,6 +1828,139 @@ export class ProductService {
                 this.convertProductResponse(product),
             ),
         };
+    }
+
+    async getByArrayIds(productOptionIds: string[]) {
+        if (!productOptionIds?.length) {
+            throw new ForbiddenException('Missing array product option id');
+        }
+
+        const products = await this.prismaService.product.findMany({
+            where: {
+                product_options: {
+                    some: {
+                        id: {
+                            in: productOptionIds,
+                        },
+                    },
+                    none: {
+                        stock: {
+                            equals: 0,
+                        },
+                    },
+                },
+            },
+            select: {
+                id: true,
+                name: true,
+                main_image: true,
+                price: true,
+                promotions: true,
+                warranties: true,
+                label: true,
+                descriptions: {
+                    select: {
+                        id: true,
+                        content: true,
+                    },
+                },
+                brand: {
+                    select: {
+                        id: true,
+                        name: true,
+                        logo_url: true,
+                        slug: true,
+                    },
+                },
+                category: {
+                    select: {
+                        id: true,
+                        name: true,
+                        slug: true,
+                    },
+                },
+                product_options: {
+                    select: {
+                        id: true,
+                        sku: true,
+                        thumbnail: true,
+                        price_modifier: true,
+                        stock: true,
+                        discount: true,
+                        is_sale: true,
+                        slug: true,
+                        label_image: true,
+                        product_images: {
+                            select: {
+                                id: true,
+                                image_url: true,
+                                image_alt_text: true,
+                            },
+                        },
+                        technical_specs: {
+                            select: {
+                                screen: true,
+                                screen_size: true,
+                                os: true,
+                                front_camera: true,
+                                rear_camera: true,
+                                chip: true,
+                                ram: true,
+                                rom: true,
+                                sim: true,
+                                battery: true,
+                                weight: true,
+                                connection: true,
+                            },
+                        },
+                        product_option_value: {
+                            select: {
+                                option: {
+                                    select: { name: true },
+                                },
+                                value: true,
+                                adjust_price: true,
+                            },
+                        },
+                        reviews: {
+                            where: { parent_id: null },
+                            select: {
+                                id: true,
+                                user: {
+                                    select: {
+                                        id: true,
+                                        email: true,
+                                        name: true,
+                                        avatar: true,
+                                    },
+                                },
+                                star: true,
+                                comment: true,
+                                _count: true,
+                                children: {
+                                    select: {
+                                        id: true,
+                                        user: {
+                                            select: {
+                                                id: true,
+                                                email: true,
+                                                name: true,
+                                                avatar: true,
+                                            },
+                                        },
+                                        comment: true,
+                                        created_at: true,
+                                    },
+                                },
+                                created_at: true,
+                            },
+                        },
+                    },
+                },
+            },
+        });
+
+        return products.map((product) => this.convertProductResponse(product));
     }
 
     async update(id: string, updateProductDto: UpdateProductDto) {
