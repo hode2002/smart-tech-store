@@ -12,12 +12,8 @@ from annoy_search import get_closest_items, get_item_vector
 from create_tree import vector_features_collection, create_tree_from_node_server
 
 allowed_origins = os.getenv('ALLOWED_ORIGINS')
-
 access_token_secret = os.getenv('ACCESS_TOKEN_SECRET')
-refresh_token_secret = os.getenv('REFRESH_TOKEN_SECRET')
-
 node_server_url = os.getenv('NODE_SERVER_URL')
-python_server_url = os.getenv('PYTHON_SERVER_URL')
 
 # Tạo Flask app
 app = Flask(__name__)

@@ -39,8 +39,7 @@ def extract_features(img_input):
         # Trích xuất đặc trưng bằng cách sử dụng mô hình ResNet50
         features = model.predict(img_array)
 
-        # Trả về vector đặc trưng đầu tiên
-        return features[0]
+        return features.flatten()
     except Exception as e:
         print(f"Error occurred: {str(e)}")
         return None
