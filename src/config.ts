@@ -7,6 +7,7 @@ const configSchema = z.object({
     NEXT_PUBLIC_SUBIZ_ACCOUNT_ID: z.string(),
     NEXT_PUBLIC_TINY_EDITOR_KEY: z.string(),
     NEXT_PUBLIC_FRONTEND_URL: z.string(),
+    NEXT_PUBLIC_PYTHON_API_URL: z.string(),
 });
 
 const configProject = configSchema.safeParse({
@@ -16,6 +17,7 @@ const configProject = configSchema.safeParse({
     NEXT_PUBLIC_SUBIZ_ACCOUNT_ID: process.env.NEXT_PUBLIC_SUBIZ_ACCOUNT_ID,
     NEXT_PUBLIC_TINY_EDITOR_KEY: process.env.NEXT_PUBLIC_TINY_EDITOR_KEY,
     NEXT_PUBLIC_FRONTEND_URL: process.env.NEXT_PUBLIC_FRONTEND_URL,
+    NEXT_PUBLIC_PYTHON_API_URL: process.env.NEXT_PUBLIC_PYTHON_API_URL,
 });
 
 if (!configProject.success) {

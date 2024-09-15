@@ -52,7 +52,7 @@ const brandPersistConfig = {
 const productPersistConfig = {
     key: 'product',
     storage: storage,
-    whitelist: ['products', 'currentProduct'],
+    whitelist: ['products', 'productsSearch'],
 };
 
 const rootReducer = combineReducers({

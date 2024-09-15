@@ -14,10 +14,15 @@ import {
 } from '@/components/ui/breadcrumb';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
+import { useAppSelector } from '@/lib/store';
 
 export default function SearchPage() {
     const searchParams = useSearchParams();
     const keywords = searchParams.get('keywords');
+
+    const productSearch = useAppSelector(
+        (state) => state.products.productsSearch,
+    );
 
     const [isCLient, setIsClient] = useState(false);
     useEffect(() => setIsClient(true), []);
@@ -31,8 +36,10 @@ export default function SearchPage() {
                 .then((response: ProductPaginationResponseType) => {
                     setProducts(response.data.products);
                 });
+        } else {
+            setProducts(productSearch);
         }
-    }, [keywords]);
+    }, [keywords, productSearch]);
 
     return (
         isCLient && (
@@ -48,23 +55,29 @@ export default function SearchPage() {
                         <BreadcrumbItem>
                             <p>Tìm kiếm</p>
                         </BreadcrumbItem>
-                        <BreadcrumbSeparator />
-                        <BreadcrumbItem>
-                            <BreadcrumbPage className="capitalize">
-                                {keywords}
-                            </BreadcrumbPage>
-                        </BreadcrumbItem>
+                        {keywords && (
+                            <>
+                                <BreadcrumbSeparator />
+                                <BreadcrumbItem>
+                                    <BreadcrumbPage className="capitalize">
+                                        {keywords}
+                                    </BreadcrumbPage>
+                                </BreadcrumbItem>
+                            </>
+                        )}
                     </BreadcrumbList>
                 </Breadcrumb>
                 <div className="my-8 flex">
                     <div className="w-full border-border bg-background">
                         <div className="w-full py-3">
-                            <div className="flex justify-between items-center">
-                                <p className="font-bold text-[20px]">
-                                    Tìm thấy {products.length} kết quả với từ
-                                    khóa {`"${keywords}"`}
-                                </p>
-                            </div>
+                            {keywords && (
+                                <div className="flex justify-between items-center">
+                                    <p className="font-bold text-[20px]">
+                                        Tìm thấy {products.length} kết quả với
+                                        từ khóa {`"${keywords}"`}
+                                    </p>
+                                </div>
+                            )}
                         </div>
                         <CategoryProductList products={products} />
                     </div>

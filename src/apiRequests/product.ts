@@ -97,6 +97,27 @@ class ProductApiRequest {
         }
     }
 
+    async getProductsByImage(file: File) {
+        const formData = new FormData();
+        formData.append('image', file);
+        try {
+            const response: GetProductsResponseType = await http.post(
+                '/products/closest',
+                formData,
+                {},
+                'python',
+            );
+            return response;
+        } catch (error: any) {
+            toast({
+                title: 'Error',
+                description: error?.payload?.message ?? 'Lỗi không xác định',
+                variant: 'destructive',
+            });
+            return error;
+        }
+    }
+
     async getProductsSale() {
         try {
             const response: GetProductsResponseType =

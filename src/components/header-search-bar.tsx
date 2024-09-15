@@ -1,6 +1,6 @@
 'use client';
 
-import { Search } from 'lucide-react';
+import { Camera, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -23,15 +23,21 @@ import {
     setHistorySearchItem,
     setHistorySearchList,
     setLocalSearchItem,
+    setProductsSearch,
 } from '@/lib/store/slices';
 import accountApiRequest from '@/apiRequests/account';
 import { v4 as uuidv4 } from 'uuid';
-import { useCallback, useEffect, useState } from 'react';
+import { ChangeEvent, useCallback, useEffect, useRef, useState } from 'react';
 import HeaderSearchList from '@/components/header-search-list';
 import { useRouter } from 'next/navigation';
 import debounce from 'lodash/debounce';
 import productApiRequest from '@/apiRequests/product';
-import { ProductPaginationResponseType } from '@/schemaValidations/product.schema';
+import {
+    GetProductsResponseType,
+    ProductPaginationResponseType,
+} from '@/schemaValidations/product.schema';
+import { Label } from '@/components/ui/label';
+import { ReloadIcon } from '@radix-ui/react-icons';
 
 export default function HeaderSearchBar() {
     const dispatch = useAppDispatch();
@@ -143,23 +149,47 @@ export default function HeaderSearchBar() {
         );
     };
 
+    const [loading, setLoading] = useState(false);
+    const inputRef = useRef<HTMLInputElement | null>(null);
+
+    const handleSearchByImage = async (image: File) => {
+        if (loading) return;
+        setLoading(true);
+        const response: GetProductsResponseType =
+            await productApiRequest.getProductsByImage(image);
+        setLoading(false);
+        if (response.statusCode === 200) {
+            dispatch(setProductsSearch(response.data));
+            router.push('/search');
+        }
+    };
+
+    const validateFile = (event: ChangeEvent<HTMLInputElement>) => {
+        const image = event.target.files?.[0];
+        if (image) {
+            if (inputRef.current) {
+                inputRef.current.value = '';
+            }
+            handleSearchByImage(image);
+        }
+    };
+
     return (
         <div
             className="mx-4 items-center w-[94%] md:w-full"
             onClick={(e) => e.stopPropagation()}
         >
             <Form {...form}>
-                <form
-                    onClick={() => setIsOpen(true)}
-                    className="flex w-full items-center space-x-2"
-                >
+                <form className="flex w-full items-center space-x-2">
                     <div className="w-full relative">
                         <FormField
                             control={form.control}
                             name="search_content"
                             render={({ field }) => (
                                 <FormItem>
-                                    <FormControl>
+                                    <FormControl
+                                        onClick={() => setIsOpen(true)}
+                                    >
                                         <Input
                                             {...field}
                                             type="text"
@@ -170,10 +200,38 @@ export default function HeaderSearchBar() {
                                             value={searchTerm}
                                             autoComplete="off"
                                             placeholder="Bạn cần tìm gì..."
-                                            className="px-2 py-5 w-full"
+                                            className="px-2 py-5 w-full relative"
                                         />
                                     </FormControl>
                                     <FormMessage />
+                                    {loading ? (
+                                        <Label className="px-2 absolute top-[5px] right-[10px] cursor-wait">
+                                            <ReloadIcon className="animate-spin" />
+                                        </Label>
+                                    ) : (
+                                        <Label
+                                            htmlFor="image"
+                                            className="px-2 absolute top-0 right-[10px] cursor-pointer"
+                                            onMouseDown={() => setIsOpen(false)}
+                                        >
+                                            <Camera
+                                                onMouseDown={() =>
+                                                    setIsOpen(false)
+                                                }
+                                            />
+                                        </Label>
+                                    )}
+
+                                    <Input
+                                        className="hidden"
+                                        type="file"
+                                        accept=".jpg,.jpeg,.png"
+                                        id="image"
+                                        placeholder="Họ tên..."
+                                        ref={inputRef}
+                                        onChange={(e) => validateFile(e)}
+                                        autoComplete="off"
+                                    />
                                 </FormItem>
                             )}
                         />
@@ -190,7 +248,7 @@ export default function HeaderSearchBar() {
                         />
                     </div>
                     <Button
-                        className="hidden md:block"
+                        className="hidden md:block min-h-[40px]"
                         onClick={(e) => onSubmit(e)}
                     >
                         <Search />

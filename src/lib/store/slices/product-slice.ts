@@ -90,6 +90,7 @@ export interface IProductState {
     productSale: ProductType[];
     productCategory: ProductType[];
     productBrand: ProductType[];
+    productsSearch: ProductType[];
 }
 
 const initialState: IProductState = {
@@ -97,6 +98,7 @@ const initialState: IProductState = {
     productSale: [],
     productCategory: [],
     productBrand: [],
+    productsSearch: [],
 };
 
 export const productSlice = createSlice({
@@ -105,6 +107,9 @@ export const productSlice = createSlice({
     reducers: {
         setProductList: (state, action: PayloadAction<ProductType[]>) => {
             state.products = action.payload;
+        },
+        setProductsSearch: (state, action: PayloadAction<ProductType[]>) => {
+            state.productsSearch = action.payload;
         },
         setProductSale: (state, action: PayloadAction<ProductType[]>) => {
             state.productSale = action.payload;
@@ -123,5 +128,6 @@ export const {
     setProductSale,
     setProductCategory,
     setProductBrand,
+    setProductsSearch,
 } = productSlice.actions;
 export const productReducer = productSlice.reducer;

@@ -47,6 +47,7 @@ const request = async <Response>(
     method: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE',
     url: string,
     options?: CustomOptions | undefined,
+    server: 'node' | 'python' = 'node',
 ) => {
     const body = options?.body
         ? options.body instanceof FormData
@@ -57,7 +58,10 @@ const request = async <Response>(
     const baseHeaders =
         body instanceof FormData ? {} : { 'Content-Type': 'application/json' };
 
-    const baseUrl = envConfig.NEXT_PUBLIC_API_URL;
+    const baseUrl =
+        server === 'node'
+            ? envConfig.NEXT_PUBLIC_API_URL
+            : envConfig.NEXT_PUBLIC_PYTHON_API_URL;
     const fullUrl = baseUrl + url;
 
     const res = await fetch(fullUrl, {
@@ -137,36 +141,41 @@ const http = {
     get<Response>(
         url: string,
         options?: Omit<CustomOptions, 'body'> | undefined,
+        server: 'node' | 'python' = 'node',
     ) {
-        return request<Response>('GET', url, options);
+        return request<Response>('GET', url, options, server);
     },
     post<Response>(
         url: string,
         body: any,
         options?: Omit<CustomOptions, 'body'> | undefined,
+        server: 'node' | 'python' = 'node',
     ) {
-        return request<Response>('POST', url, { ...options, body });
+        return request<Response>('POST', url, { ...options, body }, server);
     },
     put<Response>(
         url: string,
         body: any,
         options?: Omit<CustomOptions, 'body'> | undefined,
+        server: 'node' | 'python' = 'node',
     ) {
-        return request<Response>('PUT', url, { ...options, body });
+        return request<Response>('PUT', url, { ...options, body }), server;
     },
     patch<Response>(
         url: string,
         body: any,
         options?: Omit<CustomOptions, 'body'> | undefined,
+        server: 'node' | 'python' = 'node',
     ) {
-        return request<Response>('PATCH', url, { ...options, body });
+        return request<Response>('PATCH', url, { ...options, body }, server);
     },
     delete<Response>(
         url: string,
         body: any,
         options?: Omit<CustomOptions, 'body'> | undefined,
+        server: 'node' | 'python' = 'node',
     ) {
-        return request<Response>('DELETE', url, { ...options, body });
+        return request<Response>('DELETE', url, { ...options, body }, server);
     },
 };
 
