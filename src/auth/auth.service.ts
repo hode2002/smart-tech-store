@@ -23,6 +23,7 @@ import { ConfigService } from '@nestjs/config';
 import { JwtPayload } from 'src/common/types';
 import { AuthType } from '@prisma/client';
 import { Request, Response } from 'express';
+import axios from 'axios';
 
 @Injectable()
 export class AuthService {
@@ -35,6 +36,33 @@ export class AuthService {
         private readonly jwtService: JwtService,
         private readonly configService: ConfigService,
     ) {}
+
+    async getDataFromGoogleToken(token: string) {
+        const response = await axios.get(
+            'https://www.googleapis.com/oauth2/v2/userinfo',
+            {
+                headers: { Authorization: `Bearer ${token}` },
+            },
+        );
+        const userData = response.data;
+
+        const tokens = this.createTokenPairs({
+            email: userData.email,
+            userId: userData.id,
+            role: userData.role,
+        });
+
+        return {
+            profile: {
+                email: userData.email,
+                name: userData.name,
+                avatar: userData.picture,
+                phone: '',
+                role: 'USER',
+            },
+            tokens,
+        };
+    }
 
     async thirdPartyLogin(
         req: Request,

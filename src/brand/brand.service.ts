@@ -6,7 +6,6 @@ import {
 } from '@nestjs/common';
 import { CreateBrandDto, UpdateBrandDto } from './dto';
 import { PrismaService } from './../prisma/prisma.service';
-import { FileUploadDto } from 'src/media/dto';
 import { MediaService } from 'src/media/media.service';
 import { generateSlug } from 'src/utils';
 
@@ -17,7 +16,7 @@ export class BrandService {
         private readonly mediaService: MediaService,
     ) {}
 
-    async create(createBrandDto: CreateBrandDto, fileUploadDto: FileUploadDto) {
+    async create(createBrandDto: CreateBrandDto, file: Express.Multer.File) {
         const slug = generateSlug(createBrandDto.name);
 
         const isExist = await this.findBySlug(slug);
@@ -25,20 +24,16 @@ export class BrandService {
             throw new ConflictException('Brand Already Exists');
         }
 
-        const res = await this.mediaService.upload(fileUploadDto);
-        if (!res?.is_success) {
-            throw new InternalServerErrorException('Internal Server Error');
+        const res = await this.mediaService.uploadV2(file);
+        if (!res?.public_id) {
+            throw new InternalServerErrorException(res.message);
         }
 
-        const awsKey = res?.key;
-        if (!awsKey) {
-            throw new InternalServerErrorException('Internal Server Error');
-        }
-
+        const imageUrl = res?.url;
         return await this.prismaService.brand.create({
             data: {
                 ...createBrandDto,
-                logo_url: awsKey,
+                logo_url: imageUrl,
                 slug,
             },
         });
@@ -126,24 +121,19 @@ export class BrandService {
     async update(
         id: string,
         updateBrandDto: UpdateBrandDto,
-        fileUploadDto: FileUploadDto,
+        file: Express.Multer.File,
     ) {
         const brand = await this.findById(id);
         let logo_url = brand.logo_url;
 
-        if (fileUploadDto) {
-            const res = await this.mediaService.upload(fileUploadDto);
-            if (!res?.is_success) {
-                throw new InternalServerErrorException('Internal Server Error');
+        if (file?.size) {
+            const res = await this.mediaService.uploadV2(file);
+            if (!res?.public_id) {
+                throw new InternalServerErrorException(res.message);
             }
-            const awsKey = res?.key;
-            if (!awsKey) {
-                throw new InternalServerErrorException('Internal Server Error');
-            }
-            logo_url = awsKey;
+            logo_url = res.url;
+            await this.mediaService.deleteV2(brand.logo_url);
         }
-
-        await this.mediaService.deleteFileS3(brand.logo_url);
 
         return await this.prismaService.brand.update({
             where: { id },

@@ -87,6 +87,17 @@ export class AuthController {
         };
     }
 
+    @Post('google/token')
+    async getDataFromGoogleToken(
+        @Body('token') token: string,
+    ): Promise<SuccessResponse> {
+        return {
+            statusCode: HttpStatus.OK,
+            message: 'Login successfully',
+            data: await this.authService.getDataFromGoogleToken(token),
+        };
+    }
+
     @Post('register')
     @Throttle({ default: { limit: 3, ttl: 60000 } })
     async register(

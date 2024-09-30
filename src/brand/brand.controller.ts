@@ -20,7 +20,6 @@ import { AtJwtGuard } from 'src/auth/guards';
 import { RoleGuard } from 'src/common/guards';
 import { SuccessResponse } from 'src/common/response';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { FileUploadDto } from 'src/media/dto';
 
 @Controller('api/v1/brands')
 export class BrandController {
@@ -33,12 +32,12 @@ export class BrandController {
     @HttpCode(HttpStatus.CREATED)
     async create(
         @Body() createBrandDto: CreateBrandDto,
-        @UploadedFile() fileUploadDto: FileUploadDto,
+        @UploadedFile() file: Express.Multer.File,
     ): Promise<SuccessResponse> {
         return {
             statusCode: HttpStatus.CREATED,
             message: 'Create success',
-            data: await this.brandService.create(createBrandDto, fileUploadDto),
+            data: await this.brandService.create(createBrandDto, file),
         };
     }
 
@@ -93,16 +92,12 @@ export class BrandController {
     async update(
         @Param('id') id: string,
         @Body() updateBrandDto: UpdateBrandDto,
-        @UploadedFile() fileUploadDto: FileUploadDto,
+        @UploadedFile() file: Express.Multer.File,
     ): Promise<SuccessResponse> {
         return {
             statusCode: HttpStatus.OK,
             message: 'Update success',
-            data: await this.brandService.update(
-                id,
-                updateBrandDto,
-                fileUploadDto,
-            ),
+            data: await this.brandService.update(id, updateBrandDto, file),
         };
     }
 

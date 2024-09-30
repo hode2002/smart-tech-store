@@ -1,4 +1,5 @@
 import {
+    BadRequestException,
     ConflictException,
     ForbiddenException,
     Injectable,
@@ -17,15 +18,16 @@ import * as bcrypt from 'bcrypt';
 import * as passwordGenerator from 'generate-password';
 import { InjectQueue } from '@nestjs/bull';
 import { Queue } from 'bull';
-import { FileUploadDto } from 'src/media/dto';
 import { MediaService } from 'src/media/media.service';
 import { AuthType, Role } from '@prisma/client';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class UserService {
     constructor(
         @InjectQueue('send-mail')
         private readonly queue: Queue,
+        private readonly configService: ConfigService,
         private readonly prismaService: PrismaService,
         private readonly mediaService: MediaService,
     ) {}
@@ -234,32 +236,32 @@ export class UserService {
         return upsertData;
     }
 
-    async updateAvatar(email: string, fileUploadDto: FileUploadDto) {
+    async updateAvatar(email: string, file: Express.Multer.File) {
+        if (!file) {
+            throw new BadRequestException('Missing avatar file');
+        }
+
         const user = await this.findByEmail(email);
         if (!user) {
             throw new ForbiddenException('Access denied');
         }
 
-        const res = await this.mediaService.upload(fileUploadDto);
-        if (!res?.is_success) {
-            throw new InternalServerErrorException('Internal Server Error');
-        }
+        const result = await this.mediaService.uploadV2(file, 'Avatars');
 
-        const awsKey = res?.key;
-        if (!awsKey) {
-            throw new InternalServerErrorException('Internal Server Error');
+        if (!result?.public_id) {
+            throw new InternalServerErrorException(result.message);
         }
 
         const isUpdated = await this.updateByEmail(email, {
-            avatar: awsKey,
+            avatar: result.url,
         });
         if (!isUpdated) {
-            throw new InternalServerErrorException('Internal Server Error');
+            throw new InternalServerErrorException(result.message);
         }
 
         const oldAvatar = user?.avatar;
-        if (!oldAvatar.includes('default.jpg')) {
-            await this.mediaService.deleteFileS3(oldAvatar);
+        if (!oldAvatar.includes(this.configService.get('DEFAULT_AVATAR'))) {
+            await this.mediaService.deleteV2(oldAvatar);
         }
 
         return isUpdated;

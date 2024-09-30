@@ -20,7 +20,6 @@ import { AtJwtGuard } from 'src/auth/guards';
 import { RoleGuard } from 'src/common/guards';
 import { SuccessResponse } from 'src/common/response';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { FileUploadDto } from 'src/media/dto';
 
 @Controller('api/v1/banners')
 export class BannerController {
@@ -33,15 +32,12 @@ export class BannerController {
     @HttpCode(HttpStatus.CREATED)
     async create(
         @Body() createBannerDto: CreateBannerDto,
-        @UploadedFile() fileUploadDto: FileUploadDto,
+        @UploadedFile() file: Express.Multer.File,
     ): Promise<SuccessResponse> {
         return {
             statusCode: HttpStatus.CREATED,
             message: 'Create success',
-            data: await this.bannerService.create(
-                createBannerDto,
-                fileUploadDto,
-            ),
+            data: await this.bannerService.create(createBannerDto, file),
         };
     }
 
@@ -85,16 +81,12 @@ export class BannerController {
     async update(
         @Param('id') id: string,
         @Body() updateBannerDto: UpdateBannerDto,
-        @UploadedFile() fileUploadDto: FileUploadDto,
+        @UploadedFile() file: Express.Multer.File,
     ): Promise<SuccessResponse> {
         return {
             statusCode: HttpStatus.OK,
             message: 'Update success',
-            data: await this.bannerService.update(
-                id,
-                updateBannerDto,
-                fileUploadDto,
-            ),
+            data: await this.bannerService.update(id, updateBannerDto, file),
         };
     }
 

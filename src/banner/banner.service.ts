@@ -6,7 +6,6 @@ import {
 } from '@nestjs/common';
 import { CreateBannerDto, UpdateBannerDto } from './dto';
 import { PrismaService } from './../prisma/prisma.service';
-import { FileUploadDto } from 'src/media/dto';
 import { MediaService } from 'src/media/media.service';
 import { generateSlug } from 'src/utils';
 
@@ -17,10 +16,7 @@ export class BannerService {
         private readonly mediaService: MediaService,
     ) {}
 
-    async create(
-        createBannerDto: CreateBannerDto,
-        fileUploadDto: FileUploadDto,
-    ) {
+    async create(createBannerDto: CreateBannerDto, file: Express.Multer.File) {
         const slug = generateSlug(createBannerDto.title);
 
         const banner = await this.findBySlug(slug);
@@ -28,20 +24,16 @@ export class BannerService {
             throw new ConflictException('Banner Already Exists');
         }
 
-        const res = await this.mediaService.upload(fileUploadDto);
-        if (!res?.is_success) {
-            throw new InternalServerErrorException('Internal Server Error');
+        const res = await this.mediaService.uploadV2(file);
+        if (!res?.public_id) {
+            throw new InternalServerErrorException(res.message);
         }
 
-        const awsKey = res?.key;
-        if (!awsKey) {
-            throw new InternalServerErrorException('Internal Server Error');
-        }
-
+        const imageUrl = res?.url;
         return await this.prismaService.banner.create({
             data: {
                 ...createBannerDto,
-                image: awsKey,
+                image: imageUrl,
                 slug,
             },
             select: {
@@ -131,7 +123,7 @@ export class BannerService {
     async update(
         id: string,
         updateBannerDto: UpdateBannerDto,
-        fileUploadDto?: FileUploadDto,
+        file?: Express.Multer.File,
     ) {
         const banner = await this.prismaService.banner.findUnique({
             where: { id },
@@ -140,26 +132,22 @@ export class BannerService {
             throw new NotFoundException('Banner not found');
         }
 
-        let awsKey = banner.image;
+        let imageUrl = banner.image;
 
-        if (fileUploadDto?.size) {
-            const res = await this.mediaService.upload(fileUploadDto);
-            if (!res?.is_success) {
-                throw new InternalServerErrorException('Internal Server Error');
+        if (file?.size) {
+            const res = await this.mediaService.uploadV2(file);
+            if (!res?.public_id) {
+                throw new InternalServerErrorException(res.message);
             }
-            awsKey = res?.key;
-            await this.mediaService.deleteFileS3(banner.image);
-        }
-
-        if (!awsKey) {
-            throw new InternalServerErrorException('Internal Server Error');
+            imageUrl = res.url;
+            await this.mediaService.deleteV2(banner.image);
         }
 
         return await this.prismaService.banner.update({
             where: { id },
             data: {
                 ...updateBannerDto,
-                image: awsKey,
+                image: imageUrl,
             },
             select: {
                 id: true,
@@ -181,7 +169,7 @@ export class BannerService {
             throw new NotFoundException('Banner Not Found');
         }
 
-        await this.mediaService.deleteFileS3(isExist.image);
+        await this.mediaService.deleteV2(isExist.image);
         const isDeleted = await this.prismaService.banner.delete({
             where: { id },
         });
