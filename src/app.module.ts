@@ -1,4 +1,11 @@
 import { Module } from '@nestjs/common';
+import {
+    CacheInterceptor,
+    CacheModule,
+    CacheStore,
+} from '@nestjs/cache-manager';
+import type { RedisClientOptions } from 'redis';
+import { redisStore } from 'cache-manager-redis-store';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { PrismaModule } from './prisma/prisma.module';
@@ -6,7 +13,7 @@ import { AuthModule } from './auth/auth.module';
 import { UserModule } from './user/user.module';
 import { MailModule } from './mail/mail.module';
 import { BullModule } from '@nestjs/bull';
-import { APP_GUARD } from '@nestjs/core';
+import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { MongooseModule } from '@nestjs/mongoose';
 import { BrandModule } from './brand/brand.module';
 import { BannerModule } from './banner/banner.module';
@@ -29,14 +36,27 @@ import { CloudinaryModule } from './cloudinary/cloudinary.module';
                 limit: 100,
             },
         ]),
+        CacheModule.registerAsync<RedisClientOptions>({
+            isGlobal: true,
+            imports: [ConfigModule],
+            useFactory: async (configService: ConfigService) => {
+                const store = await redisStore({
+                    url: configService.get('REDIS_URL'),
+                    ttl: configService.get('CACHE_TTL'),
+                });
+                return {
+                    store: store as unknown as CacheStore,
+                };
+            },
+            inject: [ConfigService],
+        }),
         BullModule.forRootAsync({
             inject: [ConfigService],
             useFactory: async (configService: ConfigService) => ({
                 redis: {
+                    enableTLSForSentinelMode: false,
                     host: configService.get('REDIS_HOST'),
                     port: configService.get('REDIS_PORT'),
-                    username: configService.get('REDIS_USERNAME'),
-                    password: configService.get('REDIS_PASSWORD'),
                 },
             }),
         }),
@@ -67,6 +87,10 @@ import { CloudinaryModule } from './cloudinary/cloudinary.module';
         {
             provide: APP_GUARD,
             useClass: ThrottlerGuard,
+        },
+        {
+            provide: APP_INTERCEPTOR,
+            useClass: CacheInterceptor,
         },
     ],
 })
