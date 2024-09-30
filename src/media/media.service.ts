@@ -1,17 +1,39 @@
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import {
+    BadRequestException,
+    Injectable,
+    InternalServerErrorException,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { randomBytes } from 'crypto';
-import { FileUploadDto } from './dto';
 import { generateSlug } from 'src/utils';
 import { Upload } from '@aws-sdk/lib-storage';
 import { S3, ObjectCannedACL } from '@aws-sdk/client-s3';
+import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
+import { CloudinaryResponse } from 'src/cloudinary/cloudinary/cloudinary-response';
 
 @Injectable()
 export class MediaService {
-    constructor(private readonly configService: ConfigService) {}
+    constructor(
+        private readonly configService: ConfigService,
+        private readonly cloudinaryService: CloudinaryService,
+    ) {}
+
+    async uploadV2(
+        file: Express.Multer.File,
+        folder?: string,
+    ): Promise<CloudinaryResponse> {
+        if (!file) {
+            throw new BadRequestException('Missing file');
+        }
+        return await this.cloudinaryService.uploadFile(file, folder);
+    }
+
+    async deleteV2(filePath: string) {
+        return await this.cloudinaryService.deleteFile(filePath);
+    }
 
     async upload(
-        file: FileUploadDto,
+        file: Express.Multer.File,
     ): Promise<{ is_success: boolean; key: string }> {
         const uuid = randomBytes(8).toString('hex');
         const arr_name = file.originalname.split('.');

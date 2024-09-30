@@ -2043,17 +2043,17 @@ export class ProductService {
         }
 
         if (other?.thumbnail) {
-            await this.mediaService.deleteFileS3(isExist.thumbnail);
+            await this.mediaService.deleteV2(isExist.thumbnail);
         }
 
         if (other?.label_image) {
-            await this.mediaService.deleteFileS3(isExist.label_image);
+            await this.mediaService.deleteV2(isExist.label_image);
         }
 
         if (product_images && product_images?.length > 0) {
             const productImagesPromises = isExist.product_images.map(
                 async (item) => {
-                    this.mediaService.deleteFileS3(item.image_url);
+                    this.mediaService.deleteV2(item.image_url);
                 },
             );
             await Promise.all(productImagesPromises);

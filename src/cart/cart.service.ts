@@ -409,6 +409,7 @@ export class CartService {
         const products: ProductCartDB[] =
             await this.prismaService.cart.findMany({
                 where: { user_id: userId },
+                orderBy: { created_at: 'asc' },
                 select: {
                     product_option: {
                         select: {

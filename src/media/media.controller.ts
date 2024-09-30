@@ -1,7 +1,5 @@
 import {
     Controller,
-    Delete,
-    Body,
     HttpStatus,
     HttpCode,
     Post,
@@ -9,6 +7,8 @@ import {
     UseInterceptors,
     UploadedFile,
     UploadedFiles,
+    Body,
+    Delete,
 } from '@nestjs/common';
 import { MediaService } from './media.service';
 import { SuccessResponse } from 'src/common/response';
@@ -17,7 +17,6 @@ import { Role } from '@prisma/client';
 import { AtJwtGuard } from 'src/auth/guards';
 import { RoleGuard } from 'src/common/guards';
 import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
-import { FileUploadDto } from 'src/media/dto';
 
 @Controller('api/v1/medias')
 export class MediaController {
@@ -29,12 +28,17 @@ export class MediaController {
     @UseInterceptors(FileInterceptor('image'))
     @HttpCode(HttpStatus.OK)
     async upload(
-        @UploadedFile() fileUploadDto: FileUploadDto,
+        @UploadedFile() file: Express.Multer.File,
+        @Body('folder') folder?: string,
     ): Promise<SuccessResponse> {
+        const result = await this.mediaService.uploadV2(file, folder);
         return {
             statusCode: HttpStatus.OK,
             message: 'Upload success',
-            data: await this.mediaService.upload(fileUploadDto),
+            data: {
+                is_success: result?.public_id ? true : false,
+                key: result.url,
+            },
         };
     }
 
@@ -44,11 +48,16 @@ export class MediaController {
     @UseInterceptors(FilesInterceptor('images'))
     @HttpCode(HttpStatus.OK)
     async uploadMultiple(
-        @UploadedFiles() filesUploadDto: FileUploadDto[],
+        @UploadedFiles() files: Express.Multer.File[],
+        @Body('folder') folder?: string,
     ): Promise<SuccessResponse> {
         const results = [];
-        for (const file of filesUploadDto) {
-            results.push(await this.mediaService.upload(file));
+        for (const file of files) {
+            const res = await this.mediaService.uploadV2(file, folder);
+            results.push({
+                is_success: res?.public_id ? true : false,
+                key: res.url,
+            });
         }
         return {
             statusCode: HttpStatus.OK,
@@ -59,11 +68,11 @@ export class MediaController {
 
     @Delete()
     @HttpCode(HttpStatus.OK)
-    async remove(@Body('media-key') key: string): Promise<SuccessResponse> {
+    async remove(@Body('filePath') filePath: string): Promise<SuccessResponse> {
         return {
             statusCode: HttpStatus.OK,
             message: 'Delete file success',
-            data: await this.mediaService.deleteFileS3(key),
+            data: await this.mediaService.deleteV2(filePath),
         };
     }
 }

@@ -24,7 +24,6 @@ import { CreateUserEmailDto } from 'src/auth/dto';
 import { Request } from 'express';
 import { SuccessResponse } from 'src/common/response';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { FileUploadDto } from 'src/media/dto';
 import { Role } from '@prisma/client';
 import { RoleGuard } from 'src/common/guards';
 
@@ -151,7 +150,7 @@ export class UserController {
     @HttpCode(HttpStatus.OK)
     async upload(
         @GetEmail() email: string,
-        @UploadedFile() file: FileUploadDto,
+        @UploadedFile() file: Express.Multer.File,
     ): Promise<SuccessResponse> {
         return {
             statusCode: HttpStatus.OK,
