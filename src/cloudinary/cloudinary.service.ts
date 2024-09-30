@@ -11,6 +11,7 @@ export class CloudinaryService {
     uploadFile(
         file: Express.Multer.File,
         customFolder: string = '',
+        resource_type: 'image' | 'video' | 'auto' | 'raw' = 'image',
     ): Promise<CloudinaryResponse> {
         return new Promise<CloudinaryResponse>((resolve, reject) => {
             const folderName =
@@ -18,6 +19,7 @@ export class CloudinaryService {
             const uploadStream = cloudinary.uploader.upload_stream(
                 {
                     folder: folderName,
+                    resource_type,
                 },
                 (error, result) => {
                     if (error) return reject(error);

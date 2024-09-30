@@ -12,19 +12,57 @@ import {
 } from '@nestjs/common';
 import { MediaService } from './media.service';
 import { SuccessResponse } from 'src/common/response';
-import { Permission } from 'src/common/decorators';
-import { Role } from '@prisma/client';
 import { AtJwtGuard } from 'src/auth/guards';
-import { RoleGuard } from 'src/common/guards';
 import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 
 @Controller('api/v1/medias')
 export class MediaController {
     constructor(private readonly mediaService: MediaService) {}
 
+    @Post('upload/video')
+    @UseGuards(AtJwtGuard)
+    @UseInterceptors(FileInterceptor('video'))
+    @HttpCode(HttpStatus.OK)
+    async uploadVideo(
+        @UploadedFile() file: Express.Multer.File,
+        @Body('folder') folder?: string,
+    ): Promise<SuccessResponse> {
+        const result = await this.mediaService.uploadV2(file, folder, 'video');
+        return {
+            statusCode: HttpStatus.OK,
+            message: 'Upload success',
+            data: {
+                is_success: result?.public_id ? true : false,
+                key: result.url,
+            },
+        };
+    }
+
+    @Post('uploads/video')
+    @UseGuards(AtJwtGuard)
+    @UseInterceptors(FilesInterceptor('videos'))
+    @HttpCode(HttpStatus.OK)
+    async uploadMultipleVideo(
+        @UploadedFiles() files: Express.Multer.File[],
+        @Body('folder') folder?: string,
+    ): Promise<SuccessResponse> {
+        const results = [];
+        for (const file of files) {
+            const res = await this.mediaService.uploadV2(file, folder, 'video');
+            results.push({
+                is_success: res?.public_id ? true : false,
+                key: res.url,
+            });
+        }
+        return {
+            statusCode: HttpStatus.OK,
+            message: 'Upload multiple success',
+            data: results,
+        };
+    }
+
     @Post('upload')
-    @Permission(Role.ADMIN)
-    @UseGuards(AtJwtGuard, RoleGuard)
+    @UseGuards(AtJwtGuard)
     @UseInterceptors(FileInterceptor('image'))
     @HttpCode(HttpStatus.OK)
     async upload(
@@ -43,8 +81,7 @@ export class MediaController {
     }
 
     @Post('uploads')
-    @Permission(Role.ADMIN)
-    @UseGuards(AtJwtGuard, RoleGuard)
+    @UseGuards(AtJwtGuard)
     @UseInterceptors(FilesInterceptor('images'))
     @HttpCode(HttpStatus.OK)
     async uploadMultiple(
