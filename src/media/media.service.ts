@@ -21,11 +21,12 @@ export class MediaService {
     async uploadV2(
         file: Express.Multer.File,
         folder?: string,
+        type: 'image' | 'video' | 'auto' | 'raw' = 'image',
     ): Promise<CloudinaryResponse> {
         if (!file) {
             throw new BadRequestException('Missing file');
         }
-        return await this.cloudinaryService.uploadFile(file, folder);
+        return await this.cloudinaryService.uploadFile(file, folder, type);
     }
 
     async deleteV2(filePath: string) {
