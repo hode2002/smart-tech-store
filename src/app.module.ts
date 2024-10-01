@@ -26,6 +26,7 @@ import { DeliveryModule } from './delivery/delivery.module';
 import { OrderModule } from './order/order.module';
 import { ReviewModule } from './review/review.module';
 import { CloudinaryModule } from './cloudinary/cloudinary.module';
+import { NewsModule } from './news/news.module';
 
 @Module({
     imports: [
@@ -81,6 +82,7 @@ import { CloudinaryModule } from './cloudinary/cloudinary.module';
         OrderModule,
         ReviewModule,
         CloudinaryModule,
+        NewsModule,
     ],
     controllers: [],
     providers: [
