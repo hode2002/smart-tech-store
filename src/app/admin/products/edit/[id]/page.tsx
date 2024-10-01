@@ -127,6 +127,7 @@ export default function EditProduct({ params }: Props) {
             const response = (await adminApiRequest.uploadFile(
                 token,
                 mainImageFile,
+                '/Products/' + product?.category.slug,
             )) as UploadSingleFileResponseType;
             mainImageS3 = response.data?.key;
         }
@@ -336,7 +337,8 @@ export default function EditProduct({ params }: Props) {
                                         {!product?.product_options[0]?.options
                                             ?.length && (
                                             <ProductVariantCard
-                                                product={
+                                                product={product}
+                                                productOption={
                                                     product?.product_options[0]
                                                 }
                                             />
@@ -483,7 +485,8 @@ export default function EditProduct({ params }: Props) {
                                             className="grid auto-rows-max items-start gap-4 lg:gap-8"
                                         >
                                             <ProductVariantCard
-                                                product={productVariant}
+                                                product={product}
+                                                productOption={productVariant}
                                             />
                                         </div>
                                     ),

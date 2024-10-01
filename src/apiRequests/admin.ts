@@ -822,9 +822,10 @@ class AdminApiRequest {
         }
     }
 
-    async uploadFile(token: string, file: File) {
+    async uploadFile(token: string, file: File, folder?: string) {
         const formData = new FormData();
         formData.append('image', file);
+        folder && formData.append('folder', folder);
 
         try {
             const response: UploadSingleFileResponseType = await http.post(
@@ -849,11 +850,12 @@ class AdminApiRequest {
         }
     }
 
-    async uploadMultipleFiles(token: string, files: FileList) {
+    async uploadMultipleFiles(token: string, files: FileList, folder?: string) {
         const formData = new FormData();
         Array.from(files).forEach((file) => {
             formData.append(`images`, file);
         });
+        folder && formData.append('folder', folder);
 
         try {
             const response: UploadMultipleFilesResponseType = await http.post(

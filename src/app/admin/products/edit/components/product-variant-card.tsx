@@ -1,6 +1,7 @@
 'use client';
 
 import {
+    ProductDetailType,
     ProductImagesType,
     ProductOptionType,
     TechnicalSpecsItem,
@@ -46,12 +47,14 @@ import adminApiRequest, {
 import { ReloadIcon } from '@radix-ui/react-icons';
 
 type Props = {
-    product: ProductOptionType;
+    product: ProductDetailType;
+    productOption: ProductOptionType;
 };
 const ProductVariantCard = (props: Props) => {
     const token = useAppSelector((state) => state.auth.accessToken);
 
-    const productVariant = props.product;
+    const product = props.product;
+    const productVariant = props.productOption;
     const [isActive, setIsActive] = useState<boolean>(false);
     const [isSale, setIsSale] = useState<boolean>(false);
     const [sku, setSku] = useState<string>('');
@@ -176,6 +179,7 @@ const ProductVariantCard = (props: Props) => {
             const response = (await adminApiRequest.uploadFile(
                 token,
                 thumbnailFile,
+                '/Products/' + product.category.slug,
             )) as UploadSingleFileResponseType;
             thumbnailS3 = response.data?.key;
         }
@@ -183,6 +187,7 @@ const ProductVariantCard = (props: Props) => {
             const response = (await adminApiRequest.uploadFile(
                 token,
                 labelImageFile,
+                '/Products/Labels',
             )) as UploadSingleFileResponseType;
             labelImageS3 = response.data?.key;
         }
@@ -190,6 +195,7 @@ const ProductVariantCard = (props: Props) => {
             const response = (await adminApiRequest.uploadMultipleFiles(
                 token,
                 otherImageFiles,
+                '/Products/' + product.category.slug,
             )) as UploadMultipleFilesResponseType;
             response.data.map((res) => {
                 return otherImagesS3.push({

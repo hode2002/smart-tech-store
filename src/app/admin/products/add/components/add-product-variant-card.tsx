@@ -94,12 +94,14 @@ const AddProductVariantCard = (props: Props) => {
         const thumbnailResponse = (await adminApiRequest.uploadFile(
             token,
             thumbnailFile as File,
+            '/Products/' + product.category.slug,
         )) as UploadSingleFileResponseType;
         const thumbnailS3 = thumbnailResponse.data?.key;
 
         const labelImageResponse = (await adminApiRequest.uploadFile(
             token,
             labelImageFile as File,
+            '/Products/Labels',
         )) as UploadSingleFileResponseType;
         const labelImageS3 = labelImageResponse.data?.key;
 
@@ -107,6 +109,7 @@ const AddProductVariantCard = (props: Props) => {
         const otherImageResponse = (await adminApiRequest.uploadMultipleFiles(
             token,
             otherImageFiles as FileList,
+            '/Products/' + product.category.slug,
         )) as UploadMultipleFilesResponseType;
         otherImageResponse.data.map((res) => {
             return otherImagesS3.push({

@@ -58,6 +58,7 @@ export default function AddVariantProduct() {
         const uploadResponse = (await adminApiRequest.uploadFile(
             token,
             mainImageFile as File,
+            '/Products/' + selectedCategory,
         )) as UploadSingleFileResponseType;
         const mainImageS3 = uploadResponse.data?.key;
 

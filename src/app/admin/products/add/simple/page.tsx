@@ -123,6 +123,7 @@ export default function AddSimpleProduct() {
             const response = (await adminApiRequest.uploadFile(
                 token,
                 mainImageFile,
+                '/Products/' + selectedCategory,
             )) as UploadSingleFileResponseType;
             mainImageS3 = response.data?.key;
         }
@@ -130,6 +131,7 @@ export default function AddSimpleProduct() {
             const response = (await adminApiRequest.uploadFile(
                 token,
                 thumbnailFile,
+                '/Products/' + selectedCategory,
             )) as UploadSingleFileResponseType;
             thumbnailS3 = response.data.key;
         }
@@ -137,6 +139,7 @@ export default function AddSimpleProduct() {
             const response = (await adminApiRequest.uploadFile(
                 token,
                 labelImageFile,
+                '/Products/Labels',
             )) as UploadSingleFileResponseType;
             labelImageS3 = response.data?.key;
         }

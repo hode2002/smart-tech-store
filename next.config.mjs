@@ -15,11 +15,16 @@ const nextConfig = {
                 pathname: '/imgt/**',
             },
             {
+                protocol: 'http',
+                hostname: 'res.cloudinary.com',
+                port: '',
+                pathname: '/**',
+            },
+            {
                 protocol: 'https',
                 hostname: 'res.cloudinary.com',
                 port: '',
-                pathname:
-                    '/dwmhohds0/image/upload/v1685348575/Shopping-Online/**',
+                pathname: '/**',
             },
             {
                 protocol: 'https',
