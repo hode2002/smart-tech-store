@@ -246,7 +246,7 @@ export class UserService {
             throw new ForbiddenException('Access denied');
         }
 
-        const result = await this.mediaService.uploadV2(file, 'Avatars');
+        const result = await this.mediaService.uploadV2(file, '/Avatars');
 
         if (!result?.public_id) {
             throw new InternalServerErrorException(result.message);
