@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+        <title>New Password Template</title>
+
+        <link
+            href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap"
+            rel="stylesheet"
+        />
+    </head>
+    <body
+        style="
+            margin: 0;
+            font-family: 'Poppins', sans-serif;
+            background: #ffffff;
+            font-size: 14px;
+        "
+    >
+        <div
+            style="
+                max-width: 680px;
+                margin: 0 auto;
+                padding: 45px 30px 60px;
+                background: #f4f7ff;
+                background-image: url(https://res.cloudinary.com/dx9ltrteu/image/upload/v1727711403/email-template-background_vk8gns.jpg);
+                background-repeat: no-repeat;
+                background-size: 800px 452px;
+                background-position: top center;
+                font-size: 14px;
+                color: #434343;
+            "
+        >
+            <header>
+                <table style="width: 100%">
+                    <tbody>
+                        <tr style="height: 0">
+                            <td
+                                style="
+                                    display: flex;
+                                    align-items: center;
+                                    color: #fff;
+                                    gap: 12px;
+                                    font-size: 16px;
+                                "
+                            >
+                                <img
+                                    style="
+                                        border-radius: 50%;
+                                        margin-right: 8px;
+                                    "
+                                    alt=""
+                                    src="https://res.cloudinary.com/dx9ltrteu/image/upload/v1727763877/site-logo_z5nzll.png"
+                                    height="40px"
+                                />
+                                <p>Smart Tech Store</p>
+                            </td>
+                            <td style="text-align: right">
+                                <span
+                                    style="
+                                        font-size: 16px;
+                                        line-height: 30px;
+                                        color: #ffffff;
+                                    "
+                                    >{{createDate}}</span
+                                >
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </header>
+
+            <main>
+                <div
+                    style="
+                        margin: 0;
+                        margin-top: 70px;
+                        padding: 92px 30px 115px;
+                        background: #ffffff;
+                        border-radius: 30px;
+                        text-align: center;
+                    "
+                >
+                    <div style="width: 100%; max-width: 489px; margin: 0 auto">
+                        <h1
+                            style="
+                                margin: 0;
+                                font-size: 24px;
+                                font-weight: 500;
+                                color: #1f1f1f;
+                            "
+                        >
+                            {{subject}}
+                        </h1>
+                        <p
+                            style="
+                                margin: 0;
+                                margin-top: 17px;
+                                font-size: 16px;
+                                font-weight: 500;
+                            "
+                        >
+                            {{email}},
+                        </p>
+                        <p
+                            style="
+                                margin: 0;
+                                margin-top: 17px;
+                                font-weight: 500;
+                                letter-spacing: 0.56px;
+                            "
+                        >
+                            {{content}}
+                        </p>
+                        <p
+                            style="
+                                margin: 0;
+                                margin-top: 40px;
+                                font-size: 32px;
+                                font-weight: 600;
+                                color: #ba3d4f;
+                            "
+                        >
+                            {{newPass}}
+                        </p>
+                    </div>
+                </div>
+            </main>
+
+            <footer
+                style="
+                    width: 100%;
+                    max-width: 490px;
+                    margin: 20px auto 0;
+                    text-align: center;
+                    border-top: 1px solid #e6ebf1;
+                "
+            >
+                <p
+                    style="
+                        margin: 0;
+                        margin-top: 40px;
+                        font-size: 16px;
+                        font-weight: 600;
+                        color: #434343;
+                    "
+                >
+                    Smart Tech Store
+                </p>
+                <p style="margin: 0; margin-top: 8px; color: #434343">
+                    Khu II 30/4, Ninh Kiều, Cần Thơ.
+                </p>
+            </footer>
+        </div>
+    </body>
+</html>
