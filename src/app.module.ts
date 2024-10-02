@@ -27,6 +27,7 @@ import { OrderModule } from './order/order.module';
 import { ReviewModule } from './review/review.module';
 import { CloudinaryModule } from './cloudinary/cloudinary.module';
 import { NewsModule } from './news/news.module';
+import { NotificationModule } from './notification/notification.module';
 
 @Module({
     imports: [
@@ -83,6 +84,7 @@ import { NewsModule } from './news/news.module';
         ReviewModule,
         CloudinaryModule,
         NewsModule,
+        NotificationModule,
     ],
     controllers: [],
     providers: [
@@ -90,10 +92,10 @@ import { NewsModule } from './news/news.module';
             provide: APP_GUARD,
             useClass: ThrottlerGuard,
         },
-        {
-            provide: APP_INTERCEPTOR,
-            useClass: CacheInterceptor,
-        },
+        // {
+        //     provide: APP_INTERCEPTOR,
+        //     useClass: CacheInterceptor,
+        // },
     ],
 })
 export class AppModule {}
