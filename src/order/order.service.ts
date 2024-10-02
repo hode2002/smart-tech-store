@@ -82,6 +82,9 @@ export class OrderService {
             }
 
             let totalOrderPrice = 0;
+            const productOptionThumbs: {
+                product_option: { thumbnail: string };
+            }[] = [];
 
             const orderDetailPromises = order_details.map(
                 async (orderDetail) => {
@@ -105,6 +108,7 @@ export class OrderService {
                         {
                             where: { id: product_option_id, stock: { gte: 1 } },
                             select: {
+                                thumbnail: true,
                                 stock: true,
                                 discount: true,
                                 price_modifier: true,
@@ -126,6 +130,12 @@ export class OrderService {
                             'The number of products in the shopping cart is not enough, please try again',
                         );
                     }
+
+                    productOptionThumbs.push({
+                        product_option: {
+                            thumbnail: productOption.thumbnail,
+                        },
+                    });
 
                     if (userCart.quantity - quantity === 0) {
                         await prisma.cart.delete({
@@ -224,6 +234,8 @@ export class OrderService {
                 order_id: order.id,
                 GHTK_tracking_number: GHTKOrder.order.tracking_id,
                 payment_id: (await payment).id,
+                userId,
+                order_details: [...productOptionThumbs],
             };
         });
     }
