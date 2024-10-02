@@ -254,6 +254,23 @@ export class OrderService {
         const isUpdated = await this.prismaService.order.update({
             where: { id, status: OrderStatus.PENDING },
             data: { status: OrderStatus.CANCEL },
+            select: {
+                order_details: {
+                    select: {
+                        product_option: {
+                            select: {
+                                thumbnail: true,
+                            },
+                        },
+                    },
+                },
+                user_id: true,
+                payment: {
+                    select: {
+                        transaction_id: true,
+                    },
+                },
+            },
         });
 
         if (!isUpdated) {
@@ -271,7 +288,9 @@ export class OrderService {
 
         return {
             is_success: true,
-            order_id: order.id,
+            userId: isUpdated.user_id,
+            transaction_id: isUpdated.payment.transaction_id,
+            order_details: isUpdated.order_details,
         };
     }
 
@@ -809,6 +828,23 @@ export class OrderService {
         const isUpdated = await this.prismaService.order.update({
             where: { id },
             data: { status: updateOrderStatusDto.status },
+            select: {
+                order_details: {
+                    select: {
+                        product_option: {
+                            select: {
+                                thumbnail: true,
+                            },
+                        },
+                    },
+                },
+                user_id: true,
+                payment: {
+                    select: {
+                        transaction_id: true,
+                    },
+                },
+            },
         });
 
         if (updateOrderStatusDto.status === OrderStatus.RECEIVED) {
@@ -817,6 +853,9 @@ export class OrderService {
 
         return {
             is_success: isUpdated ? true : false,
+            userId: isUpdated.user_id,
+            transaction_id: isUpdated.payment.transaction_id,
+            order_details: isUpdated.order_details,
         };
     }
 
@@ -837,6 +876,23 @@ export class OrderService {
         const isUpdated = await this.prismaService.order.update({
             where: { id },
             data: { status: updateOrderStatusDto.status },
+            select: {
+                order_details: {
+                    select: {
+                        product_option: {
+                            select: {
+                                thumbnail: true,
+                            },
+                        },
+                    },
+                },
+                user_id: true,
+                payment: {
+                    select: {
+                        transaction_id: true,
+                    },
+                },
+            },
         });
 
         if (updateOrderStatusDto.status === OrderStatus.RECEIVED) {
@@ -845,6 +901,9 @@ export class OrderService {
 
         return {
             is_success: isUpdated ? true : false,
+            userId: isUpdated.user_id,
+            transaction_id: isUpdated.payment.transaction_id,
+            order_details: isUpdated.order_details,
         };
     }
 
