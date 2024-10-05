@@ -50,7 +50,12 @@ export class CartService {
                                 label_image: true,
                                 technical_specs: {
                                     select: {
-                                        weight: true,
+                                        specs: {
+                                            where: { key: 'Khối lượng' },
+                                            select: {
+                                                value: true,
+                                            },
+                                        },
                                     },
                                 },
                                 product_images: {
@@ -94,7 +99,15 @@ export class CartService {
                                                 discount: true,
                                                 technical_specs: {
                                                     select: {
-                                                        weight: true,
+                                                        specs: {
+                                                            where: {
+                                                                key: 'Khối lượng',
+                                                            },
+                                                            select: {
+                                                                key: true,
+                                                                value: true,
+                                                            },
+                                                        },
                                                     },
                                                 },
                                                 product_option_value: {
@@ -162,7 +175,15 @@ export class CartService {
                         label_image: true,
                         technical_specs: {
                             select: {
-                                weight: true,
+                                specs: {
+                                    where: {
+                                        key: 'Khối lượng',
+                                    },
+                                    select: {
+                                        key: true,
+                                        value: true,
+                                    },
+                                },
                             },
                         },
                         product_images: {
@@ -206,7 +227,15 @@ export class CartService {
                                         discount: true,
                                         technical_specs: {
                                             select: {
-                                                weight: true,
+                                                specs: {
+                                                    where: {
+                                                        key: 'Khối lượng',
+                                                    },
+                                                    select: {
+                                                        key: true,
+                                                        value: true,
+                                                    },
+                                                },
                                             },
                                         },
                                         product_option_value: {
@@ -307,7 +336,15 @@ export class CartService {
                         label_image: true,
                         technical_specs: {
                             select: {
-                                weight: true,
+                                specs: {
+                                    where: {
+                                        key: 'Khối lượng',
+                                    },
+                                    select: {
+                                        key: true,
+                                        value: true,
+                                    },
+                                },
                             },
                         },
                         product_images: {
@@ -351,7 +388,15 @@ export class CartService {
                                         discount: true,
                                         technical_specs: {
                                             select: {
-                                                weight: true,
+                                                specs: {
+                                                    where: {
+                                                        key: 'Khối lượng',
+                                                    },
+                                                    select: {
+                                                        key: true,
+                                                        value: true,
+                                                    },
+                                                },
                                             },
                                         },
                                         product_option_value: {
@@ -424,7 +469,15 @@ export class CartService {
                             label_image: true,
                             technical_specs: {
                                 select: {
-                                    weight: true,
+                                    specs: {
+                                        where: {
+                                            key: 'Khối lượng',
+                                        },
+                                        select: {
+                                            key: true,
+                                            value: true,
+                                        },
+                                    },
                                 },
                             },
                             product_images: {
@@ -468,7 +521,15 @@ export class CartService {
                                             discount: true,
                                             technical_specs: {
                                                 select: {
-                                                    weight: true,
+                                                    specs: {
+                                                        where: {
+                                                            key: 'Khối lượng',
+                                                        },
+                                                        select: {
+                                                            key: true,
+                                                            value: true,
+                                                        },
+                                                    },
                                                 },
                                             },
                                             product_option_value: {
@@ -568,7 +629,15 @@ export class CartService {
                             label_image: true,
                             technical_specs: {
                                 select: {
-                                    weight: true,
+                                    specs: {
+                                        where: {
+                                            key: 'Khối lượng',
+                                        },
+                                        select: {
+                                            key: true,
+                                            value: true,
+                                        },
+                                    },
                                 },
                             },
                             product_images: {
@@ -612,7 +681,15 @@ export class CartService {
                                             discount: true,
                                             technical_specs: {
                                                 select: {
-                                                    weight: true,
+                                                    specs: {
+                                                        where: {
+                                                            key: 'Khối lượng',
+                                                        },
+                                                        select: {
+                                                            key: true,
+                                                            value: true,
+                                                        },
+                                                    },
                                                 },
                                             },
                                             product_option_value: {
@@ -726,7 +803,9 @@ export class CartService {
                 stock: selectedOption.stock,
                 thumbnail: selectedOption.thumbnail,
                 weight: Number(
-                    selectedOption.technical_specs.weight?.split(' ')[0], // 188 g
+                    selectedOption.technical_specs.specs[0].value?.split(
+                        'g',
+                    )[0], // 188g
                 ),
             },
             other_product_options: selectedOption.product.product_options
@@ -750,7 +829,9 @@ export class CartService {
                     stock: productOption.stock,
                     thumbnail: productOption.thumbnail,
                     weight: Number(
-                        selectedOption.technical_specs.weight?.split(' ')[0], // 188 g
+                        selectedOption.technical_specs.specs[0].value?.split(
+                            ' g',
+                        )[0], // 188g
                     ),
                 })),
 

@@ -3,7 +3,6 @@ import {
     IsBoolean,
     IsNotEmpty,
     IsNumber,
-    IsObject,
     IsOptional,
     IsString,
 } from 'class-validator';
@@ -46,8 +45,8 @@ export class UpdateProductOptionDto {
     @IsBoolean()
     is_deleted?: boolean;
 
-    @IsObject()
-    technical_specs: TechnicalSpecs;
+    @IsArray()
+    technical_specs: TechnicalSpecs[];
 }
 
 class ProductImageDto {

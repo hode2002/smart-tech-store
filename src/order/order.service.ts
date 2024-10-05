@@ -407,7 +407,15 @@ export class OrderService {
                                 },
                                 technical_specs: {
                                     select: {
-                                        weight: true,
+                                        specs: {
+                                            where: {
+                                                key: 'Khối lượng',
+                                            },
+                                            select: {
+                                                key: true,
+                                                value: true,
+                                            },
+                                        },
                                     },
                                 },
                                 label_image: true,
@@ -526,7 +534,15 @@ export class OrderService {
                                 },
                                 technical_specs: {
                                     select: {
-                                        weight: true,
+                                        specs: {
+                                            where: {
+                                                key: 'Khối lượng',
+                                            },
+                                            select: {
+                                                key: true,
+                                                value: true,
+                                            },
+                                        },
                                     },
                                 },
                                 label_image: true,
@@ -641,7 +657,15 @@ export class OrderService {
                                 },
                                 technical_specs: {
                                     select: {
-                                        weight: true,
+                                        specs: {
+                                            where: {
+                                                key: 'Khối lượng',
+                                            },
+                                            select: {
+                                                key: true,
+                                                value: true,
+                                            },
+                                        },
                                     },
                                 },
                                 label_image: true,
@@ -772,7 +796,15 @@ export class OrderService {
                                 },
                                 technical_specs: {
                                     select: {
-                                        weight: true,
+                                        specs: {
+                                            where: {
+                                                key: 'Khối lượng',
+                                            },
+                                            select: {
+                                                key: true,
+                                                value: true,
+                                            },
+                                        },
                                     },
                                 },
                                 label_image: true,
@@ -1030,7 +1062,17 @@ export class OrderService {
                             select: { name: true, price: true },
                         },
                         technical_specs: {
-                            select: { weight: true },
+                            select: {
+                                specs: {
+                                    where: {
+                                        key: 'Khối lượng',
+                                    },
+                                    select: {
+                                        key: true,
+                                        value: true,
+                                    },
+                                },
+                            },
                         },
                     },
                 });
@@ -1053,7 +1095,7 @@ export class OrderService {
                     productOption.sku.replaceAll('-', ' '),
                 weight:
                     Number(
-                        productOption.technical_specs.weight.replace(
+                        productOption.technical_specs.specs[0].value.replace(
                             /\D+$/g,
                             '',
                         ),
@@ -1080,9 +1122,9 @@ export class OrderService {
             ward: orderData.ward,
             hamlet: orderData.hamlet,
             pick_date: new Date().toISOString().split('T')[0],
-            pick_money: totalPrice,
+            pick_money: Math.round(totalPrice),
             note: orderData.note,
-            value: totalPrice,
+            value: Math.round(totalPrice),
             transport: 'road',
             tags: [1, 2],
         };
@@ -1221,10 +1263,10 @@ export class OrderService {
                                 }),
                             ),
                         weight: Number(
-                            orderDetail.product_option.technical_specs.weight.split(
-                                ' ',
+                            orderDetail.product_option.technical_specs.specs[0].value.split(
+                                ' g',
                             )[0],
-                        ), // 188 g
+                        ), // 188g
                         label_image: orderDetail.product_option.label_image,
                         price_modifier:
                             orderDetail.product_option.price_modifier,

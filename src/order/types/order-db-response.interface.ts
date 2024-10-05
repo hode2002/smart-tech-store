@@ -39,7 +39,7 @@ export interface OrderDBResponse {
             id: string;
             sku: string;
             technical_specs: {
-                weight: string;
+                specs: { value: string }[];
             };
             product: {
                 id: string;

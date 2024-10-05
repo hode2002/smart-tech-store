@@ -3,7 +3,6 @@ import {
     IsBoolean,
     IsNotEmpty,
     IsNumber,
-    IsObject,
     IsOptional,
     IsString,
 } from 'class-validator';
@@ -63,52 +62,12 @@ class ProductDescriptionDto {
 
 export class TechnicalSpecs {
     @IsString()
-    @IsOptional()
-    screen?: string;
+    @IsNotEmpty()
+    key: string;
 
     @IsString()
-    @IsOptional()
-    screen_size?: string;
-
-    @IsString()
-    @IsOptional()
-    os?: string;
-
-    @IsString()
-    @IsOptional()
-    front_camera?: string;
-
-    @IsString()
-    @IsOptional()
-    rear_camera?: string;
-
-    @IsString()
-    @IsOptional()
-    chip?: string;
-
-    @IsString()
-    @IsOptional()
-    ram?: string;
-
-    @IsString()
-    @IsOptional()
-    rom?: string;
-
-    @IsString()
-    @IsOptional()
-    sim?: string;
-
-    @IsString()
-    @IsOptional()
-    battery?: string;
-
-    @IsString()
-    @IsOptional()
-    connection?: string;
-
-    @IsString()
-    @IsOptional()
-    weight?: string;
+    @IsNotEmpty()
+    value: string;
 }
 
 class ProductOptionDto {
@@ -152,8 +111,8 @@ class ProductOptionDto {
     @IsString()
     slug: string;
 
-    @IsObject()
-    technical_specs: TechnicalSpecs;
+    @IsArray()
+    technical_specs: TechnicalSpecs[];
 
     @IsArray()
     product_option_value: Array<ProductOptionValue>;

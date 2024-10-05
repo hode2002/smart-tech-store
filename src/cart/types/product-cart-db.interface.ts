@@ -12,7 +12,9 @@ export interface ProductCartDB {
         discount: number;
         label_image: string;
         technical_specs: {
-            weight: string;
+            specs: {
+                value: string;
+            }[];
         };
         product_images: {
             id: string;
@@ -42,7 +44,9 @@ export interface ProductCartDB {
                 is_sale: boolean;
                 discount: number;
                 technical_specs: {
-                    weight: string;
+                    specs: {
+                        value: string;
+                    }[];
                 };
                 product_option_value: {
                     option: {
