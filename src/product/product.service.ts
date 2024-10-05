@@ -13,7 +13,7 @@ import {
 } from './dto';
 import { PrismaService } from './../prisma/prisma.service';
 import { Request } from 'express';
-import { generateSlug, pagination, translateSpecs } from 'src/utils';
+import { generateSlug, pagination } from 'src/utils';
 import { ProductDetailDB, ProductDetailResponse } from './types';
 import { MediaService } from 'src/media/media.service';
 
@@ -59,6 +59,11 @@ export class ProductService {
                     },
                 },
             },
+            select: {
+                id: true,
+                name: true,
+                category: { select: { slug: true } },
+            },
         });
         let productOptionPromises = [];
         if (product_options && product_options.length > 0) {
@@ -71,7 +76,20 @@ export class ProductService {
                         price_modifier,
                         ...other
                     } = product_option;
-
+                    const technicalSpecs =
+                        await this.prismaService.technicalSpecs.create({
+                            data: {
+                                specs: {
+                                    create: technical_specs.map((spec) => ({
+                                        ...spec,
+                                        spec_type: newProduct.category.slug,
+                                    })),
+                                },
+                            },
+                            select: {
+                                id: true,
+                            },
+                        });
                     return this.prismaService.productOption.create({
                         data: {
                             ...other,
@@ -82,9 +100,7 @@ export class ProductService {
                                     data: product_images,
                                 },
                             },
-                            technical_specs: {
-                                create: technical_specs,
-                            },
+                            technical_specs_id: technicalSpecs.id,
                             ...(product_option_value && {
                                 product_option_value: {
                                     createMany: {
@@ -127,7 +143,20 @@ export class ProductService {
                     product_images,
                     ...other
                 } = product_option;
-
+                const technicalSpecs =
+                    await this.prismaService.technicalSpecs.create({
+                        data: {
+                            specs: {
+                                create: technical_specs.map((spec) => ({
+                                    ...spec,
+                                    spec_type: product.category.slug,
+                                })),
+                            },
+                        },
+                        select: {
+                            id: true,
+                        },
+                    });
                 return this.prismaService.productOption.create({
                     data: {
                         ...other,
@@ -137,9 +166,7 @@ export class ProductService {
                                 data: product_images,
                             },
                         },
-                        technical_specs: {
-                            create: technical_specs,
-                        },
+                        technical_specs_id: technicalSpecs.id,
                         product_option_value: {
                             createMany: {
                                 data: product_option_value,
@@ -233,18 +260,12 @@ export class ProductService {
                         },
                         technical_specs: {
                             select: {
-                                screen: true,
-                                screen_size: true,
-                                os: true,
-                                front_camera: true,
-                                rear_camera: true,
-                                chip: true,
-                                ram: true,
-                                rom: true,
-                                sim: true,
-                                battery: true,
-                                weight: true,
-                                connection: true,
+                                specs: {
+                                    select: {
+                                        key: true,
+                                        value: true,
+                                    },
+                                },
                             },
                         },
                         product_option_value: {
@@ -359,18 +380,12 @@ export class ProductService {
                         },
                         technical_specs: {
                             select: {
-                                screen: true,
-                                screen_size: true,
-                                os: true,
-                                front_camera: true,
-                                rear_camera: true,
-                                chip: true,
-                                ram: true,
-                                rom: true,
-                                sim: true,
-                                battery: true,
-                                weight: true,
-                                connection: true,
+                                specs: {
+                                    select: {
+                                        key: true,
+                                        value: true,
+                                    },
+                                },
                             },
                         },
                         product_option_value: {
@@ -479,18 +494,12 @@ export class ProductService {
                         },
                         technical_specs: {
                             select: {
-                                screen: true,
-                                screen_size: true,
-                                os: true,
-                                front_camera: true,
-                                rear_camera: true,
-                                chip: true,
-                                ram: true,
-                                rom: true,
-                                sim: true,
-                                battery: true,
-                                weight: true,
-                                connection: true,
+                                specs: {
+                                    select: {
+                                        key: true,
+                                        value: true,
+                                    },
+                                },
                             },
                         },
                         product_option_value: {
@@ -646,18 +655,12 @@ export class ProductService {
                         },
                         technical_specs: {
                             select: {
-                                screen: true,
-                                screen_size: true,
-                                os: true,
-                                front_camera: true,
-                                rear_camera: true,
-                                chip: true,
-                                ram: true,
-                                rom: true,
-                                sim: true,
-                                battery: true,
-                                weight: true,
-                                connection: true,
+                                specs: {
+                                    select: {
+                                        key: true,
+                                        value: true,
+                                    },
+                                },
                             },
                         },
                         product_option_value: {
@@ -775,18 +778,12 @@ export class ProductService {
                         },
                         technical_specs: {
                             select: {
-                                screen: true,
-                                screen_size: true,
-                                os: true,
-                                front_camera: true,
-                                rear_camera: true,
-                                chip: true,
-                                ram: true,
-                                rom: true,
-                                sim: true,
-                                battery: true,
-                                weight: true,
-                                connection: true,
+                                specs: {
+                                    select: {
+                                        key: true,
+                                        value: true,
+                                    },
+                                },
                             },
                         },
                         product_option_value: {
@@ -905,18 +902,12 @@ export class ProductService {
                         },
                         technical_specs: {
                             select: {
-                                screen: true,
-                                screen_size: true,
-                                os: true,
-                                front_camera: true,
-                                rear_camera: true,
-                                chip: true,
-                                ram: true,
-                                rom: true,
-                                sim: true,
-                                battery: true,
-                                weight: true,
-                                connection: true,
+                                specs: {
+                                    select: {
+                                        key: true,
+                                        value: true,
+                                    },
+                                },
                             },
                         },
                         product_option_value: {
@@ -1032,18 +1023,12 @@ export class ProductService {
                         },
                         technical_specs: {
                             select: {
-                                screen: true,
-                                screen_size: true,
-                                os: true,
-                                front_camera: true,
-                                rear_camera: true,
-                                chip: true,
-                                ram: true,
-                                rom: true,
-                                sim: true,
-                                battery: true,
-                                weight: true,
-                                connection: true,
+                                specs: {
+                                    select: {
+                                        key: true,
+                                        value: true,
+                                    },
+                                },
                             },
                         },
                         product_option_value: {
@@ -1175,18 +1160,12 @@ export class ProductService {
                         },
                         technical_specs: {
                             select: {
-                                screen: true,
-                                screen_size: true,
-                                os: true,
-                                front_camera: true,
-                                rear_camera: true,
-                                chip: true,
-                                ram: true,
-                                rom: true,
-                                sim: true,
-                                battery: true,
-                                weight: true,
-                                connection: true,
+                                specs: {
+                                    select: {
+                                        key: true,
+                                        value: true,
+                                    },
+                                },
                             },
                         },
                         product_option_value: {
@@ -1354,66 +1333,106 @@ export class ProductService {
                             },
                             AND: [
                                 {
-                                    ...(request.query['ro'] && {
-                                        OR: (request.query['ro'] as string)
-                                            .split(',')
-                                            .map((item) => ({
-                                                rom: {
-                                                    contains: item,
-                                                },
-                                            })),
-                                    }),
-                                },
-                                {
-                                    ...(request.query['co'] && {
-                                        connection: {
-                                            equals: <string>request.query['co'],
+                                    specs: {
+                                        some: {
+                                            ...(request.query['ro'] && {
+                                                OR: (
+                                                    request.query[
+                                                        'ro'
+                                                    ] as string
+                                                )
+                                                    .split(',')
+                                                    .map((item) => ({
+                                                        value: {
+                                                            contains: item,
+                                                        },
+                                                    })),
+                                            }),
                                         },
-                                    }),
+                                    },
                                 },
                                 {
-                                    ...(request.query['ra'] && {
-                                        OR: (request.query['ra'] as string)
-                                            .split(',')
-                                            .map((item) => ({
-                                                ram: {
-                                                    contains: item,
+                                    specs: {
+                                        some: {
+                                            ...(request.query['co'] && {
+                                                value: {
+                                                    contains: <string>(
+                                                        request.query['co']
+                                                    ),
                                                 },
-                                            })),
-                                    }),
+                                            }),
+                                        },
+                                    },
                                 },
                                 {
-                                    ...(request.query['c'] && {
-                                        OR: (request.query['c'] as string)
-                                            .split(',')
-                                            .map((item) => ({
-                                                battery: {
-                                                    contains: item,
-                                                },
-                                            })),
-                                    }),
+                                    specs: {
+                                        some: {
+                                            ...(request.query['ra'] && {
+                                                OR: (
+                                                    request.query[
+                                                        'ra'
+                                                    ] as string
+                                                )
+                                                    .split(',')
+                                                    .map((item) => ({
+                                                        value: {
+                                                            contains: item,
+                                                        },
+                                                    })),
+                                            }),
+                                        },
+                                    },
                                 },
                                 {
-                                    ...(request.query['p'] && {
-                                        OR: (request.query['p'] as string)
-                                            .split(',')
-                                            .map((item) => ({
-                                                battery: {
-                                                    gte: item,
-                                                },
-                                            })),
-                                    }),
+                                    specs: {
+                                        some: {
+                                            ...(request.query['c'] && {
+                                                OR: (
+                                                    request.query['c'] as string
+                                                )
+                                                    .split(',')
+                                                    .map((item) => ({
+                                                        value: {
+                                                            contains: item,
+                                                        },
+                                                    })),
+                                            }),
+                                        },
+                                    },
                                 },
                                 {
-                                    ...(request.query['o'] && {
-                                        OR: (request.query['o'] as string)
-                                            .split(',')
-                                            .map((item) => ({
-                                                os: {
-                                                    contains: item,
-                                                },
-                                            })),
-                                    }),
+                                    specs: {
+                                        some: {
+                                            ...(request.query['p'] && {
+                                                OR: (
+                                                    request.query['p'] as string
+                                                )
+                                                    .split(',')
+                                                    .map((item) => ({
+                                                        value: {
+                                                            gte: item,
+                                                        },
+                                                    })),
+                                            }),
+                                        },
+                                    },
+                                },
+                                {
+                                    specs: {
+                                        some: {
+                                            ...(request.query['o'] && {
+                                                OR: (
+                                                    request.query['o'] as string
+                                                )
+                                                    .split(',')
+                                                    .map((item) => ({
+                                                        value: {
+                                                            contains: item,
+                                                        },
+                                                    })),
+                                            }),
+                                        },
+                                    },
                                 },
                             ],
                         },
@@ -1510,66 +1529,106 @@ export class ProductService {
                             },
                             AND: [
                                 {
-                                    ...(request.query['ro'] && {
-                                        OR: (request.query['ro'] as string)
-                                            .split(',')
-                                            .map((item) => ({
-                                                rom: {
-                                                    contains: item,
-                                                },
-                                            })),
-                                    }),
-                                },
-                                {
-                                    ...(request.query['co'] && {
-                                        connection: {
-                                            equals: <string>request.query['co'],
+                                    specs: {
+                                        some: {
+                                            ...(request.query['ro'] && {
+                                                OR: (
+                                                    request.query[
+                                                        'ro'
+                                                    ] as string
+                                                )
+                                                    .split(',')
+                                                    .map((item) => ({
+                                                        value: {
+                                                            contains: item,
+                                                        },
+                                                    })),
+                                            }),
                                         },
-                                    }),
+                                    },
                                 },
                                 {
-                                    ...(request.query['ra'] && {
-                                        OR: (request.query['ra'] as string)
-                                            .split(',')
-                                            .map((item) => ({
-                                                ram: {
-                                                    contains: item,
+                                    specs: {
+                                        some: {
+                                            ...(request.query['co'] && {
+                                                value: {
+                                                    contains: <string>(
+                                                        request.query['co']
+                                                    ),
                                                 },
-                                            })),
-                                    }),
+                                            }),
+                                        },
+                                    },
                                 },
                                 {
-                                    ...(request.query['c'] && {
-                                        OR: (request.query['c'] as string)
-                                            .split(',')
-                                            .map((item) => ({
-                                                battery: {
-                                                    contains: item,
-                                                },
-                                            })),
-                                    }),
+                                    specs: {
+                                        some: {
+                                            ...(request.query['ra'] && {
+                                                OR: (
+                                                    request.query[
+                                                        'ra'
+                                                    ] as string
+                                                )
+                                                    .split(',')
+                                                    .map((item) => ({
+                                                        value: {
+                                                            contains: item,
+                                                        },
+                                                    })),
+                                            }),
+                                        },
+                                    },
                                 },
                                 {
-                                    ...(request.query['p'] && {
-                                        OR: (request.query['p'] as string)
-                                            .split(',')
-                                            .map((item) => ({
-                                                battery: {
-                                                    gte: item,
-                                                },
-                                            })),
-                                    }),
+                                    specs: {
+                                        some: {
+                                            ...(request.query['c'] && {
+                                                OR: (
+                                                    request.query['c'] as string
+                                                )
+                                                    .split(',')
+                                                    .map((item) => ({
+                                                        value: {
+                                                            contains: item,
+                                                        },
+                                                    })),
+                                            }),
+                                        },
+                                    },
                                 },
                                 {
-                                    ...(request.query['o'] && {
-                                        OR: (request.query['o'] as string)
-                                            .split(',')
-                                            .map((item) => ({
-                                                os: {
-                                                    contains: item,
-                                                },
-                                            })),
-                                    }),
+                                    specs: {
+                                        some: {
+                                            ...(request.query['p'] && {
+                                                OR: (
+                                                    request.query['p'] as string
+                                                )
+                                                    .split(',')
+                                                    .map((item) => ({
+                                                        value: {
+                                                            gte: item,
+                                                        },
+                                                    })),
+                                            }),
+                                        },
+                                    },
+                                },
+                                {
+                                    specs: {
+                                        some: {
+                                            ...(request.query['o'] && {
+                                                OR: (
+                                                    request.query['o'] as string
+                                                )
+                                                    .split(',')
+                                                    .map((item) => ({
+                                                        value: {
+                                                            contains: item,
+                                                        },
+                                                    })),
+                                            }),
+                                        },
+                                    },
                                 },
                             ],
                         },
@@ -1595,18 +1654,12 @@ export class ProductService {
                         },
                         technical_specs: {
                             select: {
-                                screen: true,
-                                screen_size: true,
-                                os: true,
-                                front_camera: true,
-                                rear_camera: true,
-                                chip: true,
-                                ram: true,
-                                rom: true,
-                                sim: true,
-                                battery: true,
-                                weight: true,
-                                connection: true,
+                                specs: {
+                                    select: {
+                                        key: true,
+                                        value: true,
+                                    },
+                                },
                             },
                         },
                         product_option_value: {
@@ -1659,7 +1712,6 @@ export class ProductService {
                 },
             },
         });
-
         return products.map((product) => this.convertProductResponse(product));
     }
 
@@ -1755,18 +1807,12 @@ export class ProductService {
                         },
                         technical_specs: {
                             select: {
-                                screen: true,
-                                screen_size: true,
-                                os: true,
-                                front_camera: true,
-                                rear_camera: true,
-                                chip: true,
-                                ram: true,
-                                rom: true,
-                                sim: true,
-                                battery: true,
-                                weight: true,
-                                connection: true,
+                                specs: {
+                                    select: {
+                                        key: true,
+                                        value: true,
+                                    },
+                                },
                             },
                         },
                         product_option_value: {
@@ -1899,18 +1945,12 @@ export class ProductService {
                         },
                         technical_specs: {
                             select: {
-                                screen: true,
-                                screen_size: true,
-                                os: true,
-                                front_camera: true,
-                                rear_camera: true,
-                                chip: true,
-                                ram: true,
-                                rom: true,
-                                sim: true,
-                                battery: true,
-                                weight: true,
-                                connection: true,
+                                specs: {
+                                    select: {
+                                        key: true,
+                                        value: true,
+                                    },
+                                },
                             },
                         },
                         product_option_value: {
@@ -2018,7 +2058,6 @@ export class ProductService {
         if (!productOptionId) {
             throw new BadRequestException('Missing product option id');
         }
-
         const { product_images, technical_specs, ...other } =
             updateProductOptionDto;
         const isExist = await this.prismaService.productOption.findUnique({
@@ -2026,8 +2065,12 @@ export class ProductService {
                 id: productOptionId,
             },
             select: {
+                product: {
+                    select: { category: true },
+                },
                 thumbnail: true,
                 label_image: true,
+                technical_specs: true,
                 product_images: {
                     select: {
                         image_url: true,
@@ -2035,21 +2078,17 @@ export class ProductService {
                 },
             },
         });
-
         if (!isExist) {
             throw new NotFoundException(
                 `Not found: product_options with id: ${productOptionId} not found`,
             );
         }
-
         if (other?.thumbnail) {
             await this.mediaService.deleteV2(isExist.thumbnail);
         }
-
         if (other?.label_image) {
             await this.mediaService.deleteV2(isExist.label_image);
         }
-
         if (product_images && product_images?.length > 0) {
             const productImagesPromises = isExist.product_images.map(
                 async (item) => {
@@ -2058,7 +2097,22 @@ export class ProductService {
             );
             await Promise.all(productImagesPromises);
         }
-
+        await this.prismaService.technicalSpecs.delete({
+            where: { id: isExist.technical_specs.id },
+        });
+        const newTechnicalSpecs =
+            await this.prismaService.technicalSpecs.create({
+                data: {
+                    specs: {
+                        createMany: {
+                            data: technical_specs.map((spec) => ({
+                                ...spec,
+                                spec_type: isExist.product.category.slug,
+                            })),
+                        },
+                    },
+                },
+            });
         return await this.prismaService.productOption.update({
             where: { id: productOptionId },
             data: {
@@ -2070,9 +2124,7 @@ export class ProductService {
                         },
                     },
                 }),
-                technical_specs: {
-                    update: technical_specs,
-                },
+                technical_specs_id: newTechnicalSpecs.id,
                 ...other,
             },
             select: {
@@ -2174,8 +2226,8 @@ export class ProductService {
 
                 return {
                     ...productOption,
-                    technical_specs: translateSpecs(
-                        productOption.technical_specs,
+                    technical_specs: productOption.technical_specs.specs.map(
+                        (item) => ({ name: item.key, value: item.value }),
                     ),
                     options: product_option_value.map((el) => {
                         const isExist = options.find((o) =>

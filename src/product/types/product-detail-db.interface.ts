@@ -1,5 +1,4 @@
 import { JsonValue } from '@prisma/client/runtime/library';
-import { technicalSpecs } from './technical-specs.interface';
 
 export interface ProductDetailDB {
     id: string;
@@ -42,7 +41,12 @@ export interface ProductDetailDB {
             image_url: string;
             image_alt_text: string;
         }[];
-        technical_specs: technicalSpecs;
+        technical_specs: {
+            specs: {
+                key: string;
+                value: string;
+            }[];
+        };
         product_option_value: {
             option: {
                 name: string;
