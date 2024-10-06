@@ -28,6 +28,7 @@ import { ReviewModule } from './review/review.module';
 import { CloudinaryModule } from './cloudinary/cloudinary.module';
 import { NewsModule } from './news/news.module';
 import { NotificationModule } from './notification/notification.module';
+import { VoucherModule } from './voucher/voucher.module';
 
 @Module({
     imports: [
@@ -85,6 +86,7 @@ import { NotificationModule } from './notification/notification.module';
         CloudinaryModule,
         NewsModule,
         NotificationModule,
+        VoucherModule,
     ],
     controllers: [],
     providers: [
