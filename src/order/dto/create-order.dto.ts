@@ -1,6 +1,16 @@
-import { IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
+import {
+    IsArray,
+    IsNotEmpty,
+    IsNumber,
+    IsOptional,
+    IsString,
+} from 'class-validator';
 
 export class CreateOrderDto {
+    @IsArray()
+    @IsOptional()
+    voucherCodes?: string[];
+
     @IsString()
     @IsNotEmpty()
     name: string;

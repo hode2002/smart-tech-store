@@ -7,6 +7,7 @@ import { MediaModule } from 'src/media/media.module';
 import { UserService } from 'src/user/user.service';
 import { ConfigModule } from '@nestjs/config';
 import { HttpModule } from '@nestjs/axios';
+import { VoucherService } from 'src/voucher/voucher.service';
 
 @Module({
     imports: [
@@ -19,7 +20,7 @@ import { HttpModule } from '@nestjs/axios';
         HttpModule,
     ],
     controllers: [OrderController],
-    providers: [OrderService, UserService],
+    providers: [OrderService, UserService, VoucherService],
     exports: [OrderService],
 })
 export class OrderModule {}
