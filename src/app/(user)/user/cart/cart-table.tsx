@@ -100,7 +100,7 @@ export default function CartTable() {
             cartProducts.map((cartItem: CartItem) => {
                 const selectedOption = cartItem.selected_option;
                 return {
-                    id: cartItem.id,
+                    id: selectedOption.id,
                     product: {
                         thumbnail: selectedOption.thumbnail,
                         name:
@@ -115,9 +115,11 @@ export default function CartTable() {
                     unitPrice: cartItem.price,
                     total:
                         cartItem.quantity *
-                        (cartItem.price -
-                            (cartItem.price * selectedOption.discount) / 100 +
-                            selectedOption.price_modifier),
+                        (cartItem.price +
+                            selectedOption.price_modifier -
+                            ((cartItem.price + selectedOption.price_modifier) *
+                                selectedOption.discount) /
+                                100),
                     selectedOption: {
                         id: selectedOption.id,
                         price_modifier: selectedOption.price_modifier,
@@ -298,9 +300,11 @@ export default function CartTable() {
                 const selectedOption = row.original?.selectedOption;
                 const unitPrice = parseFloat(row.getValue('unitPrice'));
                 const priceModifier =
-                    unitPrice -
-                    (unitPrice * selectedOption.discount) / 100 +
-                    selectedOption.price_modifier;
+                    unitPrice +
+                    selectedOption.price_modifier -
+                    ((unitPrice + selectedOption.price_modifier) *
+                        selectedOption.discount) /
+                        100;
                 return (
                     <>
                         <div className="text-center font-medium">
@@ -347,7 +351,7 @@ export default function CartTable() {
                                     token,
                                     { productOptionId },
                                 )) as RemoveCartProductResponseType;
-                            if (response.statusCode === 200) {
+                            if (response?.statusCode === 200) {
                                 dispatch(removeCartItem({ productId }));
                                 toast({ description: 'Xóa thành công' });
                                 return;
@@ -440,7 +444,7 @@ export default function CartTable() {
                         (await accountApiRequest.removeProductFromCart(token, {
                             productOptionId,
                         })) as RemoveCartProductResponseType;
-                    if (response.statusCode === 200) {
+                    if (response?.statusCode === 200) {
                         dispatch(removeCartItem({ productId }));
                         toast({ description: 'Xóa thành công' });
                     }

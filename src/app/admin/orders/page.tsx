@@ -31,11 +31,12 @@ import {
 } from '@/apiRequests/order';
 
 import { Button } from '@/components/ui/button';
-import { formatPrice } from '@/lib/utils';
+import { formatPrice, notifyContentByStatus } from '@/lib/utils';
 import moment, { unitOfTime } from 'moment';
 import { toast } from '@/components/ui/use-toast';
 import { Input } from '@/components/ui/input';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
+import notificationApiRequest from '@/apiRequests/notification';
 
 export default function Order() {
     const [selectedOrder, setSelectedOrder] = useState<OrderResponseType>();
@@ -56,7 +57,7 @@ export default function Order() {
                         statisticBy,
                     )
                 ) {
-                    total += order.total_amount + order.fee;
+                    total += order.total_amount;
                 }
             });
             return total;
@@ -98,6 +99,22 @@ export default function Order() {
         )) as UpdateOrderResponseType;
 
         if (response?.statusCode === 200) {
+            if (status !== 0) {
+                const notify = notifyContentByStatus(status as 0 | 1 | 2 | 3);
+                const jsonImages = JSON.stringify(
+                    response.data.order_details?.map(
+                        (item) => item.product_option.thumbnail,
+                    ),
+                );
+                await notificationApiRequest.createUserNotify(token, {
+                    user_id: response.data.userId!,
+                    title: notify.title,
+                    content: notify.content,
+                    images: jsonImages,
+                    link: '/user/purchase',
+                });
+            }
+
             setOrders([
                 ...orders.map((item) => {
                     if (item.id === orderId) {

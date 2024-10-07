@@ -141,7 +141,12 @@ export default function SmartphoneDetailPage({ params }: Props) {
                 (p) =>
                     p.selected_option.id !== response.data.selected_option.id,
             );
-            dispatch(setCartProducts([...cartItems, response.data]));
+            dispatch(
+                setCartProducts([
+                    ...cartItems,
+                    { ...response.data, id: response.data.selected_option.id },
+                ]),
+            );
             toast({
                 description: 'Thêm thành công',
                 variant: 'default',
@@ -921,19 +926,23 @@ export default function SmartphoneDetailPage({ params }: Props) {
                             </p>
                             <ul className="border border-solid mt-2 rounded-lg">
                                 {technicalSpecs &&
-                                    technicalSpecs.map((item, index) => (
-                                        <li
-                                            key={index}
-                                            className="px-2 py-3 flex border-b text-[14px] capitalize"
-                                        >
-                                            <p className="w-[45%]">
-                                                {item.name}:
-                                            </p>
-                                            <div className="px-2 w-[calc(50%)]">
-                                                <span>{item.value}</span>
-                                            </div>
-                                        </li>
-                                    ))}
+                                    technicalSpecs
+                                        .sort((a, b) =>
+                                            a.name.localeCompare(b.name),
+                                        )
+                                        .map((item, index) => (
+                                            <li
+                                                key={index}
+                                                className="px-2 py-3 flex border-b text-[14px] capitalize"
+                                            >
+                                                <p className="w-[45%]">
+                                                    {item.name}:
+                                                </p>
+                                                <div className="px-2 w-[calc(50%)]">
+                                                    <span>{item.value}</span>
+                                                </div>
+                                            </li>
+                                        ))}
                             </ul>
                         </div>
                     </div>

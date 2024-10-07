@@ -1,8 +1,10 @@
+import React from 'react';
 import Navbar from '@/components/navbar';
 import Link from 'next/link';
-import { Bell, CircleHelp } from 'lucide-react';
+import { CircleHelp } from 'lucide-react';
 import Image from 'next/image';
 import dynamic from 'next/dynamic';
+import { ModeToggle } from '@/components/mode-toggle';
 
 const HeaderUserAccount = dynamic(
     () => import('@/components/header-user-account'),
@@ -28,13 +30,18 @@ export function PageHeader() {
                             </Link>
                         </li>
                         <li className="hidden md:block">
-                            <Link href="#" className="flex text-sm gap-2 p-2">
-                                <Bell />
-                                Thông báo
+                            <Link
+                                href="#"
+                                className="hidden md:block py-2 px-4"
+                            >
+                                <ModeToggle />
                             </Link>
                         </li>
                         <li className="hidden md:block">
-                            <Link href="#" className="flex text-sm gap-2 p-2">
+                            <Link
+                                href="#"
+                                className="flex text-sm gap-2 p-2 items-center"
+                            >
                                 <CircleHelp />
                                 Hỗ trợ
                             </Link>

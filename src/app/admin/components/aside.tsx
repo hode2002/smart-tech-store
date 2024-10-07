@@ -6,13 +6,16 @@ import {
     TooltipTrigger,
 } from '@/components/ui/tooltip';
 import {
+    BellPlus,
     Home,
     ImagePlus,
+    Newspaper,
     Package,
     Package2,
     Settings,
     ShoppingCart,
     Users2,
+    TicketCheck,
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -90,6 +93,42 @@ const Aside = () => {
                         </Link>
                     </TooltipTrigger>
                     <TooltipContent side="right">Banners</TooltipContent>
+                </Tooltip>
+                <Tooltip>
+                    <TooltipTrigger asChild>
+                        <Link
+                            href="/admin/news"
+                            className={`flex h-9 w-9 items-center justify-center rounded-lg ${isActive('/admin/news') ? 'bg-accent text-accent-foreground' : 'text-muted-foreground'} transition-colors hover:text-foreground md:h-8 md:w-8`}
+                        >
+                            <Newspaper className="h-5 w-5" />
+                            <span className="sr-only">News</span>
+                        </Link>
+                    </TooltipTrigger>
+                    <TooltipContent side="right">News</TooltipContent>
+                </Tooltip>
+                <Tooltip>
+                    <TooltipTrigger asChild>
+                        <Link
+                            href="/admin/vouchers"
+                            className={`flex h-9 w-9 items-center justify-center rounded-lg ${isActive('/admin/vouchers') ? 'bg-accent text-accent-foreground' : 'text-muted-foreground'} transition-colors hover:text-foreground md:h-8 md:w-8`}
+                        >
+                            <TicketCheck className="h-5 w-5" />
+                            <span className="sr-only">Vouchers</span>
+                        </Link>
+                    </TooltipTrigger>
+                    <TooltipContent side="right"> Vouchers</TooltipContent>
+                </Tooltip>
+                <Tooltip>
+                    <TooltipTrigger asChild>
+                        <Link
+                            href="/admin/notifications"
+                            className={`flex h-9 w-9 items-center justify-center rounded-lg ${isActive('/admin/notifications') ? 'bg-accent text-accent-foreground' : 'text-muted-foreground'} transition-colors hover:text-foreground md:h-8 md:w-8`}
+                        >
+                            <BellPlus className="h-5 w-5" />
+                            <span className="sr-only">Notifications</span>
+                        </Link>
+                    </TooltipTrigger>
+                    <TooltipContent side="right">Notifications</TooltipContent>
                 </Tooltip>
             </nav>
             <nav className="mt-auto flex flex-col items-center gap-4 px-2 py-4">

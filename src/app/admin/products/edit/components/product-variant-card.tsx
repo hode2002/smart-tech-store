@@ -37,7 +37,6 @@ import {
     AccordionTrigger,
 } from '@/components/ui/accordion';
 import TechnicalSpecs from '@/app/admin/products/edit/components/technical-specs';
-import { translateSpecs } from '@/lib/utils';
 import { toast } from '@/components/ui/use-toast';
 import adminApiRequest, {
     UpdateProductOptionResponseType,
@@ -214,7 +213,10 @@ const ProductVariantCard = (props: Props) => {
             discount,
             is_deleted: isActive,
             is_sale: isSale,
-            technical_specs: arraySpecsToObject(translateSpecs(technicalSpecs)),
+            technical_specs: technicalSpecs.map((item) => ({
+                key: item.name,
+                value: item.value,
+            })),
         };
 
         const response = (await adminApiRequest.updateProductOption(

@@ -17,9 +17,10 @@ import orderApiRequest, {
     UpdateOrderResponseType,
 } from '@/apiRequests/order';
 import { useAppDispatch, useAppSelector } from '@/lib/store';
-import { formatPrice } from '@/lib/utils';
+import { formatPrice, notifyContentByStatus } from '@/lib/utils';
 import { toast } from '@/components/ui/use-toast';
 import {
+    addNotification,
     CartItem,
     ProductCheckout,
     setCartProducts,
@@ -34,11 +35,15 @@ import {
     AlertDialogAction,
     AlertDialogCancel,
     AlertDialogContent,
+    AlertDialogDescription,
     AlertDialogFooter,
     AlertDialogHeader,
     AlertDialogTitle,
     AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
+import notificationApiRequest, {
+    CreateUserNotificationResponseType,
+} from '@/apiRequests/notification';
 
 export default function PurchasePage() {
     const dispatch = useAppDispatch();
@@ -54,13 +59,14 @@ export default function PurchasePage() {
             currStatus,
         );
         if (response?.statusCode === 200) {
-            return setOrders(response.data);
+            setOrders(response.data);
+        } else {
+            setOrders([]);
         }
-        setOrders([]);
     }, [token, currStatus]);
 
     useEffect(() => {
-        fetchCurrentOrders().then();
+        (async () => await fetchCurrentOrders())();
     }, [fetchCurrentOrders]);
 
     const [orders, setOrders] = useState<OrderResponseType[]>([]);
@@ -78,6 +84,24 @@ export default function PurchasePage() {
         }
     };
 
+    const createNotification = async (
+        images: string,
+        userId: string,
+        status: 0 | 1 | 2 | 3,
+    ) => {
+        await fetchCurrentOrders();
+        const notification = notifyContentByStatus(status);
+        const response: CreateUserNotificationResponseType =
+            await notificationApiRequest.createUserNotify(token, {
+                user_id: userId,
+                title: notification.title,
+                content: notification.content,
+                images,
+                link: '/user/purchase',
+            });
+        dispatch(addNotification(response.data.notification));
+    };
+
     const handleUpdateOrderStatus = async (orderId: string, status: number) => {
         const response = (await orderApiRequest.updateOrderStatus(
             token,
@@ -85,7 +109,13 @@ export default function PurchasePage() {
             status,
         )) as UpdateOrderResponseType;
         if (response?.statusCode === 200) {
-            await fetchCurrentOrders();
+            const jsonImages = JSON.stringify(
+                response.data.order_details?.map(
+                    (item) => item.product_option.thumbnail,
+                ),
+            );
+            await createNotification(jsonImages, response.data.userId!, 2);
+
             toast({
                 description: response.message,
             });
@@ -98,7 +128,13 @@ export default function PurchasePage() {
             orderId,
         )) as UpdateOrderResponseType;
         if (response?.statusCode === 200) {
-            await fetchCurrentOrders();
+            const jsonImages = JSON.stringify(
+                response.data.order_details?.map(
+                    (item) => item.product_option.thumbnail,
+                ),
+            );
+            await createNotification(jsonImages, response.data.userId!, 3);
+
             toast({
                 description: response.message,
             });
@@ -169,10 +205,7 @@ export default function PurchasePage() {
     const totalOrderAmount = useCallback((order: OrderResponseType) => {
         const orderPaymentMethod = order.payment_method;
         if (orderPaymentMethod === 'cod') {
-            return [
-                formatPrice(order.fee),
-                formatPrice(order.total_amount + order.fee),
-            ];
+            return [formatPrice(order.fee), formatPrice(order.total_amount)];
         }
 
         const isPaymentOnlineSuccess = order.transaction_id;
@@ -181,10 +214,7 @@ export default function PurchasePage() {
             return [formatPrice(0), formatPrice(0)];
         }
 
-        return [
-            formatPrice(order.fee),
-            formatPrice(order.total_amount + order.fee),
-        ];
+        return [formatPrice(order.fee), formatPrice(order.total_amount)];
     }, []);
 
     return (
@@ -397,6 +427,17 @@ export default function PurchasePage() {
                                                     <AlertDialogTitle>
                                                         Bạn đã nhận được hàng?
                                                     </AlertDialogTitle>
+                                                    <AlertDialogDescription className="text-black">
+                                                        Xác nhận đã thanh toán{' '}
+                                                        <span className="font-bold">
+                                                            {
+                                                                totalOrderAmount(
+                                                                    order,
+                                                                )[1]
+                                                            }
+                                                        </span>
+                                                        ?
+                                                    </AlertDialogDescription>
                                                 </AlertDialogHeader>
                                                 <AlertDialogFooter>
                                                     <AlertDialogCancel>

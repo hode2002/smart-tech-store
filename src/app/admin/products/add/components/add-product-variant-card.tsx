@@ -35,8 +35,6 @@ import {
     AccordionItem,
     AccordionTrigger,
 } from '@/components/ui/accordion';
-import AddTechnicalSpecs from '@/app/admin/products/add/components/add-technical-specs';
-import { arraySpecsToObject, translateSpecs } from '@/lib/utils';
 import { toast } from '@/components/ui/use-toast';
 import adminApiRequest, {
     CreateProductOptionResponseType,
@@ -46,6 +44,7 @@ import adminApiRequest, {
 } from '@/apiRequests/admin';
 import { ReloadIcon } from '@radix-ui/react-icons';
 import { AttributeType } from '@/app/admin/products/add/variant/page';
+import TechnicalSpecsCard from '@/app/admin/products/add/components/technical-specs-card';
 
 type Props = {
     sku: string;
@@ -67,24 +66,6 @@ const AddProductVariantCard = (props: Props) => {
     const [technicalSpecs, setTechnicalSpecs] = useState<TechnicalSpecsItem[]>(
         [],
     );
-
-    const handleAddTechnicalSpecs = (updatedSpecs: TechnicalSpecsItem[]) => {
-        setTechnicalSpecs(updatedSpecs);
-        toast({
-            title: 'Thành công',
-            description: (
-                <pre className="mt-2 w-[340px] rounded-md bg-slate-950 p-4">
-                    <code className="text-popover-foreground">
-                        {JSON.stringify(
-                            arraySpecsToObject(updatedSpecs),
-                            null,
-                            2,
-                        )}
-                    </code>
-                </pre>
-            ),
-        });
-    };
 
     const [loading, setLoading] = useState(false);
     const handleSubmit = async () => {
@@ -139,7 +120,10 @@ const AddProductVariantCard = (props: Props) => {
             discount,
             is_deleted: isActive,
             is_sale: isSale,
-            technical_specs: arraySpecsToObject(translateSpecs(technicalSpecs)),
+            technical_specs: technicalSpecs.map((spec) => ({
+                key: spec.name,
+                value: spec.value,
+            })),
             product_option_value: productOptionValue,
         };
 
@@ -426,9 +410,14 @@ const AddProductVariantCard = (props: Props) => {
                                         </Select>
                                     </div>
                                     <div className="grid gap-3">
-                                        <AddTechnicalSpecs
+                                        {/* <AddTechnicalSpecs
                                             handleAddTechnicalSpecs={
                                                 handleAddTechnicalSpecs
+                                            }
+                                        /> */}
+                                        <TechnicalSpecsCard
+                                            setTechnicalSpecs={
+                                                setTechnicalSpecs
                                             }
                                         />
                                     </div>

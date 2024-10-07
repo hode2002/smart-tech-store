@@ -34,6 +34,34 @@ export type UpdateBannerResponseType = {
     data: BannersResponseType;
 };
 
+export type FetchNewsResponseType = {
+    statusCode: number;
+    message: string;
+    data: NewsResponseType;
+};
+
+export type FetchAllNewsResponseType = {
+    statusCode: number;
+    message: string;
+    data: NewsResponseType[];
+};
+
+export type UpdateNewsResponseType = {
+    statusCode: number;
+    message: string;
+    data: NewsResponseType;
+};
+
+export type NewsResponseType = {
+    id: string;
+    title: string;
+    content: string;
+    slug: string;
+    image: string;
+    created_at: Date;
+    updated_at: Date;
+};
+
 export type BannersResponseType = {
     id: string;
     title: string;
@@ -77,11 +105,38 @@ export type CreateBannerBodyType = {
     type: string;
 };
 
+export type CreateNewsBodyType = {
+    title: string;
+    content: string;
+    image: File;
+};
+
+export type UpdateNewsBodyType = {
+    title?: string;
+    content?: string;
+    image?: File;
+};
+
+export type DeleteNewsResponseType = {
+    statusCode: number;
+    message: string;
+    data: {
+        is_success: boolean;
+    };
+};
+
 export type CreateBannerResponseType = {
     statusCode: number;
     message: string;
     data: BannersResponseType;
 };
+
+export type CreateNewsResponseType = {
+    statusCode: number;
+    message: string;
+    data: NewsResponseType;
+};
+
 export type ActiveUserResponseType = {
     statusCode: number;
     message: string;
@@ -225,8 +280,9 @@ export type CreateProductOptionType = {
     is_deleted: boolean;
     is_sale: boolean;
     technical_specs: {
-        [key: string]: string;
-    };
+        key: string;
+        value: string;
+    }[];
 };
 
 export type CreateProductBodyType = {
@@ -272,8 +328,9 @@ export type UpdateProductOptionBodyType = {
     is_deleted: boolean;
     is_sale: boolean;
     technical_specs: {
-        [key: string]: string;
-    };
+        key: string;
+        value: string;
+    }[];
     product_images?: ProductImagesType | undefined;
     label_image?: string | undefined;
     thumbnail?: string | undefined;
@@ -332,6 +389,108 @@ class AdminApiRequest {
         try {
             const response: FetchAllBannersResponseType = await http.get(
                 '/banners/admin',
+                {
+                    headers: {
+                        Authorization: 'Bearer ' + token,
+                    },
+                },
+            );
+            return response;
+        } catch (error: any) {
+            toast({
+                title: 'Error',
+                description: error?.payload?.message ?? 'Lỗi không xác định',
+                variant: 'destructive',
+            });
+            return error;
+        }
+    }
+
+    async getAllNews() {
+        try {
+            const response: FetchAllNewsResponseType = await http.get('/news');
+            return response;
+        } catch (error: any) {
+            toast({
+                title: 'Error',
+                description: error?.payload?.message ?? 'Lỗi không xác định',
+                variant: 'destructive',
+            });
+            return error;
+        }
+    }
+
+    async getNewsBySlug(slug: string) {
+        try {
+            const response: FetchNewsResponseType = await http.get(
+                '/news/slug/' + slug,
+            );
+            return response;
+        } catch (error: any) {
+            toast({
+                title: 'Error',
+                description: error?.payload?.message ?? 'Lỗi không xác định',
+                variant: 'destructive',
+            });
+            return error;
+        }
+    }
+
+    async createNews(token: string, body: CreateNewsBodyType) {
+        try {
+            const formData = new FormData();
+            formData.append('title', body.title);
+            formData.append('content', body.content);
+            formData.append('image', body.image);
+            const response: CreateNewsResponseType = await http.post(
+                '/news',
+                formData,
+                {
+                    headers: {
+                        Authorization: 'Bearer ' + token,
+                    },
+                },
+            );
+            return response;
+        } catch (error: any) {
+            toast({
+                title: 'Error',
+                description: error?.payload?.message ?? 'Lỗi không xác định',
+                variant: 'destructive',
+            });
+            return error;
+        }
+    }
+
+    async updateNews(token: string, newsId: string, body: UpdateNewsBodyType) {
+        try {
+            const formData = new FormData();
+            body?.content && formData.append('content', body.content);
+            body?.image && formData.append('image', body.image);
+            const response: UpdateNewsResponseType = await http.patch(
+                `/news/${newsId}`,
+                formData,
+                {
+                    headers: {
+                        Authorization: 'Bearer ' + token,
+                    },
+                },
+            );
+            return response;
+        } catch (error: any) {
+            toast({
+                title: 'Error',
+                description: error?.payload?.message ?? 'Lỗi không xác định',
+                variant: 'destructive',
+            });
+            return error;
+        }
+    }
+
+    async deleteNews(token: string, newsId: string) {
+        try {
+            const response: DeleteNewsResponseType = await http.delete(
+                `/news/${newsId}`,
                 {
                     headers: {
                         Authorization: 'Bearer ' + token,

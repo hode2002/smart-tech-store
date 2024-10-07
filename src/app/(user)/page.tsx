@@ -1,5 +1,6 @@
 'use client';
 
+import React from 'react';
 import deliveryApiRequest from '@/apiRequests/delivery';
 import SwiperBox from '@/components/home/swiper-box';
 import { useAppDispatch, useAppSelector } from '@/lib/store';
@@ -15,6 +16,7 @@ import {
     setAddress,
     setBrands,
     setCategories,
+    setNotificationList,
     setProductList,
     setProfile,
     setRefreshToken,
@@ -32,6 +34,15 @@ import {
     UpdateAddressResponseType,
 } from '@/schemaValidations/account.schema';
 import { useCookies } from 'next-client-cookies';
+import adminApiRequest, {
+    FetchAllNewsResponseType,
+    NewsResponseType,
+} from '@/apiRequests/admin';
+import Image from 'next/image';
+import Link from 'next/link';
+import notificationApiRequest, {
+    GetUserNotificationResponseType,
+} from '@/apiRequests/notification';
 
 export default function Home() {
     const dispatch = useAppDispatch();
@@ -67,6 +78,7 @@ export default function Home() {
     const [tablet, setTablet] = useState<ProductType[]>([]);
     const [smartphone, setSmartphone] = useState<ProductType[]>([]);
     const [productSale, setProductSale] = useState<ProductType[]>([]);
+    const [news, setNews] = useState<NewsResponseType[]>([]);
 
     useLayoutEffect(() => {
         if (token && !userAddress?.ward) {
@@ -77,7 +89,6 @@ export default function Home() {
                     dispatch(setAddress(userAddress));
                 });
         }
-
         if (deliveryList?.length === 0) {
             deliveryApiRequest
                 .getDelivery()
@@ -85,7 +96,6 @@ export default function Home() {
                     dispatch(setDeliveryList(response.data)),
                 );
         }
-
         if (categories?.length === 0) {
             categoryApiRequest
                 .getCategories()
@@ -93,12 +103,30 @@ export default function Home() {
                     dispatch(setCategories(response.data));
                 });
         }
-
         if (brands?.length === 0) {
             brandApiRequest
                 .getBrands()
                 .then((response: BrandResponseType) =>
                     dispatch(setBrands(response.data)),
+                );
+        }
+        adminApiRequest
+            .getAllNews()
+            .then((response: FetchAllNewsResponseType) =>
+                setNews(response.data),
+            );
+        if (token) {
+            notificationApiRequest
+                .getUserNotification(token)
+                .then((response: GetUserNotificationResponseType) =>
+                    dispatch(
+                        setNotificationList(
+                            response?.data.map((i) => ({
+                                ...i.notification,
+                                status: i.status,
+                            })),
+                        ),
+                    ),
                 );
         }
     }, [
@@ -151,9 +179,7 @@ export default function Home() {
                     products={productSale}
                     option="today"
                 />
-
                 <ProductBox title="Khuyến mãi hot" products={productSale} />
-
                 <div className="mx-2 md:mx-0">
                     <SwiperBox
                         title="Điện thoại"
@@ -176,6 +202,29 @@ export default function Home() {
                         slidesPerView={isMobile ? 2 : 4}
                         spaceBetween={isDesktop ? 50 : 30}
                     />
+                </div>
+                <div className="mb-8">
+                    <p className="font-bold text-[26px]">Bài tin</p>
+                    <div className="flex items-center justify-between gap-4 flex-wrap">
+                        {news &&
+                            news.length > 0 &&
+                            news.map((item) => (
+                                <Link
+                                    href={'/news/' + item.slug}
+                                    key={item.id}
+                                    className="w-[20%] flex flex-col justify-center gap-2 text-[14px]"
+                                >
+                                    <Image
+                                        src={item.image}
+                                        width={280}
+                                        height={162}
+                                        alt=""
+                                        className="rounded-lg"
+                                    />
+                                    <p>{item.title}</p>
+                                </Link>
+                            ))}
+                    </div>
                 </div>
             </div>
             <SubizChat />

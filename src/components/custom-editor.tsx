@@ -11,18 +11,19 @@ type EEventHandler<K extends keyof Events.EditorEventMap> = EventHandler<
 >;
 
 type Props = {
-    initialValue: string;
+    initialValue?: string;
+    height?: number;
     onInit?: EEventHandler<'init'> | undefined;
 };
 export default function CustomEditor(props: Props) {
-    const { initialValue, onInit } = props;
+    const { initialValue, onInit, height = 600 } = props;
     return (
         <Editor
             onInit={onInit}
             apiKey={process.env.NEXT_PUBLIC_TINY_EDITOR_KEY}
             init={{
                 menubar: '',
-                height: 600,
+                height,
                 plugins: [
                     'advlist',
                     'autolink',

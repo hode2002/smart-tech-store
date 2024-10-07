@@ -67,7 +67,12 @@ export default function HomeProductCard(props: Props) {
                 (p) =>
                     p.selected_option.id !== response.data.selected_option.id,
             );
-            dispatch(setCartProducts([...cartItems, response.data]));
+            dispatch(
+                setCartProducts([
+                    ...cartItems,
+                    { ...response.data, id: productOption.id },
+                ]),
+            );
 
             toast({
                 description: 'Thêm thành công',

@@ -1,10 +1,8 @@
 'use client';
 
-import { ModeToggle } from '@/components/mode-toggle';
+import { Bell } from 'lucide-react';
 import SideBar from './side-bar';
-import { useState } from 'react';
-
-import { useAppSelector, useAppDispatch } from '@/lib/store';
+import { useEffect, useState } from 'react';
 import {
     userLogout,
     removeUserProfile,
@@ -26,10 +24,16 @@ import authApiRequest from '@/apiRequests/auth';
 import { LogoutResponseType } from '@/schemaValidations/auth.schema';
 import Link from 'next/link';
 import Image from 'next/image';
-
+import React from 'react';
 import { Avatar } from '@/components/ui/avatar';
 import { setDeliveryList } from '@/lib/store/slices/delivery-slice';
+import { setNotificationList } from '@/lib/store/slices/notification-slice';
 import { ShoppingCart } from 'lucide-react';
+import { useAppDispatch, useAppSelector } from '@/lib/store';
+import NotificationList from '@/components/notification-list';
+import notificationApiRequest, {
+    GetUserNotificationResponseType,
+} from '@/apiRequests/notification';
 
 export default function HeaderUserAccount() {
     const router = useRouter();
@@ -38,8 +42,40 @@ export default function HeaderUserAccount() {
     const token = useAppSelector((state) => state.auth.accessToken);
     const profile = useAppSelector((state) => state.user.profile);
     const cartProducts = useAppSelector((state) => state.user.cart);
-
+    const notificationList = useAppSelector(
+        (state) => state.notifications.notificationList,
+    );
     const [loading, setLoading] = useState(false);
+
+    useEffect(() => {
+        if (token) {
+            notificationApiRequest
+                .getUserNotification(token)
+                .then((response: GetUserNotificationResponseType) =>
+                    dispatch(
+                        setNotificationList(
+                            response?.data.map((i) => ({
+                                ...i.notification,
+                                status: i.status,
+                            })),
+                        ),
+                    ),
+                );
+        }
+    }, [dispatch, token]);
+
+    const handleReadAllNotify = async () => {
+        const response =
+            await notificationApiRequest.userReadAllNotifications(token);
+        if (response?.statusCode === 200) {
+            dispatch(
+                setNotificationList(
+                    notificationList.map((item) => ({ ...item, status: 1 })),
+                ),
+            );
+        }
+    };
+
     const handleLogout = async () => {
         if (loading) return;
         setLoading(true);
@@ -51,6 +87,7 @@ export default function HeaderUserAccount() {
             dispatch(setDeliveryList([]));
             dispatch(setCategories([]));
             dispatch(setBrands([]));
+            dispatch(setNotificationList([]));
             return router.push('/login');
         }
     };
@@ -69,13 +106,90 @@ export default function HeaderUserAccount() {
                     </Link>
                 </div>
             </div>
+            <div>
+                <div className="hidden md:block">
+                    <div className="w-0 md:w-[25%] hidden md:flex">
+                        <NavigationMenu className="z-50">
+                            <NavigationMenuList>
+                                <NavigationMenuItem>
+                                    <NavigationMenuTrigger className="flex justify-center items-center">
+                                        <div className="dark:bg-popover flex justify-center items-center">
+                                            <div className="relative">
+                                                {notificationList &&
+                                                    notificationList?.length >
+                                                        0 &&
+                                                    notificationList?.filter(
+                                                        (item) =>
+                                                            item.status !== 1,
+                                                    )?.length > 0 && (
+                                                        <div className="absolute left-5 bottom-4">
+                                                            <p className="flex h-2 w-2 items-center justify-center rounded-full bg-red-500 p-3 text-xs text-white">
+                                                                {
+                                                                    notificationList?.filter(
+                                                                        (
+                                                                            item,
+                                                                        ) =>
+                                                                            !item.status,
+                                                                    )?.length
+                                                                }
+                                                            </p>
+                                                        </div>
+                                                    )}
+
+                                                <Link
+                                                    href="#"
+                                                    className="flex text-sm gap-4 p-2 justify-center items-center"
+                                                >
+                                                    <Bell />
+                                                    Thông báo
+                                                </Link>
+                                            </div>
+                                        </div>
+                                    </NavigationMenuTrigger>
+                                    {notificationList &&
+                                    notificationList.length > 0 ? (
+                                        <NavigationMenuContent>
+                                            <>
+                                                <div className="flex justify-end p-2">
+                                                    <Button
+                                                        onClick={
+                                                            handleReadAllNotify
+                                                        }
+                                                        variant={'link'}
+                                                        className="text-md"
+                                                    >
+                                                        Đánh dấu đã đọc
+                                                    </Button>
+                                                </div>
+                                                <NotificationList
+                                                    notifications={
+                                                        notificationList
+                                                    }
+                                                />
+                                            </>
+                                        </NavigationMenuContent>
+                                    ) : (
+                                        <NavigationMenuContent>
+                                            <div className="p-4 w-[400px] lg:w-[500px] h-[400px] flex justify-center items-center">
+                                                <p>Chưa có thông báo</p>
+                                            </div>
+                                        </NavigationMenuContent>
+                                    )}
+                                </NavigationMenuItem>
+                            </NavigationMenuList>
+                        </NavigationMenu>
+                    </div>
+                </div>
+
+                <SideBar handleLogout={handleLogout} />
+            </div>
 
             {token ? (
                 <NavigationMenu style={{ zIndex: 41 }}>
                     <NavigationMenuList>
                         <NavigationMenuItem>
                             <NavigationMenuTrigger className="bg-transparent flex items-center">
-                                <span className="flex flex-col md:flex-row pr-1 md:gap-2">
+                                <div className="flex flex-col md:flex-row pr-1 md:gap-2">
                                     <Link href="/user/account/profile">
                                         <Avatar>
                                             <Image
@@ -93,7 +207,7 @@ export default function HeaderUserAccount() {
                                     >
                                         <p>{profile?.email}</p>
                                     </Link>
-                                </span>
+                                </div>
                             </NavigationMenuTrigger>
                             <NavigationMenuContent>
                                 <div className="left-0 p-4">
@@ -190,14 +304,6 @@ export default function HeaderUserAccount() {
                     </div>
                 </>
             )}
-
-            <div>
-                <Link href="#" className="hidden md:block py-2 px-4">
-                    <ModeToggle />
-                </Link>
-
-                <SideBar handleLogout={handleLogout} />
-            </div>
         </div>
     );
 }

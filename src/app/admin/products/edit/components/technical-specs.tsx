@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { TechnicalSpecsItem } from '@/schemaValidations/product.schema';
@@ -37,29 +37,31 @@ const TechnicalSpecs = (props: Props) => {
                     Cập nhật
                 </Button>
             </div>
-            {editedSpecs.map((spec) => (
-                <div
-                    key={spec.name}
-                    className="flex gap-3 my-1 items-center justify-between"
-                >
-                    <Label
-                        htmlFor={`technical-specs-${spec.name}`}
-                        className="w-[30%]"
+            {editedSpecs
+                .sort((a, b) => a.name.localeCompare(b.name))
+                .map((spec) => (
+                    <div
+                        key={spec.name}
+                        className="flex gap-3 my-1 items-center justify-between"
                     >
-                        {spec.name}
-                    </Label>
-                    <Input
-                        id={`technical-specs-${spec.name}`}
-                        type="text"
-                        autoComplete="off"
-                        className="w-[70%]"
-                        value={spec.value}
-                        onChange={(e) =>
-                            handleSpecChange(spec.name, e.target.value)
-                        }
-                    />
-                </div>
-            ))}
+                        <Label
+                            htmlFor={`technical-specs-${spec.name}`}
+                            className="w-[30%]"
+                        >
+                            {spec.name}
+                        </Label>
+                        <Input
+                            id={`technical-specs-${spec.name}`}
+                            type="text"
+                            autoComplete="off"
+                            className="w-[70%]"
+                            value={spec.value}
+                            onChange={(e) =>
+                                handleSpecChange(spec.name, e.target.value)
+                            }
+                        />
+                    </div>
+                ))}
         </>
     );
 };

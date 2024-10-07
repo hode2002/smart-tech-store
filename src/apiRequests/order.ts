@@ -2,6 +2,7 @@ import { toast } from '@/components/ui/use-toast';
 import http from '@/lib/http';
 
 export type CreateOrderType = {
+    voucherCodes?: string[];
     name: string;
     phone: string;
     address: string;
@@ -26,6 +27,13 @@ export type CreateOrderResponseType = {
         order_id: string;
         GHTK_tracking_number: number;
         payment_id: string;
+        userId?: string;
+        transaction_id?: number;
+        order_details?: {
+            product_option: {
+                thumbnail: string;
+            };
+        }[];
     };
 };
 
@@ -34,6 +42,13 @@ export type UpdateOrderResponseType = {
     message: string;
     data: {
         is_success: boolean;
+        userId?: string;
+        transaction_id?: number;
+        order_details?: {
+            product_option: {
+                thumbnail: string;
+            };
+        }[];
     };
 };
 

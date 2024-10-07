@@ -165,8 +165,7 @@ const OrderTable = (props: Props) => {
                                         <TableCell className="text-right text-nowrap">
                                             <span className="font-bold">
                                                 {formatPrice(
-                                                    order.total_amount +
-                                                        order.fee,
+                                                    order.total_amount,
                                                 )}
                                             </span>
                                         </TableCell>

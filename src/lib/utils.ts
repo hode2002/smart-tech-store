@@ -131,3 +131,27 @@ export const obfuscateEmail = (email: string | undefined) => {
 };
 
 export const FRONTEND_URL = process.env.NEXT_PUBLIC_FRONTEND_URL;
+
+export const notifyContentByStatus = (status: 0 | 1 | 2 | 3) => {
+    const contents = {
+        0: {
+            title: 'Đơn hàng của bạn đã được đặt',
+            content:
+                'Đơn hàng của bạn đã được gửi. Cảm ơn bạn đã mua sắm tại Smart Tech Store!',
+        },
+        1: {
+            title: 'Đơn hàng của bạn đang trên đường giao',
+            content:
+                'Kiện hàng của bạn đang được vận chuyển và sẽ được GHTK giao đến bạn.',
+        },
+        2: {
+            title: 'Giao hàng thành công',
+            content: 'Đơn hàng đã được giao đến bạn.',
+        },
+        3: {
+            title: 'Đơn hàng đã bị hủy',
+            content: 'Đơn hàng đã bị hủy',
+        },
+    };
+    return contents[status];
+};

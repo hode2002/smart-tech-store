@@ -48,6 +48,17 @@ export type RemoveCartProductResponseType = {
     };
 };
 
+export type CreateNotifyBodyType = {
+    user_id: string;
+    title: string;
+    content: string;
+    images: string;
+};
+
+export type UpdateNotifyBodyType = {
+    status: number;
+};
+
 class AccountApiRequest {
     private async fetchAddress(
         type: 'province' | 'district' | 'ward',

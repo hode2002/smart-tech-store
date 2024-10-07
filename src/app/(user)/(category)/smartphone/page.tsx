@@ -437,7 +437,7 @@ export default function SmartphonePage() {
                                         Điện thoại
                                     </h1>
                                     <span className="opacity-90 font-semibold text-md">
-                                        ({products.length} sản phẩm)
+                                        ({products?.length ?? 0} sản phẩm)
                                     </span>
                                 </div>
                             </div>

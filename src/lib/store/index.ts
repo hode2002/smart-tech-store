@@ -9,6 +9,7 @@ import {
     categoryReducer,
     productReducer,
     userReducer,
+    notificationReducer,
 } from '@/lib/store/slices';
 import { deliveryReducer } from '@/lib/store/slices/delivery-slice';
 
@@ -62,6 +63,7 @@ const rootReducer = combineReducers({
     category: persistReducer(categoryPersistConfig, categoryReducer),
     brand: persistReducer(brandPersistConfig, brandReducer),
     products: persistReducer(productPersistConfig, productReducer),
+    notifications: notificationReducer,
 });
 
 export const store = configureStore({
