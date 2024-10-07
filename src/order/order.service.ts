@@ -29,6 +29,8 @@ import { Request, Response } from 'express';
 import * as moment from 'moment';
 import * as querystring from 'qs';
 import * as crypto from 'crypto';
+import { VoucherService } from '../voucher/voucher.service';
+import { VoucherType } from '@prisma/client';
 
 @Injectable()
 export class OrderService {
@@ -37,36 +39,38 @@ export class OrderService {
         private readonly userService: UserService,
         private readonly configService: ConfigService,
         private readonly httpService: HttpService,
+        private readonly voucherService: VoucherService,
     ) {}
 
     async create(userId: string, createOrderDto: CreateOrderDto) {
-        return await this.prismaService.$transaction(async (prisma) => {
-            const user = await prisma.user.findUnique({
-                where: { id: userId },
-            });
+        const user = await this.prismaService.user.findUnique({
+            where: { id: userId },
+        });
 
-            if (!user) {
-                throw new NotFoundException('User not found');
-            }
+        if (!user) {
+            throw new NotFoundException('User not found');
+        }
 
-            const {
-                delivery_id,
-                payment_method,
-                order_details,
-                name,
-                phone,
-                note,
-                ...orderAddress
-            } = createOrderDto;
+        const {
+            delivery_id,
+            payment_method,
+            order_details,
+            name,
+            phone,
+            note,
+            voucherCodes,
+            ...orderAddress
+        } = createOrderDto;
 
-            const deliveryService = await prisma.delivery.findUnique({
-                where: { id: delivery_id },
-            });
+        const deliveryService = await this.prismaService.delivery.findUnique({
+            where: { id: delivery_id },
+        });
 
-            if (!deliveryService) {
-                throw new NotFoundException('Delivery service not found');
-            }
+        if (!deliveryService) {
+            throw new NotFoundException('Delivery service not found');
+        }
 
+        const result = await this.prismaService.$transaction(async (prisma) => {
             const order = await prisma.order.create({
                 data: {
                     user_id: userId,
@@ -186,7 +190,6 @@ export class OrderService {
                     });
                 },
             );
-
             const GHTKOrder = await this.createGHTKOrder(
                 order.id,
                 createOrderDto,
@@ -196,13 +199,9 @@ export class OrderService {
                 throw new UnprocessableEntityException(GHTKOrder.message);
             }
 
-            const payment = prisma.payment.create({
-                data: {
-                    order_id: order.id,
-                    payment_method,
-                    transaction_id: null,
-                    total_price: totalOrderPrice + GHTKOrder.order.fee,
-                },
+            const updateShippingFee = prisma.order.update({
+                where: { id: order.id },
+                data: { total_amount: totalOrderPrice + GHTKOrder.order.fee },
             });
 
             const orderShipping = prisma.orderShipping.create({
@@ -217,9 +216,13 @@ export class OrderService {
                 },
             });
 
-            const updateShippingFee = prisma.order.update({
-                where: { id: order.id },
-                data: { total_amount: totalOrderPrice },
+            const payment = prisma.payment.create({
+                data: {
+                    order_id: order.id,
+                    payment_method,
+                    transaction_id: null,
+                    total_price: totalOrderPrice + GHTKOrder.order.fee,
+                },
             });
 
             await Promise.all([
@@ -231,6 +234,8 @@ export class OrderService {
 
             return {
                 is_success: true,
+                total_order_price: totalOrderPrice,
+                GKTK_order_fee: GHTKOrder.order.fee,
                 order_id: order.id,
                 GHTK_tracking_number: GHTKOrder.order.tracking_id,
                 payment_id: (await payment).id,
@@ -238,6 +243,42 @@ export class OrderService {
                 order_details: [...productOptionThumbs],
             };
         });
+
+        if (voucherCodes.length > 0) {
+            let totalOrderPrice =
+                result.total_order_price + result.GKTK_order_fee;
+            for (const code of voucherCodes) {
+                const voucher = await this.voucherService.applyVoucherToOrder(
+                    result.order_id,
+                    code,
+                );
+                if (voucher.type === VoucherType.FIXED) {
+                    totalOrderPrice -= voucher.value;
+                } else {
+                    const percent = voucher.value;
+                    totalOrderPrice -= (totalOrderPrice * percent) / 100;
+                }
+            }
+
+            const updateOrderPricePromise = this.prismaService.order.update({
+                where: { id: result.order_id },
+                data: { total_amount: totalOrderPrice },
+            });
+
+            const updatePaymentPricePromise = this.prismaService.payment.update(
+                {
+                    where: { id: result.payment_id },
+                    data: { total_price: totalOrderPrice },
+                },
+            );
+
+            await Promise.all([
+                updateOrderPricePromise,
+                updatePaymentPricePromise,
+            ]);
+        }
+
+        return result;
     }
 
     async cancel(userId: string, id: string) {
