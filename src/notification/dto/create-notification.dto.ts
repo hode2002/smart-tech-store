@@ -1,9 +1,10 @@
-import { IsNotEmpty, IsString } from 'class-validator';
+import { NotificationType } from '@prisma/client';
+import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 export class CreateNotificationDto {
     @IsString()
-    @IsNotEmpty()
-    user_id: string;
+    @IsOptional()
+    user_id?: string;
 
     @IsString()
     @IsNotEmpty()
@@ -16,4 +17,12 @@ export class CreateNotificationDto {
     @IsString()
     @IsNotEmpty()
     images: string;
+
+    @IsString()
+    @IsOptional()
+    type?: NotificationType;
+
+    @IsString()
+    @IsNotEmpty()
+    link: string;
 }
