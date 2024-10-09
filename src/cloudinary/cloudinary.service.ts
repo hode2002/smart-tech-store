@@ -29,17 +29,26 @@ export class CloudinaryService {
             streamifier.createReadStream(file.buffer).pipe(uploadStream);
         });
     }
-    deleteFile(filePath: string) {
+    deleteFile(
+        filePath: string,
+        resource_type: 'image' | 'video' | 'auto' | 'raw' = 'image',
+    ) {
         const folderName = this.configService.get('CLOUDINARY_FOLDER_NAME');
         const arr = filePath.split(folderName);
         const ext = filePath.split('.').pop();
         const displayName = arr[arr.length - 1].split('.' + ext)[0];
         const publicId = folderName + displayName;
         return new Promise<any>((resolve, reject) => {
-            cloudinary.uploader.destroy(publicId, (error, result) => {
-                if (error) return reject(error);
-                resolve(result);
-            });
+            cloudinary.uploader.destroy(
+                publicId,
+                {
+                    resource_type,
+                },
+                (error, result) => {
+                    if (error) return reject(error);
+                    resolve(result);
+                },
+            );
         });
     }
 }
