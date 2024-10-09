@@ -29,8 +29,11 @@ export class MediaService {
         return await this.cloudinaryService.uploadFile(file, folder, type);
     }
 
-    async deleteV2(filePath: string) {
-        return await this.cloudinaryService.deleteFile(filePath);
+    async deleteV2(
+        filePath: string,
+        type: 'image' | 'video' | 'auto' | 'raw' = 'image',
+    ) {
+        return await this.cloudinaryService.deleteFile(filePath, type);
     }
 
     async upload(
