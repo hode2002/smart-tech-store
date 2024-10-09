@@ -64,6 +64,10 @@ export interface ProductDetailDB {
             };
             star: number;
             comment: string;
+            video_url?: string;
+            review_images?: {
+                image_url: string;
+            }[];
             children: {
                 id: string;
                 user: {

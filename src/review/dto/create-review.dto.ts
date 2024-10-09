@@ -1,4 +1,10 @@
-import { IsNotEmpty, IsNumber, IsString } from 'class-validator';
+import {
+    IsArray,
+    IsNotEmpty,
+    IsNumber,
+    IsOptional,
+    IsString,
+} from 'class-validator';
 
 export class CreateReviewDto {
     @IsString()
@@ -12,4 +18,12 @@ export class CreateReviewDto {
     @IsString()
     @IsNotEmpty()
     comment: string;
+
+    @IsArray()
+    @IsOptional()
+    images?: string[];
+
+    @IsString()
+    @IsOptional()
+    video_url?: string;
 }

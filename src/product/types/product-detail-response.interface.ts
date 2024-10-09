@@ -65,6 +65,10 @@ export interface ProductDetailResponse {
             };
             star: number;
             comment: string;
+            video_url?: string;
+            review_images?: {
+                image_url: string;
+            }[];
             created_at: Date;
             children: {
                 id: string;

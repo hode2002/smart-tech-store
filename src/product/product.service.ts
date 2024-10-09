@@ -1195,6 +1195,12 @@ export class ProductService {
                                 },
                                 star: true,
                                 comment: true,
+                                video_url: true,
+                                review_images: {
+                                    select: {
+                                        image_url: true,
+                                    },
+                                },
                                 _count: true,
                                 children: {
                                     select: {

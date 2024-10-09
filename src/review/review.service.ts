@@ -3,12 +3,14 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { UserService } from 'src/user/user.service';
 import { CreateReplyReviewDto, CreateReviewDto } from './dto';
 import { OrderStatus } from 'src/order/types';
+import { MediaService } from 'src/media/media.service';
 
 @Injectable()
 export class ReviewService {
     constructor(
         private readonly prismaService: PrismaService,
         private readonly userService: UserService,
+        private readonly mediaService: MediaService,
     ) {}
 
     async getAllReviews() {
@@ -42,6 +44,12 @@ export class ReviewService {
                 star: true,
                 comment: true,
                 _count: true,
+                video_url: true,
+                review_images: {
+                    select: {
+                        image_url: true,
+                    },
+                },
                 children: {
                     select: {
                         id: true,
@@ -103,6 +111,8 @@ export class ReviewService {
             },
             select: {
                 id: true,
+                video_url: true,
+                review_images: true,
             },
         });
 
@@ -110,15 +120,64 @@ export class ReviewService {
             const isUpdated = await this.prismaService.review.update({
                 where: { id: review.id },
                 data: {
-                    comment,
                     star,
+                    comment,
                 },
                 select: {
                     id: true,
                     star: true,
                     comment: true,
+                    video_url: true,
+                    review_images: {
+                        select: { image_url: true },
+                    },
                 },
             });
+
+            if (createReviewDto?.video_url) {
+                let deleteCloudinaryVideoPromise: Promise<any>;
+                if (review.video_url) {
+                    deleteCloudinaryVideoPromise = this.mediaService.deleteV2(
+                        review.video_url,
+                        'video',
+                    );
+                }
+
+                const updateNewVideoPromise = this.prismaService.review.update({
+                    where: { id: review.id },
+                    data: { video_url: createReviewDto.video_url },
+                });
+
+                await Promise.all([
+                    deleteCloudinaryVideoPromise,
+                    updateNewVideoPromise,
+                ]);
+            }
+
+            if (createReviewDto?.images && createReviewDto.images?.length > 0) {
+                const deleteCloudImagePromises = review.review_images.map(
+                    (item) => {
+                        return this.mediaService.deleteV2(item.image_url);
+                    },
+                );
+                const deleteReviewImagePromises =
+                    this.prismaService.reviewImage.deleteMany({
+                        where: { review_id: review.id },
+                    });
+
+                const updateNewImagePromises = createReviewDto.images.map(
+                    (imageUrl) => {
+                        return this.prismaService.reviewImage.create({
+                            data: { review_id: review.id, image_url: imageUrl },
+                        });
+                    },
+                );
+                await Promise.all([
+                    deleteCloudImagePromises,
+                    deleteReviewImagePromises,
+                    ...updateNewImagePromises,
+                ]);
+            }
 
             return {
                 is_success: isUpdated ? true : false,
@@ -126,10 +185,10 @@ export class ReviewService {
             };
         }
 
-        const newReview = await this.prismaService.review.create({
+        let newReview = await this.prismaService.review.create({
             data: {
-                comment,
                 star,
+                comment,
                 user_id: userId,
                 product_option_id,
             },
@@ -137,8 +196,34 @@ export class ReviewService {
                 id: true,
                 star: true,
                 comment: true,
+                video_url: true,
+                review_images: {
+                    select: { image_url: true },
+                },
             },
         });
+
+        if (createReviewDto?.video_url) {
+            const isUpdated = await this.prismaService.review.update({
+                where: { id: newReview.id },
+                data: { video_url: createReviewDto.video_url },
+            });
+            newReview = { ...newReview, ...isUpdated };
+        }
+
+        if (createReviewDto?.images && createReviewDto.images?.length > 0) {
+            const createImagePromises = createReviewDto.images.map((image) => {
+                return this.prismaService.reviewImage.create({
+                    data: { review_id: newReview.id, image_url: image },
+                    select: {
+                        image_url: true,
+                    },
+                });
+            });
+
+            const images = await Promise.all(createImagePromises);
+            newReview = { ...newReview, review_images: images };
+        }
 
         return {
             is_success: newReview ? true : false,
@@ -247,6 +332,12 @@ export class ReviewService {
                 star: true,
                 comment: true,
                 _count: true,
+                video_url: true,
+                review_images: {
+                    select: {
+                        image_url: true,
+                    },
+                },
                 children: {
                     select: {
                         id: true,
@@ -314,7 +405,6 @@ export class ReviewService {
         if (!user) {
             throw new NotFoundException('User not found');
         }
-
         const review = await this.prismaService.review.findUnique({
             where: { id: reviewId, user_id: userId },
             select: {
@@ -325,6 +415,12 @@ export class ReviewService {
                 star: true,
                 parent_id: true,
                 product_option_id: true,
+                video_url: true,
+                review_images: {
+                    select: {
+                        image_url: true,
+                    },
+                },
             },
         });
 
@@ -332,7 +428,23 @@ export class ReviewService {
             throw new NotFoundException('Reviews not found');
         }
 
-        const isDeleted = await this.prismaService.review.delete({
+        let deleteVideoPromise: Promise<any>,
+            deleteImagePromises: Promise<any>[] = [];
+
+        if (review?.video_url) {
+            deleteVideoPromise = this.mediaService.deleteV2(
+                review.video_url,
+                'video',
+            );
+        }
+
+        if (review?.review_images?.length > 0) {
+            deleteImagePromises = review.review_images.map((item) => {
+                return this.mediaService.deleteV2(item.image_url);
+            });
+        }
+
+        const deleteReviewPromise = this.prismaService.review.delete({
             where: {
                 id: review.id,
             },
@@ -340,12 +452,23 @@ export class ReviewService {
                 id: true,
                 star: true,
                 comment: true,
+                video_url: true,
+                review_images: {
+                    select: {
+                        image_url: true,
+                    },
+                },
             },
         });
 
+        await Promise.all([
+            deleteVideoPromise,
+            ...deleteImagePromises,
+            deleteReviewPromise,
+        ]);
+
         return {
-            is_success: isDeleted ? true : false,
-            ...isDeleted,
+            is_success: true,
         };
     }
 }
