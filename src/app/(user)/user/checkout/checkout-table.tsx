@@ -106,9 +106,11 @@ export default function CheckoutTable() {
                 cell: ({ row }) => {
                     const unitPrice = row.original.unitPrice;
                     const priceModifier =
-                        unitPrice -
-                        (unitPrice * row.original.discount) / 100 +
-                        row.original.priceModifier;
+                        unitPrice +
+                        row.original.priceModifier -
+                        ((unitPrice + row.original.priceModifier) *
+                            row.original.discount) /
+                            100;
                     return (
                         <div className="text-right font-medium">
                             {row.original.discount === 0 ? (
