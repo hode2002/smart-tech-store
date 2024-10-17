@@ -197,9 +197,11 @@ const ProductComboCard = ({
                             <p className="text-[#E83A45] font-bold">
                                 {formatPrice(calculateProductPrice())}
                             </p>
-                            <p className="line-through opacity-9">
-                                {formatPrice(originalPrice)}
-                            </p>
+                            {mainProduct?.discount > 0 && (
+                                <p className="line-through opacity-90">
+                                    {formatPrice(originalPrice)}
+                                </p>
+                            )}
                         </div>
                     </div>
                 </div>
