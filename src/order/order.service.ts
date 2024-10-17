@@ -31,6 +31,7 @@ import * as querystring from 'qs';
 import * as crypto from 'crypto';
 import { VoucherService } from '../voucher/voucher.service';
 import { VoucherType } from '@prisma/client';
+import { CreateOrderComboDto } from 'src/order/dto/create-order-combo';
 
 @Injectable()
 export class OrderService {
@@ -194,6 +195,242 @@ export class OrderService {
                 order.id,
                 createOrderDto,
             );
+
+            if (!GHTKOrder?.success) {
+                throw new UnprocessableEntityException(GHTKOrder.message);
+            }
+
+            const updateShippingFee = prisma.order.update({
+                where: { id: order.id },
+                data: { total_amount: totalOrderPrice + GHTKOrder.order.fee },
+            });
+
+            const orderShipping = prisma.orderShipping.create({
+                data: {
+                    order_id: order.id,
+                    delivery_id,
+                    estimate_date: GHTKOrder.order.estimated_deliver_time,
+                    tracking_number: String(GHTKOrder.order.tracking_id),
+                    order_label: GHTKOrder.order.label,
+                    fee: GHTKOrder.order.fee,
+                    ...orderAddress,
+                },
+            });
+
+            const payment = prisma.payment.create({
+                data: {
+                    order_id: order.id,
+                    payment_method,
+                    transaction_id: null,
+                    total_price: totalOrderPrice + GHTKOrder.order.fee,
+                },
+            });
+
+            await Promise.all([
+                payment,
+                orderShipping,
+                updateShippingFee,
+                ...orderDetailPromises,
+            ]);
+
+            return {
+                is_success: true,
+                total_order_price: totalOrderPrice,
+                GKTK_order_fee: GHTKOrder.order.fee,
+                order_id: order.id,
+                GHTK_tracking_number: GHTKOrder.order.tracking_id,
+                payment_id: (await payment).id,
+                userId,
+                order_details: [...productOptionThumbs],
+            };
+        });
+
+        if (voucherCodes.length > 0) {
+            let totalOrderPrice =
+                result.total_order_price + result.GKTK_order_fee;
+            for (const code of voucherCodes) {
+                const voucher = await this.voucherService.applyVoucherToOrder(
+                    result.order_id,
+                    code,
+                );
+                if (voucher.type === VoucherType.FIXED) {
+                    totalOrderPrice -= voucher.value;
+                } else {
+                    const percent = voucher.value;
+                    totalOrderPrice -= (totalOrderPrice * percent) / 100;
+                }
+            }
+
+            const updateOrderPricePromise = this.prismaService.order.update({
+                where: { id: result.order_id },
+                data: { total_amount: totalOrderPrice },
+            });
+
+            const updatePaymentPricePromise = this.prismaService.payment.update(
+                {
+                    where: { id: result.payment_id },
+                    data: { total_price: totalOrderPrice },
+                },
+            );
+
+            await Promise.all([
+                updateOrderPricePromise,
+                updatePaymentPricePromise,
+            ]);
+        }
+
+        return result;
+    }
+
+    async createOrderCombo(
+        userId: string,
+        createOrderComboDto: CreateOrderComboDto,
+    ) {
+        const user = await this.prismaService.user.findUnique({
+            where: { id: userId },
+        });
+
+        if (!user) {
+            throw new NotFoundException('User not found');
+        }
+
+        const {
+            delivery_id,
+            payment_method,
+            productComboIds,
+            name,
+            phone,
+            note,
+            voucherCodes,
+            productOptionId,
+            ...orderAddress
+        } = createOrderComboDto;
+
+        const deliveryService = await this.prismaService.delivery.findUnique({
+            where: { id: delivery_id },
+        });
+
+        if (!deliveryService) {
+            throw new NotFoundException('Delivery service not found');
+        }
+
+        const productComboPromises = productComboIds.map((id) =>
+            this.prismaService.productCombo.findUnique({
+                where: { id },
+                select: {
+                    product_option_id: true,
+                    discount: true,
+                    combo_id: true,
+                },
+            }),
+        );
+
+        const order_details = await Promise.all(productComboPromises);
+
+        const result = await this.prismaService.$transaction(async (prisma) => {
+            const order = await prisma.order.create({
+                data: {
+                    user_id: userId,
+                    order_date: new Date(),
+                    name,
+                    phone,
+                    note,
+                },
+            });
+
+            if (!order) {
+                throw new UnprocessableEntityException(`Cannot create order`);
+            }
+
+            const orderCombo = await prisma.orderCombo.create({
+                data: {
+                    order_id: order.id,
+                    combo_id: order_details[0].combo_id,
+                },
+            });
+
+            if (!orderCombo) {
+                throw new UnprocessableEntityException(
+                    `Cannot create order combo`,
+                );
+            }
+
+            let totalOrderPrice = 0;
+            const productOptionThumbs: {
+                product_option: { thumbnail: string };
+            }[] = [];
+
+            const orderDetailPromises = [
+                { product_option_id: productOptionId, discount: 0 },
+                ...order_details,
+            ].map(async (orderDetail) => {
+                const { product_option_id, discount } = orderDetail;
+
+                const productOption = await prisma.productOption.findUnique({
+                    where: { id: product_option_id, stock: { gte: 1 } },
+                    select: {
+                        thumbnail: true,
+                        stock: true,
+                        discount: true,
+                        price_modifier: true,
+                        product: {
+                            select: { price: true },
+                        },
+                    },
+                });
+
+                if (!productOption) {
+                    throw new UnprocessableEntityException(
+                        'There are not enough products left, please try again',
+                    );
+                }
+
+                productOptionThumbs.push({
+                    product_option: {
+                        thumbnail: productOption.thumbnail,
+                    },
+                });
+
+                await prisma.productOption.update({
+                    where: {
+                        id: product_option_id,
+                        stock: { gte: 1 },
+                    },
+                    data: { stock: productOption.stock - 1 },
+                });
+
+                const discountPercent =
+                    product_option_id === productOptionId
+                        ? productOption.discount
+                        : discount;
+                const originalPrice =
+                    productOption.product.price + productOption.price_modifier;
+                const discountPrice = (originalPrice * discountPercent) / 100;
+                const modifiedPrice = originalPrice - discountPrice;
+
+                totalOrderPrice += modifiedPrice;
+
+                return prisma.orderDetail.create({
+                    data: {
+                        order_id: order.id,
+                        product_option_id,
+                        price: modifiedPrice,
+                        quantity: 1,
+                        subtotal: modifiedPrice,
+                    },
+                });
+            });
+
+            const GHTKOrder = await this.createGHTKOrder(order.id, {
+                ...createOrderComboDto,
+                order_details: [
+                    { product_option_id: productOptionId, quantity: 1 },
+                    ...order_details.map((item) => ({
+                        product_option_id: item.product_option_id,
+                        quantity: 1,
+                    })),
+                ],
+            });
 
             if (!GHTKOrder?.success) {
                 throw new UnprocessableEntityException(GHTKOrder.message);

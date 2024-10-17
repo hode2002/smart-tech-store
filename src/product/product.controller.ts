@@ -24,6 +24,9 @@ import { AtJwtGuard } from 'src/auth/guards';
 import { RoleGuard } from 'src/common/guards';
 import { SuccessResponse } from 'src/common/response';
 import { Request } from 'express';
+import { CreateProductComboDto } from 'src/product/dto/create-product-combo.dto';
+import { CreateComboDto } from 'src/product/dto/create-combo.dto';
+import { UpdateProductComboDto } from 'src/product/dto/update-product-combo.dto';
 
 @Controller('api/v1/products')
 export class ProductController {
@@ -48,6 +51,48 @@ export class ProductController {
             statusCode: HttpStatus.OK,
             message: 'Get product images success',
             data: await this.productService.getProductImages(),
+        };
+    }
+
+    @Get('combos')
+    @Permission(Role.ADMIN)
+    @UseGuards(AtJwtGuard, RoleGuard)
+    @HttpCode(HttpStatus.OK)
+    async getAllProductCombo(): Promise<SuccessResponse> {
+        return {
+            statusCode: HttpStatus.OK,
+            message: 'Get all combo success',
+            data: await this.productService.getAllProductCombo(),
+        };
+    }
+
+    @Post('combos')
+    @Permission(Role.ADMIN)
+    @UseGuards(AtJwtGuard, RoleGuard)
+    @HttpCode(HttpStatus.CREATED)
+    async createCombo(
+        @Body() createComboDto: CreateComboDto,
+    ): Promise<SuccessResponse> {
+        return {
+            statusCode: HttpStatus.CREATED,
+            message: 'Create combo success',
+            data: await this.productService.createCombo(createComboDto),
+        };
+    }
+
+    @Post('product-combos')
+    @Permission(Role.ADMIN)
+    @UseGuards(AtJwtGuard, RoleGuard)
+    @HttpCode(HttpStatus.CREATED)
+    async createProductCombo(
+        @Body() createProductComboDto: CreateProductComboDto,
+    ): Promise<SuccessResponse> {
+        return {
+            statusCode: HttpStatus.CREATED,
+            message: 'Create product combo success',
+            data: await this.productService.createProductCombo(
+                createProductComboDto,
+            ),
         };
     }
 
@@ -193,6 +238,39 @@ export class ProductController {
             message: 'Create new product option success',
             data: await this.productService.createProductOption(
                 createProductOptionDto,
+            ),
+        };
+    }
+
+    @Patch('combos/:id')
+    @Permission(Role.ADMIN)
+    @UseGuards(AtJwtGuard, RoleGuard)
+    @HttpCode(HttpStatus.OK)
+    async updateStatusCombo(
+        @Param('id') id: string,
+        @Body('status') status: number,
+    ): Promise<SuccessResponse> {
+        return {
+            statusCode: HttpStatus.OK,
+            message: 'Update combo success',
+            data: await this.productService.updateStatusCombo(id, status),
+        };
+    }
+
+    @Patch('product-combos/:id')
+    @Permission(Role.ADMIN)
+    @UseGuards(AtJwtGuard, RoleGuard)
+    @HttpCode(HttpStatus.OK)
+    async updateProductCombo(
+        @Param('id') id: string,
+        @Body() updateProductComboDto: UpdateProductComboDto,
+    ): Promise<SuccessResponse> {
+        return {
+            statusCode: HttpStatus.OK,
+            message: 'Update product combo success',
+            data: await this.productService.updateProductCombo(
+                id,
+                updateProductComboDto,
             ),
         };
     }

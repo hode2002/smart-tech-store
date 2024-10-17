@@ -81,5 +81,23 @@ export interface ProductDetailDB {
             }[];
             created_at: Date;
         }[];
+        combos?: {
+            product_combos: {
+                discount: number;
+                product_option: {
+                    product: {
+                        name: string;
+                        price: number;
+                        category: {
+                            slug: string;
+                        };
+                    };
+                    sku: string;
+                    price_modifier: number;
+                    thumbnail: string;
+                    slug: string;
+                };
+            }[];
+        }[];
     }[];
 }

@@ -27,6 +27,7 @@ import { Throttle } from '@nestjs/throttler';
 import { Role } from '@prisma/client';
 import { RoleGuard } from 'src/common/guards';
 import { AdminUpdateOrderStatusDto } from './dto/admin-update-order-status.dto';
+import { CreateOrderComboDto } from 'src/order/dto/create-order-combo';
 
 @Controller('api/v1/orders')
 export class OrderController {
@@ -67,6 +68,23 @@ export class OrderController {
             statusCode: HttpStatus.CREATED,
             message: 'Create order success',
             data: await this.orderService.create(userId, createOrderDto),
+        };
+    }
+
+    @Post('combos')
+    @UseGuards(AtJwtGuard)
+    @HttpCode(HttpStatus.CREATED)
+    async createOrderCombo(
+        @GetUserId() userId: string,
+        @Body() createOrderComboDto: CreateOrderComboDto,
+    ): Promise<SuccessResponse> {
+        return {
+            statusCode: HttpStatus.CREATED,
+            message: 'Create order success',
+            data: await this.orderService.createOrderCombo(
+                userId,
+                createOrderComboDto,
+            ),
         };
     }
 
