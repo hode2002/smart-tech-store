@@ -4,6 +4,7 @@ import {
     ForbiddenException,
     Injectable,
     NotFoundException,
+    UnprocessableEntityException,
 } from '@nestjs/common';
 import {
     CreateProductDto,
@@ -16,6 +17,9 @@ import { Request } from 'express';
 import { generateSlug, pagination } from 'src/utils';
 import { ProductDetailDB, ProductDetailResponse } from './types';
 import { MediaService } from 'src/media/media.service';
+import { CreateProductComboDto } from 'src/product/dto/create-product-combo.dto';
+import { CreateComboDto } from 'src/product/dto/create-combo.dto';
+import { UpdateProductComboDto } from 'src/product/dto/update-product-combo.dto';
 
 @Injectable()
 export class ProductService {
@@ -125,6 +129,253 @@ export class ProductService {
                     product_options: await Promise.all(productOptionPromises),
                 }),
         };
+    }
+
+    async getAllProductCombo() {
+        return await this.prismaService.combo.findMany({
+            orderBy: {
+                created_at: 'asc',
+            },
+            select: {
+                id: true,
+                created_at: true,
+                status: true,
+                product_option: {
+                    select: {
+                        thumbnail: true,
+                        price_modifier: true,
+                        stock: true,
+                        sku: true,
+                        discount: true,
+                        slug: true,
+                        product: {
+                            select: {
+                                id: true,
+                                name: true,
+                                price: true,
+                            },
+                        },
+                    },
+                },
+                product_combos: {
+                    select: {
+                        id: true,
+                        discount: true,
+                        product_option: {
+                            select: {
+                                id: true,
+                                thumbnail: true,
+                                price_modifier: true,
+                                stock: true,
+                                sku: true,
+                                discount: true,
+                                slug: true,
+                                product: {
+                                    select: {
+                                        id: true,
+                                        name: true,
+                                        price: true,
+                                    },
+                                },
+                            },
+                        },
+                    },
+                },
+            },
+        });
+    }
+
+    async createCombo(createComboDto: CreateComboDto) {
+        const { mainProductId, productCombos } = createComboDto;
+        if (!mainProductId) {
+            throw new BadRequestException('Missing product option id!');
+        }
+
+        const isExist = await this.prismaService.combo.findFirst({
+            where: { product_option_id: mainProductId, status: 0 },
+        });
+
+        if (isExist) {
+            throw new ConflictException('Combo already exists');
+        }
+
+        const result = await this.prismaService.$transaction(async (prisma) => {
+            const combo = await prisma.combo.create({
+                data: {
+                    product_option_id: mainProductId,
+                },
+                include: {
+                    product_option: true,
+                },
+            });
+
+            const createProductComboPromises = productCombos.map((item) =>
+                prisma.productCombo.create({
+                    data: {
+                        combo_id: combo.id,
+                        product_option_id: item.productComboId,
+                        discount: item.discount,
+                    },
+                }),
+            );
+
+            await Promise.all(createProductComboPromises);
+
+            return {
+                comboId: combo.id,
+            };
+        });
+
+        return await this.prismaService.combo.findUnique({
+            where: { id: result.comboId, status: 0 },
+            select: {
+                id: true,
+                created_at: true,
+                status: true,
+                product_option: {
+                    select: {
+                        thumbnail: true,
+                        price_modifier: true,
+                        stock: true,
+                        sku: true,
+                        discount: true,
+                        slug: true,
+                        product: {
+                            select: {
+                                id: true,
+                                name: true,
+                                price: true,
+                            },
+                        },
+                    },
+                },
+                product_combos: {
+                    select: {
+                        id: true,
+                        discount: true,
+                        product_option: {
+                            select: {
+                                id: true,
+                                thumbnail: true,
+                                price_modifier: true,
+                                stock: true,
+                                sku: true,
+                                discount: true,
+                                slug: true,
+                                product: {
+                                    select: {
+                                        id: true,
+                                        name: true,
+                                        price: true,
+                                    },
+                                },
+                            },
+                        },
+                    },
+                },
+            },
+        });
+    }
+
+    async createProductCombo(createProductComboDto: CreateProductComboDto) {
+        const { comboId, discount, productOptionId } = createProductComboDto;
+
+        const combo = await this.prismaService.combo.findUnique({
+            where: { id: comboId },
+            include: {
+                product_option: true,
+                product_combos: true,
+            },
+        });
+
+        if (!combo) {
+            throw new NotFoundException('Combo not found!');
+        }
+
+        if (combo.product_option_id === productOptionId) {
+            throw new BadRequestException('Invalid product option id!');
+        }
+
+        if (
+            combo.product_combos.find(
+                (p) => p.product_option_id === productOptionId,
+            )
+        ) {
+            throw new BadRequestException('Product already exist in combo!');
+        }
+
+        const productCombo = await this.prismaService.productCombo.create({
+            data: {
+                combo_id: comboId,
+                product_option_id: productOptionId,
+                discount,
+            },
+            include: {
+                combo: true,
+                product_option: true,
+            },
+        });
+
+        if (!productCombo) {
+            throw new UnprocessableEntityException(
+                'Create failed. Please try again!',
+            );
+        }
+
+        return productCombo;
+    }
+
+    async updateStatusCombo(id: string, status: number) {
+        if (!id) {
+            throw new BadRequestException('Missing combo id!');
+        }
+
+        const updated = await this.prismaService.combo.update({
+            where: { id },
+            data: { status },
+            select: {
+                id: true,
+                status: true,
+            },
+        });
+
+        return updated;
+    }
+
+    async updateProductCombo(
+        comboId: string,
+        updateProductComboDto: UpdateProductComboDto,
+    ) {
+        if (!comboId) {
+            throw new BadRequestException('Missing combo id!');
+        }
+
+        const combo = await this.prismaService.combo.findUnique({
+            where: { id: comboId },
+        });
+
+        if (!combo) {
+            throw new NotFoundException('Combo not found!');
+        }
+
+        const updateProductComboPromises =
+            updateProductComboDto.productCombos.map((item) => {
+                return this.prismaService.productCombo.updateMany({
+                    where: {
+                        combo_id: comboId,
+                        product_option_id: item.product_option_id,
+                    },
+                    data: {
+                        discount: item.discount,
+                    },
+                });
+            });
+
+        await Promise.all(updateProductComboPromises);
+
+        return await this.prismaService.combo.findUnique({
+            where: { id: comboId },
+        });
     }
 
     async createProductOption(createProductOptionDto: CreateProductOptionDto) {
@@ -1218,6 +1469,51 @@ export class ProductService {
                                     },
                                 },
                                 created_at: true,
+                            },
+                        },
+                        combos: {
+                            where: { status: 0 },
+                            take: 1,
+                            select: {
+                                product_combos: {
+                                    select: {
+                                        id: true,
+                                        discount: true,
+                                        product_option: {
+                                            select: {
+                                                product: {
+                                                    select: {
+                                                        name: true,
+                                                        price: true,
+                                                        category: {
+                                                            select: {
+                                                                slug: true,
+                                                            },
+                                                        },
+                                                    },
+                                                },
+                                                id: true,
+                                                sku: true,
+                                                price_modifier: true,
+                                                thumbnail: true,
+                                                slug: true,
+                                                technical_specs: {
+                                                    select: {
+                                                        specs: {
+                                                            where: {
+                                                                key: 'Khối lượng',
+                                                            },
+                                                            select: {
+                                                                key: true,
+                                                                value: true,
+                                                            },
+                                                        },
+                                                    },
+                                                },
+                                            },
+                                        },
+                                    },
+                                },
                             },
                         },
                     },
