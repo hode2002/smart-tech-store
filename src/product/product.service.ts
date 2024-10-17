@@ -330,6 +330,26 @@ export class ProductService {
             throw new BadRequestException('Missing combo id!');
         }
 
+        if (status === 0) {
+            const combo = await this.prismaService.combo.findUnique({
+                where: { id },
+            });
+
+            if (!combo) {
+                throw new NotFoundException('Combo not found');
+            }
+
+            const isExist = await this.prismaService.combo.findFirst({
+                where: { product_option_id: combo.product_option_id, status },
+            });
+
+            if (isExist) {
+                throw new ForbiddenException(
+                    '1 product cannot have 2 combos at the same time',
+                );
+            }
+        }
+
         const updated = await this.prismaService.combo.update({
             where: { id },
             data: { status },
