@@ -32,6 +32,10 @@ export type ReviewItem = {
     };
     star: number;
     comment: string;
+    video_url?: string;
+    review_images?: {
+        image_url: string;
+    }[];
     children: {
         id: string;
         user: {
@@ -66,6 +70,39 @@ export const ProductImages = z.array(
 );
 
 export type ProductImagesType = z.TypeOf<typeof ProductImages>;
+
+const combo = z.object({
+    product_combos: z.array(
+        z.object({
+            id: z.string(),
+            discount: z.number(),
+            product_option: z.object({
+                product: z.object({
+                    name: z.string(),
+                    price: z.number(),
+                    category: z.object({
+                        slug: z.string(),
+                    }),
+                }),
+                id: z.string(),
+                sku: z.string(),
+                price_modifier: z.number(),
+                thumbnail: z.string(),
+                slug: z.string(),
+                technical_specs: z.object({
+                    specs: z.array(
+                        z.object({
+                            key: z.string(),
+                            value: z.string(),
+                        }),
+                    ),
+                }),
+            }),
+        }),
+    ),
+});
+
+export type ComboType = z.TypeOf<typeof combo>;
 
 export const ProductOption = z.object({
     id: z.string(),
@@ -133,6 +170,7 @@ export const ProductOption = z.object({
         details: z.array(z.number()),
         overall: z.number(),
     }),
+    combos: z.array(combo).optional(),
 });
 
 export type ProductOptionType = z.TypeOf<typeof ProductOption>;

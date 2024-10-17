@@ -19,6 +19,22 @@ export type CreateOrderType = {
     }[];
 };
 
+export type CreateOrderComboType = {
+    voucherCodes?: string[];
+    name: string;
+    phone: string;
+    address: string;
+    province: string;
+    district: string;
+    ward: string;
+    hamlet?: string;
+    note?: string;
+    delivery_id: string;
+    payment_method: string;
+    productOptionId: string;
+    productComboIds: string[];
+};
+
 export type CreateOrderResponseType = {
     statusCode: number;
     message: string;
@@ -217,6 +233,27 @@ class OrderApiRequest {
         try {
             const response: CreateOrderResponseType = await http.post(
                 '/orders',
+                body,
+                {
+                    headers: {
+                        Authorization: 'Bearer ' + token,
+                    },
+                },
+            );
+            return response;
+        } catch (error: any) {
+            toast({
+                title: 'Error',
+                description: error?.payload?.message ?? 'Lỗi không xác định',
+                variant: 'destructive',
+            });
+        }
+    }
+
+    async createOrderCombo(token: string, body: CreateOrderComboType) {
+        try {
+            const response: CreateOrderResponseType = await http.post(
+                '/orders/combos',
                 body,
                 {
                     headers: {

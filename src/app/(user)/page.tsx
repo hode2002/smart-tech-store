@@ -118,16 +118,18 @@ export default function Home() {
         if (token) {
             notificationApiRequest
                 .getUserNotification(token)
-                .then((response: GetUserNotificationResponseType) =>
-                    dispatch(
-                        setNotificationList(
-                            response?.data.map((i) => ({
-                                ...i.notification,
-                                status: i.status,
-                            })),
-                        ),
-                    ),
-                );
+                .then((response: GetUserNotificationResponseType) => {
+                    if (response?.data) {
+                        dispatch(
+                            setNotificationList(
+                                response.data?.map((i) => ({
+                                    ...i.notification,
+                                    status: i.status,
+                                })),
+                            ),
+                        );
+                    }
+                });
         }
     }, [
         token,

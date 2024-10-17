@@ -5,13 +5,14 @@ import { Button } from '@/components/ui/button';
 import CheckoutTable from '@/app/(user)/user/checkout/checkout-table';
 import UserAddress from '@/app/(user)/user/checkout/user-address';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useAppDispatch, useAppSelector } from '@/lib/store';
 import { formatPrice, notifyContentByStatus } from '@/lib/utils';
 import { toast } from '@/components/ui/use-toast';
 import { ReloadIcon } from '@radix-ui/react-icons';
 import orderApiRequest, {
     CalculateShippingFeeType,
+    CreateOrderComboType,
     CreateOrderResponseType,
     CreateOrderType,
 } from '@/apiRequests/order';
@@ -31,6 +32,10 @@ import notificationApiRequest, {
 } from '@/apiRequests/notification';
 
 export default function CheckoutPage() {
+    const searchParams = useSearchParams();
+    const proId = searchParams.get('proId');
+    const comboIds = searchParams.get('comboIds');
+
     const router = useRouter();
     const dispatch = useAppDispatch();
     const productCheckout = useAppSelector((state) => state.user.checkout);
@@ -129,7 +134,22 @@ export default function CheckoutPage() {
         if (loading) return;
         setLoading(true);
 
-        const orderInfo: CreateOrderType = {
+        const totalPrice = productPrice + deliveryCost;
+        const LIMIT_VNPAY_PAYMENT_PRICE = 20000000;
+
+        if (paymentMethod === 'vnpay') {
+            if (totalPrice < 0 || totalPrice > LIMIT_VNPAY_PAYMENT_PRICE) {
+                toast({
+                    title: 'Success',
+                    description:
+                        'VNPAY chỉ hỗ trợ thanh toán trong khoảng 1 <= <=' +
+                        formatPrice(LIMIT_VNPAY_PAYMENT_PRICE),
+                });
+            }
+            return setLoading(false);
+        }
+
+        const orderInfo = {
             voucherCodes: voucherList.map((i) => i.code),
             name: profile.name as string,
             phone: profile.phone as string,
@@ -141,16 +161,33 @@ export default function CheckoutPage() {
             note: 'Giao buổi trưa',
             delivery_id: selectedDelivery.id,
             payment_method: paymentMethod,
-            order_details: productCheckout.map((product) => ({
-                product_option_id: product.id,
-                quantity: product.quantity,
-            })),
+            ...(proId && comboIds
+                ? {
+                      productOptionId: proId,
+                      productComboIds: comboIds
+                          ?.split(',')
+                          .filter((i) => i.length > 0),
+                  }
+                : {
+                      order_details: productCheckout.map((product) => ({
+                          product_option_id: product.id,
+                          quantity: product.quantity,
+                      })),
+                  }),
         };
 
-        const createOrderResponse = (await orderApiRequest.createOrder(
-            token,
-            orderInfo,
-        )) as CreateOrderResponseType;
+        let createOrderResponse: CreateOrderResponseType;
+        if (proId && comboIds) {
+            createOrderResponse = (await orderApiRequest.createOrderCombo(
+                token,
+                orderInfo as CreateOrderComboType,
+            )) as CreateOrderResponseType;
+        } else {
+            createOrderResponse = (await orderApiRequest.createOrder(
+                token,
+                orderInfo as CreateOrderType,
+            )) as CreateOrderResponseType;
+        }
 
         setLoading(false);
         if (createOrderResponse?.statusCode === 201) {
@@ -175,18 +212,7 @@ export default function CheckoutPage() {
                 0,
             );
 
-            const totalPrice = productPrice + deliveryCost;
-            const LIMIT_VNPAY_PAYMENT_PRICE = 20000000;
             if (paymentMethod === 'vnpay') {
-                if (totalPrice < 0 || totalPrice > LIMIT_VNPAY_PAYMENT_PRICE) {
-                    return toast({
-                        title: 'Success',
-                        description:
-                            'VNPAY chỉ hỗ trợ thanh toán trong khoảng 1 <= <=' +
-                            formatPrice(LIMIT_VNPAY_PAYMENT_PRICE),
-                    });
-                }
-
                 const paymentResponse =
                     (await orderApiRequest.createVnpayPayment(token, {
                         amount: totalPrice,
@@ -383,26 +409,33 @@ export default function CheckoutPage() {
                                 </div>
 
                                 <div className="flex justify-between items-center flex-wrap mt-6">
-                                    <Link href={'/user/cart'}>
-                                        <Button
-                                            variant={'outline'}
-                                            className="w-auto md:w-[180px] h-[40px]"
-                                        >
-                                            Quay lại
-                                        </Button>
-                                    </Link>
-
+                                    {!(proId && comboIds) && (
+                                        <Link href={'/user/cart'}>
+                                            <Button
+                                                variant={'outline'}
+                                                className="w-auto md:w-[180px] h-[40px]"
+                                            >
+                                                Quay lại
+                                            </Button>
+                                        </Link>
+                                    )}
                                     {loading ? (
                                         <Button
                                             disabled
-                                            className="w-auto md:w-[180px] h-[40px]"
+                                            className={
+                                                `${proId && comboIds ? ' md:w-full' : ' md:w-[180px]'} ` +
+                                                'w-auto h-[40px]'
+                                            }
                                         >
                                             <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />
                                         </Button>
                                     ) : (
                                         <Button
                                             variant={'default'}
-                                            className="w-auto md:w-[180px] h-[40px]"
+                                            className={
+                                                `${proId && comboIds ? ' md:w-full' : ' md:w-[180px]'} ` +
+                                                'w-auto h-[40px]'
+                                            }
                                             onClick={handlePayment}
                                         >
                                             Xác nhận thanh toán

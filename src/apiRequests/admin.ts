@@ -363,6 +363,93 @@ export type GetOptionValueResponseType = {
     data: OptionValueType[];
 };
 
+export type GetAllComboResponseType = {
+    statusCode: number;
+    message: string;
+    data: ComboResponseType[];
+};
+
+export type CreateComboBodyType = {
+    mainProductId: string;
+    productCombos: { productComboId: string; discount: number }[];
+};
+
+export type CreateProductComboType = {
+    comboId: string;
+    productOptionId: string;
+    discount: number;
+};
+
+export type CreateComboResponseType = {
+    statusCode: number;
+    message: string;
+    data: ComboResponseType;
+};
+
+export type UpdateComboResponseType = {
+    statusCode: number;
+    message: string;
+    data: {
+        id: string;
+        status: number;
+    };
+};
+
+export type UpdateProductComboBodyType = {
+    productCombos: {
+        product_option_id: string;
+        discount: number;
+    }[];
+};
+
+export type UpdateProductComboResponseType = {
+    statusCode: number;
+    message: string;
+    data: {
+        productCombos: {
+            product_option_id: string;
+            discount: number;
+        }[];
+    };
+};
+
+export type ComboResponseType = {
+    id: string;
+    created_at: string;
+    status: number;
+    product_option: {
+        thumbnail: string;
+        price_modifier: number;
+        stock: number;
+        sku: string;
+        discount: number;
+        slug: string;
+        product: {
+            id: string;
+            name: string;
+            price: number;
+        };
+    };
+    product_combos: {
+        id: string;
+        discount: number;
+        product_option: {
+            id: string;
+            thumbnail: string;
+            price_modifier: number;
+            stock: number;
+            sku: string;
+            discount: number;
+            slug: string;
+            product: {
+                id: string;
+                name: string;
+                price: number;
+            };
+        };
+    }[];
+};
+
 class AdminApiRequest {
     async getAllUsers(token: string) {
         try {
@@ -533,6 +620,97 @@ class AdminApiRequest {
         try {
             const response: ProductPaginationResponseType = await http.get(
                 `/products/management?page=${page}&limit=${limit}`,
+                {
+                    headers: {
+                        Authorization: 'Bearer ' + token,
+                    },
+                },
+            );
+            return response;
+        } catch (error: any) {
+            toast({
+                title: 'Error',
+                description: error?.payload?.message ?? 'Lỗi không xác định',
+                variant: 'destructive',
+            });
+            return error;
+        }
+    }
+
+    async getCombos(token: string) {
+        try {
+            const response: GetAllComboResponseType = await http.get(
+                '/products/combos',
+                {
+                    headers: {
+                        Authorization: 'Bearer ' + token,
+                    },
+                },
+            );
+            return response;
+        } catch (error: any) {
+            toast({
+                title: 'Error',
+                description: error?.payload?.message ?? 'Lỗi không xác định',
+                variant: 'destructive',
+            });
+            return error;
+        }
+    }
+
+    async createCombo(token: string, body: CreateComboBodyType) {
+        try {
+            const response: CreateComboResponseType = await http.post(
+                '/products/combos',
+                body,
+                {
+                    headers: {
+                        Authorization: 'Bearer ' + token,
+                    },
+                },
+            );
+            return response;
+        } catch (error: any) {
+            toast({
+                title: 'Error',
+                description: error?.payload?.message ?? 'Lỗi không xác định',
+                variant: 'destructive',
+            });
+            return error;
+        }
+    }
+
+    async updateCombo(token: string, id: string, body: { status: number }) {
+        try {
+            const response: UpdateComboResponseType = await http.patch(
+                '/products/combos/' + id,
+                body,
+                {
+                    headers: {
+                        Authorization: 'Bearer ' + token,
+                    },
+                },
+            );
+            return response;
+        } catch (error: any) {
+            toast({
+                title: 'Error',
+                description: error?.payload?.message ?? 'Lỗi không xác định',
+                variant: 'destructive',
+            });
+            return error;
+        }
+    }
+
+    async updateProductCombo(
+        token: string,
+        id: string,
+        body: UpdateProductComboBodyType,
+    ) {
+        try {
+            const response: UpdateProductComboResponseType = await http.patch(
+                '/products/product-combos/' + id,
+                body,
                 {
                     headers: {
                         Authorization: 'Bearer ' + token,
@@ -983,12 +1161,15 @@ class AdminApiRequest {
 
     async uploadFile(token: string, file: File, folder?: string) {
         const formData = new FormData();
-        formData.append('image', file);
+        const fileType = file.type?.split('/')[0] ?? 'image';
+        formData.append(fileType, file);
         folder && formData.append('folder', folder);
+        const url =
+            fileType === 'image' ? '/medias/upload' : '/medias/upload/video';
 
         try {
             const response: UploadSingleFileResponseType = await http.post(
-                '/medias/upload',
+                url,
                 formData,
                 {
                     headers: {
@@ -1012,7 +1193,7 @@ class AdminApiRequest {
     async uploadMultipleFiles(token: string, files: FileList, folder?: string) {
         const formData = new FormData();
         Array.from(files).forEach((file) => {
-            formData.append(`images`, file);
+            formData.append('images', file);
         });
         folder && formData.append('folder', folder);
 

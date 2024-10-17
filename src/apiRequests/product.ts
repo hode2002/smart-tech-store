@@ -12,6 +12,8 @@ export type CreateProductReviewType = {
     product_option_id: string;
     star: number;
     comment: string;
+    video_url?: string;
+    images?: string[];
 };
 
 export type ProductReviewResponseType = {
@@ -39,6 +41,10 @@ export type ProductReview = {
     };
     star: number;
     comment: string;
+    video_url?: string;
+    review_images?: {
+        image_url: string;
+    }[];
     children: {
         id: string;
         user: {

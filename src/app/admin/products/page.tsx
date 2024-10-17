@@ -28,7 +28,12 @@ import {
     ProductDetailType,
     ProductPaginationResponseType,
 } from '@/schemaValidations/product.schema';
-import adminApiRequest, { CreateBrandResponseType } from '@/apiRequests/admin';
+import adminApiRequest, {
+    ComboResponseType,
+    CreateBrandResponseType,
+    CreateComboResponseType,
+    GetAllComboResponseType,
+} from '@/apiRequests/admin';
 import CategoryTable from '@/app/admin/products/(category)/category-table';
 import BrandTable from '@/app/admin/products/(brands)/brand-table';
 import {
@@ -69,6 +74,8 @@ import {
 } from '@/components/ui/alert-dialog';
 import { useRouter } from 'next/navigation';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
+import ComboTable from '@/app/admin/products/(combo)/combo-table';
+import { AddComboModal } from '@/app/admin/products/(combo)/add-combo-modal';
 
 export default function Product() {
     const token = useAppSelector((state) => state.auth.accessToken);
@@ -77,6 +84,8 @@ export default function Product() {
     const [filterProducts, setFilterProducts] = useState<ProductDetailType[]>(
         [],
     );
+    const [combos, setCombos] = useState<ComboResponseType[]>([]);
+
     const [pagination, setPagination] = useState<Page>();
     const [currPage, setCurrPage] = useState<number>(1);
 
@@ -120,11 +129,22 @@ export default function Product() {
         return setCategories([]);
     }, []);
 
+    const fetchCombos = useCallback(async () => {
+        const response = (await adminApiRequest.getCombos(
+            token,
+        )) as GetAllComboResponseType;
+        if (response?.statusCode === 200) {
+            return setCombos(response.data);
+        }
+        return setCombos([]);
+    }, [token]);
+
     useEffect(() => {
         fetchProducts().then();
         fetchBrands().then();
         fetchCategories().then();
-    }, [fetchProducts, fetchBrands, fetchCategories]);
+        fetchCombos().then();
+    }, [fetchProducts, fetchBrands, fetchCategories, fetchCombos]);
 
     useEffect(() => {
         setFilterProducts(products);
@@ -170,6 +190,28 @@ export default function Product() {
                 description: response.message,
             });
         }
+    };
+
+    const handleAddCombo = async (
+        mainProductId: string,
+        productCombos: { productComboId: string; discount: number }[],
+    ) => {
+        const response: CreateComboResponseType =
+            await adminApiRequest.createCombo(token, {
+                mainProductId,
+                productCombos,
+            });
+
+        if (response?.statusCode === 201) {
+            setCombos((prev) => [...prev, response.data]);
+            toast({
+                title: 'Success',
+                description: response.message,
+            });
+            return true;
+        }
+
+        return false;
     };
 
     const [searchText, setSearchText] = useState<string>('');
@@ -220,6 +262,7 @@ export default function Product() {
                     <TabsTrigger value="all">Sản phẩm</TabsTrigger>
                     <TabsTrigger value="category">Danh mục</TabsTrigger>
                     <TabsTrigger value="brand">Thương hiệu</TabsTrigger>
+                    <TabsTrigger value="combo">Combo</TabsTrigger>
                 </TabsList>
                 <div className="md:ml-auto md:flex items-center mt-4 md:mt-0">
                     <TabsContent
@@ -363,6 +406,20 @@ export default function Product() {
                             </span>
                         </Button>
                     </TabsContent>
+                    <TabsContent
+                        value="combo"
+                        className="flex items-center gap-2 capitalize mt-0"
+                    >
+                        <Button size="sm" className="h-7 gap-1 py-4">
+                            <PlusCircle className="h-3.5 w-3.5" />
+                            <span className="not-sr-only whitespace-nowrap">
+                                <AddComboModal
+                                    products={products}
+                                    handleAddCombo={handleAddCombo}
+                                />
+                            </span>
+                        </Button>
+                    </TabsContent>
                 </div>
             </div>
             <ScrollArea>
@@ -474,6 +531,17 @@ export default function Product() {
                         </CardHeader>
                         <CardContent>
                             <BrandTable brands={brands} />
+                            <ScrollBar orientation="horizontal" />
+                        </CardContent>
+                    </Card>
+                </TabsContent>
+                <TabsContent value="combo">
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Combo</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <ComboTable combos={combos} />
                             <ScrollBar orientation="horizontal" />
                         </CardContent>
                     </Card>
