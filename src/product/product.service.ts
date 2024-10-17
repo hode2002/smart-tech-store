@@ -1595,177 +1595,129 @@ export class ProductService {
     }
 
     async getByParameters(request: Request) {
-        const products = await this.prismaService.product.findMany({
-            where: {
-                category: { is_deleted: false },
-                brand: { is_deleted: false },
-                product_options: {
-                    some: {
-                        technical_specs: {
-                            product_option: {
-                                stock: { gte: 1 },
-                                product: {
-                                    AND: [
-                                        {
-                                            ...(request.query['ca'] && {
-                                                category: {
-                                                    name: {
-                                                        contains: <string>(
-                                                            request.query['ca']
-                                                        ),
-                                                    },
-                                                },
-                                            }),
-                                        },
-                                        {
-                                            ...(request.query['b'] && {
-                                                brand: {
-                                                    OR: (
-                                                        request.query[
-                                                            'b'
-                                                        ] as string
-                                                    )
-                                                        .split(',')
-                                                        .map((item) => ({
-                                                            name: {
-                                                                contains: item,
-                                                            },
-                                                        })),
-                                                },
-                                            }),
-                                        },
-                                        {
-                                            price: {
-                                                ...(request.query['pf'] && {
-                                                    gte:
-                                                        Number(
-                                                            request.query['pf'],
-                                                        ) * 1000000,
-                                                }),
-                                                ...(request.query['pt'] && {
-                                                    lte:
-                                                        Number(
-                                                            request.query['pt'],
-                                                        ) * 1000000,
-                                                }),
+        const filters = {
+            category: { is_deleted: false },
+            brand: { is_deleted: false },
+            product_options: {
+                some: {
+                    technical_specs: {
+                        product_option: {
+                            stock: { gte: 1 },
+                            product: {
+                                AND: [
+                                    request.query['ca'] && {
+                                        category: {
+                                            name: {
+                                                contains: <string>(
+                                                    request.query['ca']
+                                                ),
                                             },
                                         },
-                                    ],
+                                    },
+                                    request.query['b'] && {
+                                        brand: {
+                                            OR: (request.query['b'] as string)
+                                                ?.split(',')
+                                                .map((item) => ({
+                                                    name: { contains: item },
+                                                })),
+                                        },
+                                    },
+                                    {
+                                        price: {
+                                            ...(request.query['pf'] && {
+                                                gte:
+                                                    Number(
+                                                        request.query['pf'],
+                                                    ) * 1000000,
+                                            }),
+                                            ...(request.query['pt'] && {
+                                                lte:
+                                                    Number(
+                                                        request.query['pt'],
+                                                    ) * 1000000,
+                                            }),
+                                        },
+                                    },
+                                ].filter(Boolean),
+                            },
+                        },
+                        AND: [
+                            request.query['ro'] && {
+                                specs: {
+                                    some: {
+                                        OR: (request.query['ro'] as string)
+                                            ?.split(',')
+                                            .map((item) => ({
+                                                value: { contains: item },
+                                            })),
+                                    },
                                 },
                             },
-                            AND: [
-                                {
-                                    specs: {
-                                        some: {
-                                            ...(request.query['ro'] && {
-                                                OR: (
-                                                    request.query[
-                                                        'ro'
-                                                    ] as string
-                                                )
-                                                    .split(',')
-                                                    .map((item) => ({
-                                                        value: {
-                                                            contains: item,
-                                                        },
-                                                    })),
-                                            }),
+                            request.query['co'] && {
+                                specs: {
+                                    some: {
+                                        value: {
+                                            contains: <string>(
+                                                request.query['co']
+                                            ),
                                         },
                                     },
                                 },
-                                {
-                                    specs: {
-                                        some: {
-                                            ...(request.query['co'] && {
-                                                value: {
-                                                    contains: <string>(
-                                                        request.query['co']
-                                                    ),
-                                                },
-                                            }),
-                                        },
+                            },
+                            request.query['ra'] && {
+                                specs: {
+                                    some: {
+                                        OR: (request.query['ra'] as string)
+                                            ?.split(',')
+                                            .map((item) => ({
+                                                value: { contains: item },
+                                            })),
                                     },
                                 },
-                                {
-                                    specs: {
-                                        some: {
-                                            ...(request.query['ra'] && {
-                                                OR: (
-                                                    request.query[
-                                                        'ra'
-                                                    ] as string
-                                                )
-                                                    .split(',')
-                                                    .map((item) => ({
-                                                        value: {
-                                                            contains: item,
-                                                        },
-                                                    })),
-                                            }),
-                                        },
+                            },
+                            request.query['c'] && {
+                                specs: {
+                                    some: {
+                                        OR: (request.query['c'] as string)
+                                            ?.split(',')
+                                            .map((item) => ({
+                                                value: { contains: item },
+                                            })),
                                     },
                                 },
-                                {
-                                    specs: {
-                                        some: {
-                                            ...(request.query['c'] && {
-                                                OR: (
-                                                    request.query['c'] as string
-                                                )
-                                                    .split(',')
-                                                    .map((item) => ({
-                                                        value: {
-                                                            contains: item,
-                                                        },
-                                                    })),
-                                            }),
-                                        },
+                            },
+                            request.query['p'] && {
+                                specs: {
+                                    some: {
+                                        OR: (request.query['p'] as string)
+                                            ?.split(',')
+                                            .map((item) => ({
+                                                value: { gte: item },
+                                            })),
                                     },
                                 },
-                                {
-                                    specs: {
-                                        some: {
-                                            ...(request.query['p'] && {
-                                                OR: (
-                                                    request.query['p'] as string
-                                                )
-                                                    .split(',')
-                                                    .map((item) => ({
-                                                        value: {
-                                                            gte: item,
-                                                        },
-                                                    })),
-                                            }),
-                                        },
+                            },
+                            request.query['o'] && {
+                                specs: {
+                                    some: {
+                                        OR: (request.query['o'] as string)
+                                            ?.split(',')
+                                            .map((item) => ({
+                                                value: { contains: item },
+                                            })),
                                     },
                                 },
-                                {
-                                    specs: {
-                                        some: {
-                                            ...(request.query['o'] && {
-                                                OR: (
-                                                    request.query['o'] as string
-                                                )
-                                                    .split(',')
-                                                    .map((item) => ({
-                                                        value: {
-                                                            contains: item,
-                                                        },
-                                                    })),
-                                            }),
-                                        },
-                                    },
-                                },
-                            ],
-                        },
-                    },
-                    none: {
-                        stock: {
-                            equals: 0,
-                        },
+                            },
+                        ].filter(Boolean),
                     },
                 },
+                none: { stock: { equals: 0 } },
             },
+        };
+
+        const products = await this.prismaService.product.findMany({
+            where: filters,
             select: {
                 id: true,
                 name: true,
@@ -1797,163 +1749,6 @@ export class ProductService {
                 },
                 product_options: {
                     where: {
-                        technical_specs: {
-                            product_option: {
-                                stock: { gte: 1 },
-                                product: {
-                                    AND: [
-                                        {
-                                            ...(request.query['ca'] && {
-                                                category: {
-                                                    name: {
-                                                        contains: <string>(
-                                                            request.query['ca']
-                                                        ),
-                                                    },
-                                                },
-                                            }),
-                                        },
-                                        {
-                                            ...(request.query['b'] && {
-                                                brand: {
-                                                    OR: (
-                                                        request.query[
-                                                            'b'
-                                                        ] as string
-                                                    )
-                                                        .split(',')
-                                                        .map((item) => ({
-                                                            name: {
-                                                                contains: item,
-                                                            },
-                                                        })),
-                                                },
-                                            }),
-                                        },
-                                        {
-                                            price: {
-                                                ...(request.query['pf'] && {
-                                                    gte:
-                                                        Number(
-                                                            request.query['pf'],
-                                                        ) * 1000000,
-                                                }),
-                                                ...(request.query['pt'] && {
-                                                    lte:
-                                                        Number(
-                                                            request.query['pt'],
-                                                        ) * 1000000,
-                                                }),
-                                            },
-                                        },
-                                    ],
-                                },
-                            },
-                            AND: [
-                                {
-                                    specs: {
-                                        some: {
-                                            ...(request.query['ro'] && {
-                                                OR: (
-                                                    request.query[
-                                                        'ro'
-                                                    ] as string
-                                                )
-                                                    .split(',')
-                                                    .map((item) => ({
-                                                        value: {
-                                                            contains: item,
-                                                        },
-                                                    })),
-                                            }),
-                                        },
-                                    },
-                                },
-                                {
-                                    specs: {
-                                        some: {
-                                            ...(request.query['co'] && {
-                                                value: {
-                                                    contains: <string>(
-                                                        request.query['co']
-                                                    ),
-                                                },
-                                            }),
-                                        },
-                                    },
-                                },
-                                {
-                                    specs: {
-                                        some: {
-                                            ...(request.query['ra'] && {
-                                                OR: (
-                                                    request.query[
-                                                        'ra'
-                                                    ] as string
-                                                )
-                                                    .split(',')
-                                                    .map((item) => ({
-                                                        value: {
-                                                            contains: item,
-                                                        },
-                                                    })),
-                                            }),
-                                        },
-                                    },
-                                },
-                                {
-                                    specs: {
-                                        some: {
-                                            ...(request.query['c'] && {
-                                                OR: (
-                                                    request.query['c'] as string
-                                                )
-                                                    .split(',')
-                                                    .map((item) => ({
-                                                        value: {
-                                                            contains: item,
-                                                        },
-                                                    })),
-                                            }),
-                                        },
-                                    },
-                                },
-                                {
-                                    specs: {
-                                        some: {
-                                            ...(request.query['p'] && {
-                                                OR: (
-                                                    request.query['p'] as string
-                                                )
-                                                    .split(',')
-                                                    .map((item) => ({
-                                                        value: {
-                                                            gte: item,
-                                                        },
-                                                    })),
-                                            }),
-                                        },
-                                    },
-                                },
-                                {
-                                    specs: {
-                                        some: {
-                                            ...(request.query['o'] && {
-                                                OR: (
-                                                    request.query['o'] as string
-                                                )
-                                                    .split(',')
-                                                    .map((item) => ({
-                                                        value: {
-                                                            contains: item,
-                                                        },
-                                                    })),
-                                            }),
-                                        },
-                                    },
-                                },
-                            ],
-                        },
                         is_deleted: false,
                         stock: { gte: 1 },
                     },
@@ -1987,18 +1782,14 @@ export class ProductService {
                         product_option_value: {
                             select: {
                                 option: {
-                                    select: {
-                                        name: true,
-                                    },
+                                    select: { name: true },
                                 },
                                 value: true,
                                 adjust_price: true,
                             },
                         },
                         reviews: {
-                            where: {
-                                parent_id: null,
-                            },
+                            where: { parent_id: null },
                             select: {
                                 id: true,
                                 user: {
@@ -2034,6 +1825,7 @@ export class ProductService {
                 },
             },
         });
+
         return products.map((product) => this.convertProductResponse(product));
     }
 
