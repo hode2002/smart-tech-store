@@ -69,8 +69,7 @@ export class VoucherService {
 
         const start_date = moment.utc(voucher.start_date, 'DD-MM-YYYY');
         const end_date = moment.utc(voucher.end_date, 'DD-MM-YYYY');
-        const date = moment(new Date()).format('YYYY-DD-MM');
-        const today = moment.utc(date);
+        const today = moment.utc();
 
         const isValidDate =
             today.isValid() &&
