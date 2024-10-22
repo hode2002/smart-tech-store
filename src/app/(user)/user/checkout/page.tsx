@@ -244,6 +244,12 @@ export default function CheckoutPage() {
     };
 
     const onApplyVoucherCode = async () => {
+        if (voucherList.find((v) => v.code === voucherCode)) {
+            return toast({
+                description: 'Mã giảm giá đã được sử dụng!',
+            });
+        }
+
         const response = (await voucherApiRequest.checkValidVoucher(
             token,
             voucherCode,
