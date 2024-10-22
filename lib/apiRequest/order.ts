@@ -2,6 +2,7 @@ import http from '@/lib/http';
 import Toast from 'react-native-toast-message';
 
 export type CreateOrderType = {
+    voucherCodes?: string[];
     name: string;
     phone: string;
     address: string;

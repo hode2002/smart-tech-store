@@ -9,6 +9,7 @@ import {
     ActivityIndicator,
     Image,
     Text,
+    TextInput,
     TouchableOpacity,
     View,
 } from 'react-native';
@@ -23,6 +24,10 @@ import Toast from 'react-native-toast-message';
 import { formatPrice } from '@/lib/utils';
 import CheckoutTable from '@/components/CheckoutTable';
 import { ScrollView } from 'react-native';
+import voucherApiRequest, {
+    CheckValidVoucherResponseType,
+    VoucherType,
+} from '@/lib/apiRequest/voucher';
 
 export default function Checkout() {
     const { accessToken } = useAuthStore((state) => state);
@@ -36,6 +41,8 @@ export default function Checkout() {
         setPaymentId,
     } = useUserStore((state) => state);
     const [deliveryList, setDeliveryList] = useState<Delivery[]>([]);
+    const [voucherCode, setVoucherCode] = useState('');
+    const [voucherList, setVoucherList] = useState<VoucherType[]>([]);
 
     useEffect(() => {
         return () => {
@@ -123,6 +130,7 @@ export default function Checkout() {
         setLoading(true);
 
         const orderInfo: CreateOrderType = {
+            voucherCodes: voucherList.map((i) => i.code),
             name: profile.name as string,
             phone: profile.phone as string,
             address: userAddress.address as string,
@@ -182,6 +190,41 @@ export default function Checkout() {
 
             router.replace('/(root)/(tabs)/orders');
             return;
+        }
+    };
+
+    const calculateOrderPrice = () => {
+        return voucherList.reduce((prev, curr) => {
+            if (curr.type === 'FIXED') {
+                return (prev -= curr.value);
+            }
+
+            const percent = curr.value;
+            return (prev -= (prev * percent) / 100);
+        }, productPrice + deliveryCost);
+    };
+
+    const onApplyVoucherCode = async () => {
+        if (voucherList.find((v) => v.code === voucherCode)) {
+            return Toast.show({
+                type: 'info',
+                text1: 'Mã giảm giá đã được sử dụng!',
+            });
+        }
+
+        const response = (await voucherApiRequest.checkValidVoucher(
+            accessToken,
+            voucherCode,
+            productPrice,
+        )) as CheckValidVoucherResponseType;
+
+        if (response?.statusCode === 200) {
+            setVoucherList((prev) => [...prev, response.data]);
+            setVoucherCode('');
+            Toast.show({
+                type: 'success',
+                text1: response.message,
+            });
         }
     };
 
@@ -246,6 +289,36 @@ export default function Checkout() {
                     <View className="w-full mb-4">
                         <View className="flex-col gap-2 rounded-md w-full">
                             <View className="bg-white px-4 py-6 gap-4 capitalize">
+                                <Text className="font-bold">Mã giảm giá</Text>
+                                <View className="flex-row justify-end gap-4 flex-wrap">
+                                    <TextInput
+                                        inputMode="text"
+                                        className="w-full border border-gray-500 rounded-md px-4 py-2 font-JakartaMedium"
+                                        value={voucherCode}
+                                        onChangeText={(value) =>
+                                            setVoucherCode(value)
+                                        }
+                                    />
+                                    <View>
+                                        {loading ? (
+                                            <View className="mt-2 font-JakartaBold bg-black text-white px-5 py-3 min-w-[120px] rounded-md">
+                                                <ActivityIndicator
+                                                    size="small"
+                                                    color="#fff"
+                                                />
+                                            </View>
+                                        ) : (
+                                            <Button
+                                                onPress={onApplyVoucherCode}
+                                                label="Áp dụng"
+                                                labelClasses="font-JakartaBold text-white"
+                                                className="mt-2 bg-black text-white min-w-[120px] rounded-md"
+                                            />
+                                        )}
+                                    </View>
+                                </View>
+                            </View>
+                            <View className="bg-white px-4 py-6 gap-4 capitalize">
                                 <Text className="font-JakartaBold">
                                     Đơn vị vận chuyển
                                 </Text>
@@ -304,12 +377,62 @@ export default function Checkout() {
                                         {formatPrice(deliveryCost)}
                                     </Text>
                                 </View>
+                                {voucherList && voucherList.length > 0 && (
+                                    <>
+                                        <View className="flex-row items-center flex-wrap justify-between">
+                                            <Text className="font-JakartaBold">
+                                                Tạm tính
+                                            </Text>
+                                            <Text className="font-JakartaBold text-[16px]">
+                                                {formatPrice(
+                                                    totalPice + deliveryCost,
+                                                )}
+                                            </Text>
+                                        </View>
+                                        <View className="py-8">
+                                            <Text className="font-JakartaBold">
+                                                Mã giảm giá
+                                            </Text>
+                                            {voucherList.map((item) => (
+                                                <View
+                                                    key={item.id}
+                                                    className="flex-row items-center flex-wrap justify-between"
+                                                >
+                                                    <Text className="font-JakartaLight">
+                                                        {item.code}
+                                                    </Text>
+                                                    <Text className="font-JakartaLight whitespace-nowrap">
+                                                        {item.type ===
+                                                        'FIXED' ? (
+                                                            <>
+                                                                {'-'}
+                                                                {formatPrice(
+                                                                    item.value,
+                                                                )}
+                                                            </>
+                                                        ) : (
+                                                            <>
+                                                                {'-'}
+                                                                {formatPrice(
+                                                                    (productPrice +
+                                                                        deliveryCost) *
+                                                                        (item.value /
+                                                                            100),
+                                                                )}
+                                                            </>
+                                                        )}
+                                                    </Text>
+                                                </View>
+                                            ))}
+                                        </View>
+                                    </>
+                                )}
                                 <View className="flex-row items-center flex-wrap justify-between">
                                     <Text className="font-JakartaBold">
                                         Tổng
                                     </Text>
                                     <Text className="font-JakartaBold text-[16px]">
-                                        {formatPrice(totalPice + deliveryCost)}
+                                        {formatPrice(calculateOrderPrice())}
                                     </Text>
                                 </View>
                             </View>
@@ -325,8 +448,8 @@ export default function Checkout() {
                             <>({productCheckout?.length} sản phẩm):</>
                         )}
                     </Text>
-                    <Text className="ml-4 font-bold text-[16px] whitespace-nowrap">
-                        {formatPrice(totalPice + deliveryCost)}
+                    <Text className="ml-4 font-JakartaBold text-[16px] whitespace-nowrap">
+                        {formatPrice(calculateOrderPrice())}
                     </Text>
                 </View>
                 <View className="mt-4">
