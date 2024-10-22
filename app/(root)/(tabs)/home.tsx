@@ -7,8 +7,12 @@ import Navbar from '@/components/Navbar';
 import Banner from '@/components/Banner';
 import { Skeleton, VStack } from 'native-base';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useAuthStore, useUserStore } from '@/store';
+import { useAuthStore, useNotificationStore, useUserStore } from '@/store';
 import accountApiRequest from '@/lib/apiRequest/account';
+import React from 'react';
+import notificationApiRequest, {
+    GetUserNotificationResponseType,
+} from '@/lib/apiRequest/notification';
 
 const Home = () => {
     const { accessToken, setAccessToken, setRefreshToken } = useAuthStore(
@@ -17,6 +21,7 @@ const Home = () => {
     const { setProfile, setAddress, cart, setCartProducts } = useUserStore(
         (state) => state,
     );
+    const { setNotifications } = useNotificationStore((state) => state);
 
     useEffect(() => {
         (async () => {
@@ -84,6 +89,21 @@ const Home = () => {
         return response.data;
     }, []);
 
+    const fetchNotifications = useCallback(async () => {
+        const response: GetUserNotificationResponseType =
+            await notificationApiRequest.getUserNotification(accessToken);
+        if (response?.data) {
+            setNotifications(
+                response.data?.map((i) => ({
+                    ...i.notification,
+                    status: i.status,
+                })),
+            );
+            return response.data;
+        }
+        return [];
+    }, [accessToken, setNotifications]);
+
     useEffect(() => {
         (async () => {
             const smartphone = await fetchProduct('smartphone');
@@ -93,8 +113,12 @@ const Home = () => {
             setSmartphone(smartphone);
             setTablet(tablet);
             setLaptop(laptop);
+
+            if (accessToken) {
+                fetchNotifications();
+            }
         })();
-    }, [fetchProduct]);
+    }, [fetchProduct, accessToken, fetchNotifications]);
 
     return (
         <View className="bg-white pt-2">

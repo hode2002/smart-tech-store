@@ -149,7 +149,8 @@ const EditAddress = () => {
                                 onPress={onSubmit}
                                 label="Lưu"
                                 disabled={!ward?.value && !addressDetail.length}
-                                labelClasses={`m-4 mt-12 font-JakartaBold text-white px-5 py-3 min-w-[120px] rounded-md ${!ward?.value && !addressDetail.length ? 'bg-[#ccc]' : 'bg-black'}`}
+                                labelClasses={`font-JakartaBold text-white`}
+                                className={`m-4 mt-12 min-w-[120px] rounded-md ${!ward?.value && !addressDetail.length ? 'bg-[#ccc]' : 'bg-black'}`}
                             />
                         )}
                     </View>

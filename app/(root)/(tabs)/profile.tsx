@@ -10,7 +10,7 @@ const Profile = () => {
     return (
         <View className="bg-black pt-16">
             <ScrollView>
-                <View className="flex flex-row px-4">
+                <View className="flex flex-row px-4 py-2">
                     {profile?.email ? (
                         <View className="flex flex-row justify-between w-full">
                             <TouchableOpacity
@@ -86,78 +86,20 @@ const Profile = () => {
                                 <Button
                                     onPress={() => router.push('/(auth)/login')}
                                     label="Đăng nhập"
-                                    labelClasses="font-JakartaBold bg-white text-black px-5 py-3 min-w-[120px] rounded-md"
+                                    labelClasses="font-JakartaBold text-black"
+                                    className="bg-white  px-5 py-2 min-w-[120px] rounded-md"
                                 />
                                 <Button
                                     onPress={() =>
                                         router.push('/(auth)/register')
                                     }
                                     label="Đăng ký"
-                                    labelClasses="font-JakartaBold bg-white text-black px-5 py-3 min-w-[120px] rounded-md"
+                                    labelClasses="font-JakartaBold text-black"
+                                    className="bg-white  px-5 py-2 min-w-[120px] rounded-md"
                                 />
                             </View>
                         </View>
                     )}
-                </View>
-
-                <View className="bg-white mt-4">
-                    {/* <View className="flex items-center justify-center my-5 bg-white">
-                        <Image
-                            source={{
-                                uri:
-                                    user?.externalAccounts[0]?.imageUrl ??
-                                    user?.imageUrl,
-                            }}
-                            style={{
-                                width: 110,
-                                height: 110,
-                                borderRadius: 110 / 2,
-                            }}
-                            className="rounded-full h-[110px] w-[110px] border-[3px] border-white shadow-sm shadow-neutral-300"
-                        />
-                    </View>
-
-                    <View className="flex flex-col items-start justify-center bg-white rounded-lg shadow-sm shadow-neutral-300 px-5 py-3">
-                        <View className="flex flex-col items-start justify-start w-full">
-                            <InputField
-                                label="First name"
-                                placeholder={user?.firstName || 'Not Found'}
-                                containerStyle="w-full"
-                                inputStyle="p-3.5"
-                                editable={false}
-                            />
-
-                            <InputField
-                                label="Last name"
-                                placeholder={user?.lastName || 'Not Found'}
-                                containerStyle="w-full"
-                                inputStyle="p-3.5"
-                                editable={false}
-                            />
-
-                            <InputField
-                                label="Email"
-                                placeholder={
-                                    user?.primaryEmailAddress?.emailAddress ||
-                                    'Not Found'
-                                }
-                                containerStyle="w-full"
-                                inputStyle="p-3.5"
-                                editable={false}
-                            />
-
-                            <InputField
-                                label="Phone"
-                                placeholder={
-                                    user?.primaryPhoneNumber?.phoneNumber ||
-                                    'Not Found'
-                                }
-                                containerStyle="w-full"
-                                inputStyle="p-3.5"
-                                editable={false}
-                            />
-                        </View>
-                    </View> */}
                 </View>
             </ScrollView>
         </View>

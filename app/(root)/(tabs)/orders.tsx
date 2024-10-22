@@ -174,32 +174,37 @@ export default function PurchasePage() {
                     <Button
                         onPress={() => setCurrStatus(5)}
                         label="Tất cả"
-                        labelClasses={`${currStatus === 5 ? 'border-b-2 border-red-500 text-red-500' : 'text-black'} mt-4 font-JakartaBold px-5 pb-3 min-w-[120px] rounded-md`}
+                        labelClasses={`${currStatus === 5 ? 'text-red-500' : 'text-black'}`}
+                        className={`${currStatus === 5 ? 'border-b-2 border-red-500 font-JakartaBold min-w-[120px]' : 'text-black'}`}
                     />
                     <Button
                         onPress={() => setCurrStatus(0)}
                         label="Chờ xác nhận"
-                        labelClasses={`${currStatus === 0 ? 'border-b-2 border-red-500 text-red-500' : 'text-black'} mt-4 font-JakartaBold px-5 pb-3 min-w-[120px] rounded-md`}
+                        labelClasses={`${currStatus === 0 ? 'text-red-500' : 'text-black'}`}
+                        className={`${currStatus === 0 ? 'border-b-2 border-red-500 font-JakartaBold min-w-[120px]' : 'text-black'}`}
                     />
                     <Button
                         onPress={() => setCurrStatus(1)}
                         label="Vận chuyển"
-                        labelClasses={`${currStatus === 1 ? 'border-b-2 border-red-500 text-red-500' : 'text-black'} mt-4 font-JakartaBold px-5 pb-3 min-w-[120px] rounded-md`}
+                        labelClasses={`${currStatus === 1 ? 'text-red-500' : 'text-black'}`}
+                        className={`${currStatus === 1 ? 'border-b-2 border-red-500 font-JakartaBold min-w-[120px]' : 'text-black'}`}
                     />
                     <Button
                         onPress={() => setCurrStatus(2)}
                         label="Hoàn thành"
-                        labelClasses={`${currStatus === 2 ? 'border-b-2 border-red-500 text-red-500' : 'text-black'} mt-4 font-JakartaBold px-5 pb-3 min-w-[120px] rounded-md`}
+                        labelClasses={`${currStatus === 2 ? 'text-red-500' : 'text-black'}`}
+                        className={`${currStatus === 2 ? 'border-b-2 border-red-500 font-JakartaBold min-w-[120px]' : 'text-black'}`}
                     />
                     <Button
                         onPress={() => setCurrStatus(3)}
                         label="Đã hủy"
-                        labelClasses={`${currStatus === 3 ? 'border-b-2 border-red-500 text-red-500' : 'text-black'} mt-4 font-JakartaBold px-5 pb-3 min-w-[120px] rounded-md`}
+                        labelClasses={`${currStatus === 3 ? 'text-red-500' : 'text-black'}`}
+                        className={`${currStatus === 3 ? 'border-b-2 border-red-500 font-JakartaBold min-w-[120px]' : 'text-black'}`}
                     />
                 </ScrollView>
             </View>
             {orders && orders?.length > 0 ? (
-                <View className="w-full mb-4 bg-whites">
+                <ScrollView className="w-full mb-32">
                     {orders.map((order) => {
                         return (
                             <View
@@ -231,8 +236,8 @@ export default function PurchasePage() {
                                                         `/${orderDetail.product.category.slug}/${orderDetail.product.slug}` as Href
                                                     }
                                                 >
-                                                    <View className="flex-row justify-between items-center w-full px-2">
-                                                        <View className="flex-row gap-3 items-center">
+                                                    <View className="flex-row justify-around items-center w-full px-2">
+                                                        <View className="flex-row gap-2 items-center">
                                                             <Image
                                                                 source={{
                                                                     uri: orderDetail
@@ -247,7 +252,7 @@ export default function PurchasePage() {
                                                                         .name
                                                                 }
                                                             />
-                                                            <View className="items-start">
+                                                            <View className="truncate w-[60%]">
                                                                 <Text className="font-JakartaBold text-md leading-none">
                                                                     {
                                                                         orderDetail
@@ -255,12 +260,14 @@ export default function PurchasePage() {
                                                                             .name
                                                                     }
                                                                 </Text>
-                                                                <Text className="my-2 text-sm font-JakartaMeidum flex gap-1">
-                                                                    {
-                                                                        orderDetail
-                                                                            .product
-                                                                            .name
-                                                                    }
+                                                                <Text className="my-2 text-sm font-JakartaMedium">
+                                                                    <Text>
+                                                                        {
+                                                                            orderDetail
+                                                                                .product
+                                                                                .name
+                                                                        }
+                                                                    </Text>{' '}
                                                                     {orderDetail.product.options.map(
                                                                         (
                                                                             option,
@@ -272,7 +279,7 @@ export default function PurchasePage() {
                                                                             >
                                                                                 {
                                                                                     option.value
-                                                                                }
+                                                                                }{' '}
                                                                             </Text>
                                                                         ),
                                                                     )}
@@ -318,7 +325,8 @@ export default function PurchasePage() {
                                         </View>
                                         <View className="flex-row gap-6 items-center justify-between border-y border-gray-200 px-4 py-3">
                                             <Text className="font-JakartaMedium">
-                                                {orders.length} sản phẩm
+                                                {order?.order_details.length}{' '}
+                                                sản phẩm
                                             </Text>
                                             <View className="flex-row gap-2 justify-center">
                                                 <Text className="font-JakartaMedium">
@@ -359,7 +367,8 @@ export default function PurchasePage() {
                                                         );
                                                     }}
                                                     label="Hủy"
-                                                    labelClasses="text-white bg-black m-4 font-JakartaBold px-5 py-3 min-w-[120px] rounded-md"
+                                                    labelClasses="text-white font-JakartaBold"
+                                                    className="bg-black m-4 min-w-[120px] rounded-md"
                                                 />
                                             </View>
                                         )}
@@ -391,7 +400,8 @@ export default function PurchasePage() {
                                                         );
                                                     }}
                                                     label="Đã nhận hàng"
-                                                    labelClasses="text-white bg-black m-4 font-JakartaBold px-5 py-3 min-w-[120px] rounded-md"
+                                                    labelClasses="text-white font-JakartaBold"
+                                                    className="bg-black m-4 min-w-[120px] rounded-md"
                                                 />
                                             </View>
                                         )}
@@ -402,7 +412,8 @@ export default function PurchasePage() {
                                                     handleRepurchase(order)
                                                 }
                                                 label="Mua lại"
-                                                labelClasses="text-white bg-black m-4 font-JakartaBold px-5 py-3 min-w-[120px] rounded-md"
+                                                labelClasses="text-white font-JakartaBold"
+                                                className="bg-black m-4 min-w-[120px] rounded-md"
                                             />
                                         )}
                                     </View>
@@ -410,10 +421,10 @@ export default function PurchasePage() {
                             </View>
                         );
                     })}
-                </View>
+                </ScrollView>
             ) : (
-                <View className="w-full mb-4">
-                    <View className="px-6 pt-6 border-b transition-colors hover:bg-accent hover:text-accent-foreground ">
+                <View className="w-full mb-4 bg-white h-full">
+                    <View className="px-6 pt-6 transition-colors hover:bg-accent hover:text-accent-foreground ">
                         <View className="flex justify-center items-center">
                             <Text>Không có đơn hàng</Text>
                         </View>

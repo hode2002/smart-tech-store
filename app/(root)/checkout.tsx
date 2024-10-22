@@ -245,7 +245,7 @@ export default function Checkout() {
                     </View>
                     <View className="w-full mb-4">
                         <View className="flex-col gap-2 rounded-md w-full">
-                            <View className="bg-white px-4 py-6 gap-4">
+                            <View className="bg-white px-4 py-6 gap-4 capitalize">
                                 <Text className="font-JakartaBold">
                                     Đơn vị vận chuyển
                                 </Text>
@@ -261,7 +261,8 @@ export default function Checkout() {
                                                     );
                                                 }}
                                                 label={delivery.name}
-                                                labelClasses="capitalize font-JakartaMedium bg-black text-white px-5 py-3 min-w-[120px] rounded-md"
+                                                labelClasses="capitalize font-JakartaMedium text-white"
+                                                className="font-JakartaMedium bg-black w-full rounded-md"
                                             />
                                         ))}
                                 </View>
@@ -273,12 +274,14 @@ export default function Checkout() {
                                 <Button
                                     onPress={() => setPaymentMethod('cod')}
                                     label="Thanh toán khi nhận hàng"
-                                    labelClasses={`${paymentMethod === 'cod' ? 'bg-black text-white' : 'text-black border'} font-JakartaMedium px-5 py-2 w-full rounded-md`}
+                                    labelClasses={`${paymentMethod === 'cod' ? 'text-white' : 'text-black'}`}
+                                    className={`${paymentMethod === 'cod' ? 'bg-black text-white' : 'text-black border'} font-JakartaMedium px-5 py-2 w-full rounded-md`}
                                 />
                                 <Button
                                     onPress={() => setPaymentMethod('vnpay')}
                                     label="Thanh toán qua VNPAY"
-                                    labelClasses={`${paymentMethod === 'vnpay' ? 'bg-black text-white' : 'text-black border'} font-JakartaMedium px-5 py-2 w-full rounded-md`}
+                                    labelClasses={`${paymentMethod === 'vnpay' ? 'text-white' : 'text-black'}`}
+                                    className={`${paymentMethod === 'vnpay' ? 'bg-black text-white' : 'text-black border'} font-JakartaMedium px-5 py-2 w-full rounded-md`}
                                 />
                             </View>
                             <View className="bg-white px-4 py-6 gap-4">
@@ -339,7 +342,8 @@ export default function Checkout() {
                         <Button
                             onPress={handlePayment}
                             label="Đặt hàng"
-                            labelClasses="mt-4 font-JakartaBold bg-black text-white px-5 py-3 min-w-[120px] w-full rounded-md"
+                            labelClasses="capitalize font-JakartaBold text-white"
+                            className="mt-4 bg-black min-w-[120px] w-full rounded-md"
                         />
                     )}
                 </View>

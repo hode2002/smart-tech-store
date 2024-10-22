@@ -130,7 +130,8 @@ const ChangePasswordScreen = () => {
                         <Button
                             onPress={handleSubmit(onSubmit)}
                             label="Xác nhận"
-                            labelClasses="mt-4 font-JakartaBold text-white px-5 py-3 min-w-[120px] rounded-md bg-black"
+                            labelClasses="font-JakartaBold text-white"
+                            className="mt-4 min-w-[120px] rounded-md bg-black"
                         />
                     )}
                 </View>

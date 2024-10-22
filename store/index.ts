@@ -10,6 +10,8 @@ import {
     IProduct,
     LocationStore,
     MarkerData,
+    Notification,
+    NotificationStore,
     ProductStore,
     UserStore,
 } from '@/types/type';
@@ -246,5 +248,21 @@ export const useProductStore = create<ProductStore>()(
             set(() => ({
                 productsSearch: list,
             })),
+    })),
+);
+
+export const useNotificationStore = create<NotificationStore>()(
+    immer((set) => ({
+        notifications: [],
+        setNotifications: (notifications: Notification[]) =>
+            set(() => ({
+                notifications,
+            })),
+        addNotification: (notification) =>
+            set((state) => {
+                const newList = state.notifications.reverse();
+                newList.push(notification);
+                state.notifications = newList.reverse();
+            }),
     })),
 );

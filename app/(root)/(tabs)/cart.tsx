@@ -471,7 +471,7 @@ export default function CartTable() {
                 </ScrollView>
                 {userProfile?.email && (
                     <View className="border-t border-gray-200 p-4 fixed bottom-[100px] bg-white">
-                        <View className="flex flex-row justify-end items-center gap-4">
+                        <View className="flex-row justify-end items-center gap-4">
                             <Text className="font-JakartaSemiBold text-2xl">
                                 {formatPrice(totalPrice)}
                             </Text>
@@ -487,7 +487,8 @@ export default function CartTable() {
                                     <Button
                                         onPress={handleCheckout}
                                         label={`${table.getFilteredSelectedRowModel().rows.length === 0 ? 'Kiểm tra' : `Đặt hàng (${table.getFilteredSelectedRowModel().rows.length})`}`}
-                                        labelClasses="mt-4 font-JakartaBold bg-black text-white px-5 py-3 min-w-[120px] rounded-md"
+                                        labelClasses="font-JakartaBold text-white"
+                                        className="mt-4 font-JakartaBold bg-black min-w-[120px] rounded-md"
                                     />
                                 )}
                             </View>
@@ -548,7 +549,8 @@ export default function CartTable() {
                         bottomSheetRef.current?.close();
                     }}
                     label="Xác nhận"
-                    labelClasses="mb-20 mx-4 font-JakartaBold bg-black text-white px-5 py-3 min-w-[120px] rounded-md"
+                    labelClasses="font-JakartaBold text-white"
+                    className="mb-20 mx-4 font-JakartaBold bg-black min-w-[120px] rounded-md"
                 />
             </BottomSheet>
         </GestureHandlerRootView>

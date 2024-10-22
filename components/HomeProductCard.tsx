@@ -3,12 +3,13 @@ import { Href, Link, router } from 'expo-router';
 import { formatPrice } from '@/lib/utils';
 import { Button } from '@/components/Button';
 import { IProduct } from '@/types/type';
-import StarIcon from '@/components/StarIcon';
 import { useAuthStore, useUserStore } from '@/store';
 import accountApiRequest, {
     AddToCartResponseType,
 } from '@/lib/apiRequest/account';
 import Toast from 'react-native-toast-message';
+import React from 'react';
+import { icons } from '@/constants';
 
 type HomeProductCardProps = {
     product: IProduct;
@@ -123,17 +124,17 @@ export default function HomeProductCard({
                             )}
                         </View>
                         {productOption.rating.total_reviews > 0 && (
-                            <View className="flex justify-start items-center gap-2">
+                            <View className="flex-row items-center justify-center gap-2 px-5 py-3">
                                 <Text className="font-bold">
                                     {productOption.rating.overall}
                                 </Text>
-                                <View className="inline-flex items-center">
-                                    <Text>
-                                        <StarIcon />
-                                    </Text>
-                                </View>
+                                <Image
+                                    source={icons.star}
+                                    resizeMode="contain"
+                                    className="w-5 h-5"
+                                />
                                 <Text className="block font-sans text-base antialiased font-medium leading-relaxed text-gray-500">
-                                    {productOption.rating.total_reviews}
+                                    ({productOption.rating.total_reviews})
                                 </Text>
                             </View>
                         )}
@@ -141,7 +142,8 @@ export default function HomeProductCard({
                 </Link>
                 <Button
                     label="Thêm vào giỏ"
-                    labelClasses="text-white bg-black rounded-md py-2"
+                    labelClasses="font-JakartaBold text-white"
+                    className="text-white bg-black rounded-md py-2"
                     onPress={handleAddToCart}
                 />
             </View>

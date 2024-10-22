@@ -1,6 +1,6 @@
 import { View, Text, ActivityIndicator, TouchableOpacity } from 'react-native';
 import React, { useState } from 'react';
-import { useAuthStore, useUserStore } from '@/store';
+import { useAuthStore, useNotificationStore, useUserStore } from '@/store';
 import { Href, router } from 'expo-router';
 import { icons } from '@/constants';
 import { Button } from '@/components/Button';
@@ -12,6 +12,7 @@ import * as Updates from 'expo-updates';
 const Settings = () => {
     const { removeUserProfile } = useUserStore((state) => state);
     const { accessToken, userLogout } = useAuthStore((state) => state);
+    const { setNotifications } = useNotificationStore((state) => state);
     const [loading, setLoading] = useState(false);
 
     const handleLogout = async () => {
@@ -22,6 +23,7 @@ const Settings = () => {
         if (response.statusCode === 200) {
             userLogout();
             removeUserProfile();
+            setNotifications([]);
             return await Updates.reloadAsync();
         }
     };
@@ -66,7 +68,8 @@ const Settings = () => {
                 <Button
                     onPress={handleLogout}
                     label="Đăng xuất"
-                    labelClasses="mt-10 font-JakartaBold bg-white text-black px-5 py-3 min-w-[120px] rounded-md"
+                    labelClasses="font-JakartaBold text-black"
+                    className="mt-10 bg-white min-w-[120px] rounded-md"
                 />
             )}
         </View>

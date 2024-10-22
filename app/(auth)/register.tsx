@@ -133,7 +133,8 @@ export default function Register() {
                             <Button
                                 onPress={handleSubmit(onSubmit)}
                                 label="Gửi OTP"
-                                labelClasses="mt-4 font-JakartaBold bg-black text-white px-5 py-3 min-w-[120px] rounded-md"
+                                labelClasses="font-JakartaBold text-white"
+                                className="mt-4 bg-black text-white min-w-[120px] rounded-md"
                             />
                         )}
                     </View>
@@ -269,7 +270,8 @@ export default function Register() {
                                         onCreatePassword,
                                     )}
                                     label="Xác nhận"
-                                    labelClasses="mt-4 font-JakartaBold bg-black text-white px-5 py-3 min-w-[120px] rounded-md"
+                                    labelClasses="font-JakartaBold text-white"
+                                    className="mt-4 bg-black text-white min-w-[120px] rounded-md"
                                 />
                             )}
                         </View>

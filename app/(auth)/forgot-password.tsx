@@ -84,7 +84,8 @@ export default function ForgotPassword() {
                             <Button
                                 onPress={handleSubmit(onSubmit)}
                                 label="Gửi"
-                                labelClasses="mt-4 font-JakartaBold bg-black text-white px-5 py-3 min-w-[120px] rounded-md"
+                                labelClasses="font-JakartaBold text-white"
+                                className="mt-4 bg-black text-white min-w-[120px] rounded-md"
                             />
                         )}
                     </View>

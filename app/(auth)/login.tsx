@@ -173,16 +173,17 @@ export default function Login() {
                             </Text>
                         </Link>
                     </View>
-                    <View>
+                    <View className="py-">
                         {loading ? (
-                            <View className="mt-4 font-JakartaBold bg-black text-white px-5 py-3 min-w-[120px] rounded-md">
+                            <View className="mt-4 font-JakartaBold bg-black text-white px-5 py-2 min-w-[120px] rounded-md">
                                 <ActivityIndicator size="small" color="#fff" />
                             </View>
                         ) : (
                             <Button
                                 onPress={handleSubmit(onSubmit)}
                                 label="Đăng nhập"
-                                labelClasses="mt-4 font-JakartaBold bg-black text-white px-5 py-3 min-w-[120px] rounded-md"
+                                labelClasses="font-JakartaBold text-white"
+                                className="mt-4 bg-black min-w-[120px] rounded-md"
                             />
                         )}
                     </View>

@@ -405,6 +405,19 @@ declare interface DeliveryStore {
     setDeliveryList: (list: Delivery[]) => void;
 }
 
+declare interface Notification {
+    id: string;
+    title: string;
+    content: string;
+    images: string;
+    status: number;
+    slug: string;
+    link: string;
+    type: 'ORDER' | 'COMMON' | 'VOUCHER' | 'COMMENT';
+    created_at: Date;
+    updated_at: Date;
+}
+
 export type CreateOrderType = {
     name: string;
     phone: string;
@@ -425,4 +438,10 @@ export type CreateOrderType = {
 declare interface ProductStore {
     productsSearch: IProduct[];
     setProductsSearch: (products: IProduct[]) => void;
+}
+
+declare interface NotificationStore {
+    notifications: Notification[];
+    addNotification: (notification: Notification) => void;
+    setNotifications: (notifications: Notification[]) => void;
 }

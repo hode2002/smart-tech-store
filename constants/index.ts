@@ -53,6 +53,10 @@ import minus from '@/assets/icons/minus.png';
 import trash from '@/assets/icons/trash.png';
 import switchIcon from '@/assets/icons/switch.png';
 import creditCard from '@/assets/icons/credit-card.png';
+import shoppingBag from '@/assets/icons/shopping-bag.png';
+import ticketCheck from '@/assets/icons/ticket-check.png';
+import messageCircle from '@/assets/icons/message-circle.png';
+import info from '@/assets/icons/info.png';
 
 export const images = {
     onboarding1,
@@ -113,6 +117,10 @@ export const icons = {
     trash,
     switchIcon,
     creditCard,
+    shoppingBag,
+    ticketCheck,
+    messageCircle,
+    info,
 };
 
 export const onboarding = [
