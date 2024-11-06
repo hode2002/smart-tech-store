@@ -8,6 +8,7 @@ import {
     MenuOption,
     MenuTrigger,
 } from 'react-native-popup-menu';
+import React from 'react';
 
 const Layout = () => {
     return (
@@ -54,19 +55,26 @@ const Layout = () => {
         >
             <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
             <Stack.Screen
-                name="smartphone"
+                name="(category)/smartphone"
                 options={{
                     headerShown: true,
-                    headerTitle: 'Điện thoại di động',
+                    headerTitle: '',
                 }}
             />
             <Stack.Screen
-                name="laptop"
-                options={{ headerShown: true, headerTitle: 'Laptop' }}
+                name="(category)/laptop"
+                options={{
+                    headerShown: true,
+                    headerTitle: '',
+                }}
             />
             <Stack.Screen
-                name="tablet"
-                options={{ headerShown: true, headerTitle: 'Máy tính bảng' }}
+                name="(category)/tablet"
+                options={{ headerShown: true, headerTitle: '' }}
+            />
+            <Stack.Screen
+                name="(category)/[slug]"
+                options={{ headerShown: true, headerTitle: '' }}
             />
             <Stack.Screen
                 name="edit-profile"

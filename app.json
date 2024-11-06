@@ -1,55 +1,60 @@
 {
+  "expo": {
+    "name": "Smart Tech Store",
+    "slug": "smart-tech-store",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/images/site-logo.png",
+    "scheme": "smart-tech-store",
+    "userInterfaceStyle": "automatic",
+    "splash": {
+      "image": "./assets/images/site-logo.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#000"
+    },
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/images/adaptive-icon.png",
+        "backgroundColor": "#ffffff"
+      },
+      "package": "com.anonymous.smarttechstore"
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "static",
+      "favicon": "./assets/images/favicon.png"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-video"
+    ],
+    "experiments": {
+      "typedRoutes": true
+    },
     "expo": {
-        "name": "Smart Tech Store",
-        "slug": "smart-tech-store",
-        "version": "1.0.0",
-        "orientation": "portrait",
-        "icon": "./assets/images/site-logo.png",
-        "scheme": "smart-tech-store",
-        "userInterfaceStyle": "automatic",
-        "splash": {
-            "image": "./assets/images/site-logo.png",
-            "resizeMode": "contain",
-            "backgroundColor": "#000"
-        },
-        "ios": {
-            "supportsTablet": true
-        },
-        "android": {
-            "adaptiveIcon": {
-                "foregroundImage": "./assets/images/adaptive-icon.png",
-                "backgroundColor": "#ffffff"
-            },
-            "package": "com.anonymous.smarttechstore"
-        },
-        "web": {
-            "bundler": "metro",
-            "output": "static",
-            "favicon": "./assets/images/favicon.png"
-        },
-        "plugins": ["expo-router"],
-        "experiments": {
-            "typedRoutes": true
-        },
-        "expo": {
-            "web": {
-                "bundler": "metro"
-            },
-            "plugins": [
-                [
-                    "expo-image-picker",
-                    {
-                        "photosPermission": "The app accesses your photos to let you share them with your friends."
-                    }
-                ],
-                ["@react-native-google-signin/google-signin"]
-            ]
-        },
-        "extra": {
-            "eas": {
-                "projectId": "25fe6a02-bf69-47b4-80eb-b25ddc4df249"
-            }
-        },
-        "owner": "hvd07062002"
-    }
+      "web": {
+        "bundler": "metro"
+      },
+      "plugins": [
+        [
+          "expo-image-picker",
+          {
+            "photosPermission": "The app accesses your photos to let you share them with your friends."
+          }
+        ],
+        [
+          "@react-native-google-signin/google-signin"
+        ]
+      ]
+    },
+    "extra": {
+      "eas": {
+        "projectId": "25fe6a02-bf69-47b4-80eb-b25ddc4df249"
+      }
+    },
+    "owner": "hvd07062002"
+  }
 }

@@ -3,7 +3,7 @@ import { Skeleton } from '@/components/Skeleton';
 import { icons } from '@/constants';
 import { useAuthStore, useUserStore } from '@/store';
 import { CartItem, Delivery } from '@/types/type';
-import { Href, router } from 'expo-router';
+import { Href, router, useLocalSearchParams } from 'expo-router';
 import React, { useEffect, useMemo, useState } from 'react';
 import {
     ActivityIndicator,
@@ -15,6 +15,7 @@ import {
 } from 'react-native';
 import orderApiRequest, {
     CalculateShippingFeeType,
+    CreateOrderComboType,
     CreateOrderResponseType,
     CreateOrderType,
 } from '@/lib/apiRequest/order';
@@ -30,6 +31,9 @@ import voucherApiRequest, {
 } from '@/lib/apiRequest/voucher';
 
 export default function Checkout() {
+    const { proId, comboIds } = useLocalSearchParams();
+    console.log({ proId, comboIds });
+
     const { accessToken } = useAuthStore((state) => state);
     const {
         profile,
@@ -129,7 +133,22 @@ export default function Checkout() {
         if (loading) return;
         setLoading(true);
 
-        const orderInfo: CreateOrderType = {
+        const totalPrice = productPrice + deliveryCost;
+        const LIMIT_VNPAY_PAYMENT_PRICE = 20000000;
+
+        if (paymentMethod === 'vnpay') {
+            if (totalPrice < 0 || totalPrice > LIMIT_VNPAY_PAYMENT_PRICE) {
+                Toast.show({
+                    type: 'success',
+                    text1:
+                        'VNPAY chỉ hỗ trợ thanh toán trong khoảng 1 <= <=' +
+                        formatPrice(LIMIT_VNPAY_PAYMENT_PRICE),
+                });
+            }
+            return setLoading(false);
+        }
+
+        const orderInfo = {
             voucherCodes: voucherList.map((i) => i.code),
             name: profile.name as string,
             phone: profile.phone as string,
@@ -141,15 +160,33 @@ export default function Checkout() {
             note: 'Giao buổi trưa',
             delivery_id: selectedDelivery!.id,
             payment_method: paymentMethod,
-            order_details: productCheckout.map((product) => ({
-                product_option_id: product.id,
-                quantity: product.quantity,
-            })),
+            ...(proId && comboIds
+                ? {
+                      productOptionId: proId,
+                      productComboIds: (comboIds as string)
+                          ?.split(',')
+                          .filter((i) => i.length > 0),
+                  }
+                : {
+                      order_details: productCheckout.map((product) => ({
+                          product_option_id: product.id,
+                          quantity: product.quantity,
+                      })),
+                  }),
         };
-        const createOrderResponse = (await orderApiRequest.createOrder(
-            accessToken,
-            orderInfo,
-        )) as CreateOrderResponseType;
+
+        let createOrderResponse: CreateOrderResponseType;
+        if (proId && comboIds) {
+            createOrderResponse = (await orderApiRequest.createOrderCombo(
+                accessToken,
+                orderInfo as CreateOrderComboType,
+            )) as CreateOrderResponseType;
+        } else {
+            createOrderResponse = (await orderApiRequest.createOrder(
+                accessToken,
+                orderInfo as CreateOrderType,
+            )) as CreateOrderResponseType;
+        }
 
         setLoading(false);
         if (createOrderResponse?.statusCode === 201) {
@@ -163,17 +200,7 @@ export default function Checkout() {
 
             setCartProducts(cartItemAfterCheckout);
 
-            const LIMIT_VNPAY_PAYMENT_PRICE = 20000000;
             if (paymentMethod === 'vnpay') {
-                if (totalPice < 0 || totalPice > LIMIT_VNPAY_PAYMENT_PRICE) {
-                    return Toast.show({
-                        type: 'info',
-                        text1:
-                            'VNPAY chỉ hỗ trợ thanh toán trong khoảng 1 <= <=' +
-                            formatPrice(LIMIT_VNPAY_PAYMENT_PRICE),
-                    });
-                }
-
                 const paymentResponse =
                     (await orderApiRequest.createVnpayPayment(accessToken, {
                         amount: totalPice,

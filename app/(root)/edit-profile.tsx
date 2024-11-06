@@ -198,7 +198,8 @@ const EditProfile = () => {
                                     disabled={!isValid}
                                     onPress={handleSubmit(onSubmit)}
                                     label="Lưu"
-                                    labelClasses={`mt-4 font-JakartaBold text-white px-5 py-3 min-w-[120px] rounded-md ${isValid ? 'bg-black' : 'bg-[#ccc]'}`}
+                                    labelClasses="font-JakartaBold text-white"
+                                    className={`mt-4 min-w-[120px] rounded-md ${isValid ? 'bg-black' : 'bg-[#ccc]'}`}
                                 />
                             )}
                         </View>
