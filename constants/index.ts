@@ -57,6 +57,10 @@ import shoppingBag from '@/assets/icons/shopping-bag.png';
 import ticketCheck from '@/assets/icons/ticket-check.png';
 import messageCircle from '@/assets/icons/message-circle.png';
 import info from '@/assets/icons/info.png';
+import listFilter from '@/assets/icons/list-filter.png';
+import badgeCheck from '@/assets/icons/badge-check.png';
+import upload from '@/assets/icons/upload.png';
+import shieldCheck from '@/assets/icons/shield-check.png';
 
 export const images = {
     onboarding1,
@@ -121,6 +125,10 @@ export const icons = {
     ticketCheck,
     messageCircle,
     info,
+    listFilter,
+    badgeCheck,
+    upload,
+    shieldCheck,
 };
 
 export const onboarding = [
