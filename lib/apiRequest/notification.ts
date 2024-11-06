@@ -95,7 +95,7 @@ class NotificationApiRequest {
             return response;
         } catch (error: any) {
             Toast.show({
-                type: 'Error',
+                type: 'error',
                 text1: error?.payload?.message ?? 'Lỗi không xác định',
             });
             return error;
@@ -116,7 +116,7 @@ class NotificationApiRequest {
             return response;
         } catch (error: any) {
             Toast.show({
-                type: 'Error',
+                type: 'error',
                 text1: error?.payload?.message ?? 'Lỗi không xác định',
             });
             return error;
@@ -137,7 +137,7 @@ class NotificationApiRequest {
             return response;
         } catch (error: any) {
             Toast.show({
-                type: 'Error',
+                type: 'error',
                 text1: error?.payload?.message ?? 'Lỗi không xác định',
             });
             return error;
@@ -162,7 +162,7 @@ class NotificationApiRequest {
             return response;
         } catch (error: any) {
             Toast.show({
-                type: 'Error',
+                type: 'error',
                 text1: error?.payload?.message ?? 'Lỗi không xác định',
             });
             return error;
@@ -183,7 +183,7 @@ class NotificationApiRequest {
             return response;
         } catch (error: any) {
             Toast.show({
-                type: 'Error',
+                type: 'error',
                 text1: error?.payload?.message ?? 'Lỗi không xác định',
             });
             return error;
@@ -204,7 +204,7 @@ class NotificationApiRequest {
             return response;
         } catch (error: any) {
             Toast.show({
-                type: 'Error',
+                type: 'error',
                 text1: error?.payload?.message ?? 'Lỗi không xác định',
             });
             return error?.payload;
@@ -224,7 +224,7 @@ class NotificationApiRequest {
             return response;
         } catch (error: any) {
             Toast.show({
-                type: 'Error',
+                type: 'error',
                 text1: error?.payload?.message ?? 'Lỗi không xác định',
             });
             return error?.payload;
@@ -249,7 +249,7 @@ class NotificationApiRequest {
             return response;
         } catch (error: any) {
             Toast.show({
-                type: 'Error',
+                type: 'error',
                 text1: error?.payload?.message ?? 'Lỗi không xác định',
             });
             return error?.payload;
@@ -269,7 +269,7 @@ class NotificationApiRequest {
             return response;
         } catch (error: any) {
             Toast.show({
-                type: 'Error',
+                type: 'error',
                 text1: error?.payload?.message ?? 'Lỗi không xác định',
             });
             return error?.payload;

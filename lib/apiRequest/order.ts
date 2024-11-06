@@ -19,6 +19,22 @@ export type CreateOrderType = {
     }[];
 };
 
+export type CreateOrderComboType = {
+    voucherCodes?: string[];
+    name: string;
+    phone: string;
+    address: string;
+    province: string;
+    district: string;
+    ward: string;
+    hamlet?: string;
+    note?: string;
+    delivery_id: string;
+    payment_method: string;
+    productOptionId: string;
+    productComboIds: string[];
+};
+
 export type CreateOrderResponseType = {
     statusCode: number;
     message: string;
@@ -27,6 +43,13 @@ export type CreateOrderResponseType = {
         order_id: string;
         GHTK_tracking_number: number;
         payment_id: string;
+        userId?: string;
+        transaction_id?: number;
+        order_details?: {
+            product_option: {
+                thumbnail: string;
+            };
+        }[];
     };
 };
 
@@ -35,6 +58,13 @@ export type UpdateOrderResponseType = {
     message: string;
     data: {
         is_success: boolean;
+        userId?: string;
+        transaction_id?: number;
+        order_details?: {
+            product_option: {
+                thumbnail: string;
+            };
+        }[];
     };
 };
 
@@ -170,6 +200,7 @@ class OrderApiRequest {
                 type: 'error',
                 text1: error?.payload?.message ?? 'Lỗi không xác định',
             });
+            return error;
         }
     }
 
@@ -201,6 +232,26 @@ class OrderApiRequest {
         try {
             const response: CreateOrderResponseType = await http.post(
                 '/orders',
+                body,
+                {
+                    headers: {
+                        Authorization: 'Bearer ' + token,
+                    },
+                },
+            );
+            return response;
+        } catch (error: any) {
+            Toast.show({
+                type: 'error',
+                text1: error?.payload?.message ?? 'Lỗi không xác định',
+            });
+        }
+    }
+
+    async createOrderCombo(token: string, body: CreateOrderComboType) {
+        try {
+            const response: CreateOrderResponseType = await http.post(
+                '/orders/combos',
                 body,
                 {
                     headers: {
