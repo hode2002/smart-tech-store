@@ -149,10 +149,10 @@ const TableBanners = (props: Props) => {
                             <TableCell className="table-cell">
                                 <Image
                                     alt="Banner image"
-                                    className="aspect-square rounded-md object-cover"
-                                    height="300"
+                                    className="aspect-square rounded-md object-contain"
+                                    height="100"
                                     src={banner.image}
-                                    width="300"
+                                    width="200"
                                 />
                             </TableCell>
                             <TableCell className="font-medium text-nowrap">
