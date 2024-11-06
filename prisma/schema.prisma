@@ -1,0 +1,494 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["fullTextSearch", "fullTextIndex"]
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum AuthType {
+  GOOGLE
+  EMAIL
+  FACEBOOK
+}
+
+enum NotificationType {
+  ORDER
+  COMMON
+  VOUCHER
+  COMMENT
+}
+
+enum VoucherType {
+  FIXED
+  PERCENT
+}
+
+model Banner {
+  id         String   @id @default(uuid())
+  title      String   @unique
+  image      String
+  link       String
+  status     String   @default("show")
+  type       String   @default("slide")
+  slug       String
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  @@index([status, slug])
+  @@map("banners")
+}
+
+model User {
+  id                 String             @id @default(uuid())
+  email              String             @unique
+  password           String?
+  name               String?
+  avatar             String?            @default("https://res.cloudinary.com/dx9ltrteu/image/upload/v1727679484/default_amjedt.jpg")
+  phone              String?
+  address            UserAddress?
+  cart               Cart[]
+  orders             Order[]
+  history_search     HistorySearch[]
+  review             Review[]
+  refresh_token      String?
+  role               Role               @default(USER)
+  auth_type          AuthType           @default(EMAIL)
+  is_active          Boolean            @default(false)
+  created_at         DateTime           @default(now())
+  updated_at         DateTime           @updatedAt
+  user_notifications UserNotification[]
+
+  @@index([email, is_active])
+  @@map("users")
+}
+
+model UserAddress {
+  id         String   @id @default(uuid())
+  user       User     @relation(fields: [user_id], references: [id])
+  user_id    String   @unique
+  address    String?
+  province   String
+  district   String
+  ward       String
+  hamlet     String?
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  @@map("user_address")
+}
+
+model Cart {
+  id                String        @id @default(uuid())
+  user              User          @relation(fields: [user_id], references: [id])
+  user_id           String
+  product_option    ProductOption @relation(fields: [product_option_id], references: [id])
+  product_option_id String
+  quantity          Int           @default(1)
+  created_at        DateTime      @default(now())
+  updated_at        DateTime      @updatedAt
+
+  @@index([user_id, product_option_id])
+  @@map("carts")
+}
+
+model Product {
+  id              String               @id @default(uuid())
+  name            String
+  descriptions    ProductDescription[]
+  main_image      String
+  brand           Brand                @relation(fields: [brand_id], references: [id])
+  brand_id        String
+  category        Category             @relation(fields: [category_id], references: [id])
+  category_id     String
+  price           Float
+  promotions      Json
+  warranties      Json
+  label           String
+  product_options ProductOption[]
+  created_at      DateTime             @default(now())
+  updated_at      DateTime             @updatedAt
+
+  @@index([name, brand_id, category_id, price])
+  @@map("products")
+}
+
+model ProductOption {
+  id                   String               @id @default(uuid())
+  product              Product              @relation(fields: [product_id], references: [id])
+  product_id           String
+  thumbnail            String
+  product_images       ProductImage[]
+  label_image          String
+  price_modifier       Float                @default(0)
+  stock                Int                  @default(0)
+  sku                  String
+  discount             Float                @default(0)
+  is_sale              Boolean              @default(false)
+  is_deleted           Boolean              @default(false)
+  slug                 String
+  reviews              Review[]
+  order_detail         OrderDetail[]
+  cart                 Cart[]
+  created_at           DateTime             @default(now())
+  updated_at           DateTime             @updatedAt
+  product_option_value ProductOptionValue[]
+  combos               Combo[]
+  product_combos       ProductCombo[]
+  technical_specs      TechnicalSpecs?      @relation(fields: [technical_specs_id], references: [id])
+  technical_specs_id   String?              @unique
+
+  @@index([slug, product_id, is_sale, is_deleted])
+  @@map("product_options")
+}
+
+model TechnicalSpecs {
+  id             String         @id @default(uuid())
+  product_option ProductOption?
+  specs          Spec[]
+  created_at     DateTime       @default(now())
+  updated_at     DateTime       @updatedAt
+
+  @@map("technical_specs")
+}
+
+model Spec {
+  id                 String         @id @default(uuid())
+  technical_specs    TechnicalSpecs @relation(fields: [technical_specs_id], references: [id], onDelete: Cascade)
+  technical_specs_id String
+  key                String
+  value              String
+  spec_type          String
+  created_at         DateTime       @default(now())
+  updated_at         DateTime       @updatedAt
+
+  @@index([spec_type])
+  @@map("specs")
+}
+
+model Option {
+  id                   String               @id @default(uuid())
+  name                 String
+  product_option_value ProductOptionValue[]
+
+  @@map("options")
+}
+
+model ProductOptionValue {
+  id                String        @id @default(uuid())
+  product_option    ProductOption @relation(fields: [product_option_id], references: [id])
+  product_option_id String
+  option            Option        @relation(fields: [option_id], references: [id])
+  option_id         String
+  value             String
+  adjust_price      Float         @default(0)
+
+  @@index([product_option_id, option_id])
+  @@map("product_option_values")
+}
+
+model ProductDescription {
+  id         String   @id @default(uuid())
+  product    Product  @relation(fields: [product_id], references: [id])
+  product_id String
+  content    String   @db.LongText
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  @@map("product_descriptions")
+}
+
+model ProductImage {
+  id                String        @id @default(uuid())
+  product_option    ProductOption @relation(fields: [product_option_id], references: [id])
+  product_option_id String
+  image_url         String
+  image_alt_text    String?
+  created_at        DateTime      @default(now())
+  updated_at        DateTime      @updatedAt
+
+  @@map("product_images")
+}
+
+model Brand {
+  id          String    @id @default(uuid())
+  name        String
+  description String?
+  logo_url    String
+  products    Product[]
+  is_deleted  Boolean   @default(false)
+  slug        String
+  created_at  DateTime  @default(now())
+  updated_at  DateTime  @updatedAt
+
+  @@index([slug, is_deleted])
+  @@map("brands")
+}
+
+model Category {
+  id          String    @id @default(uuid())
+  name        String
+  description String?
+  products    Product[]
+  is_deleted  Boolean   @default(false)
+  slug        String
+  created_at  DateTime  @default(now())
+  updated_at  DateTime  @updatedAt
+
+  @@index([slug, is_deleted])
+  @@map("categories")
+}
+
+model Order {
+  id             String         @id @default(uuid())
+  User           User           @relation(fields: [user_id], references: [id])
+  user_id        String
+  name           String
+  phone          String
+  order_details  OrderDetail[]
+  shipping       OrderShipping?
+  order_date     DateTime?
+  total_amount   Float          @default(0)
+  payment        Payment?
+  note           String?
+  status         Int            @default(0)
+  created_at     DateTime       @default(now())
+  updated_at     DateTime       @updatedAt
+  order_vouchers OrderVoucher[]
+  order_combo    OrderCombo[]
+
+  @@index([user_id, status])
+  @@map("orders")
+}
+
+model OrderDetail {
+  id                String        @id @default(uuid())
+  order             Order         @relation(fields: [order_id], references: [id])
+  order_id          String
+  product_option    ProductOption @relation(fields: [product_option_id], references: [id])
+  product_option_id String
+  quantity          Int           @default(1)
+  price             Float
+  subtotal          Float
+  created_at        DateTime      @default(now())
+  updated_at        DateTime      @updatedAt
+
+  @@index([order_id])
+  @@map("order_details")
+}
+
+model OrderCombo {
+  id       String @id @default(uuid())
+  order    Order  @relation(fields: [order_id], references: [id])
+  order_id String
+  combo    Combo  @relation(fields: [combo_id], references: [id])
+  combo_id String
+
+  @@index([order_id, combo_id])
+  @@map("order_combos")
+}
+
+model Payment {
+  id             String   @id @default(uuid())
+  order          Order    @relation(fields: [order_id], references: [id])
+  order_id       String   @unique
+  total_price    Float
+  payment_method String
+  transaction_id String?
+  created_at     DateTime @default(now())
+  updated_at     DateTime @updatedAt
+
+  @@index([order_id])
+  @@map("payments")
+}
+
+model Delivery {
+  id             String          @id @default(uuid())
+  name           String
+  status         Int             @default(0)
+  slug           String          @unique
+  created_at     DateTime        @default(now())
+  updated_at     DateTime        @updatedAt
+  order_shipping OrderShipping[]
+
+  @@index([status, slug])
+  @@map("delivery")
+}
+
+model OrderShipping {
+  id              String   @id @default(uuid())
+  order           Order    @relation(fields: [order_id], references: [id])
+  order_id        String   @unique
+  delivery        Delivery @relation(fields: [delivery_id], references: [id])
+  delivery_id     String
+  address         String?
+  province        String
+  district        String
+  ward            String
+  hamlet          String?
+  estimate_date   String
+  fee             Int      @default(0)
+  tracking_number String   @unique
+  order_label     String?  @unique
+  status          Int      @default(0)
+  created_at      DateTime @default(now())
+  updated_at      DateTime @updatedAt
+
+  @@index([order_id, status])
+  @@map("order_shipping")
+}
+
+model HistorySearch {
+  id             String   @id @default(uuid())
+  user           User     @relation(fields: [user_id], references: [id])
+  user_id        String
+  search_content String
+  created_at     DateTime @default(now())
+  updated_at     DateTime @updatedAt
+
+  @@index([user_id, search_content])
+  @@map("history_search")
+}
+
+model Review {
+  id                String        @id @default(uuid())
+  parent            Review?       @relation("parent", fields: [parent_id], references: [id], onDelete: Cascade)
+  parent_id         String?
+  children          Review[]      @relation("parent")
+  user              User          @relation(fields: [user_id], references: [id])
+  user_id           String
+  product_option    ProductOption @relation(fields: [product_option_id], references: [id])
+  product_option_id String
+  star              Float?        @default(5)
+  comment           String
+  review_images     ReviewImage[]
+  like              Int           @default(0)
+  video_url         String?
+  created_at        DateTime      @default(now())
+  updated_at        DateTime      @updatedAt
+
+  @@index([product_option_id, user_id, star])
+  @@map("reviews")
+}
+
+model ReviewImage {
+  id         String   @id @default(uuid())
+  review     Review   @relation(fields: [review_id], references: [id], onDelete: Cascade)
+  review_id  String
+  image_url  String
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  @@index([review_id])
+  @@map("review_images")
+}
+
+model Voucher {
+  id                 String         @id @default(uuid())
+  code               String
+  type               VoucherType    @default(FIXED)
+  value              Float          @default(0)
+  start_date         DateTime
+  end_date           DateTime
+  available_quantity Int            @default(0)
+  min_order_value    Float          @default(0)
+  status             Int            @default(0)
+  created_at         DateTime       @default(now())
+  updated_at         DateTime       @updatedAt
+  order_vouchers     OrderVoucher[]
+
+  @@index([type, start_date, end_date, available_quantity, status])
+  @@map("vouchers")
+}
+
+model OrderVoucher {
+  id         String   @id @default(uuid())
+  order      Order    @relation(fields: [order_id], references: [id])
+  order_id   String
+  voucher    Voucher  @relation(fields: [voucher_id], references: [id])
+  voucher_id String
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  @@index([order_id, voucher_id])
+  @@map("order_vouchers")
+}
+
+model Combo {
+  id                String         @id @default(uuid())
+  product_option    ProductOption  @relation(fields: [product_option_id], references: [id])
+  product_option_id String
+  product_combos    ProductCombo[]
+  status            Int            @default(0)
+  created_at        DateTime       @default(now())
+  updated_at        DateTime       @updatedAt
+  order_combos      OrderCombo[]
+
+  @@index([product_option_id])
+  @@map("combos")
+}
+
+model ProductCombo {
+  id                String        @id @default(uuid())
+  combo             Combo         @relation(fields: [combo_id], references: [id])
+  combo_id          String
+  product_option    ProductOption @relation(fields: [product_option_id], references: [id])
+  product_option_id String
+  discount          Float         @default(0)
+  created_at        DateTime      @default(now())
+  updated_at        DateTime      @updatedAt
+
+  @@index([combo_id, product_option_id])
+  @@map("product_combos")
+}
+
+model Notification {
+  id                 String             @id @default(uuid())
+  title              String
+  content            String             @db.LongText
+  images             String             @db.LongText
+  status             Int                @default(0)
+  slug               String
+  type               NotificationType   @default(ORDER)
+  link               String
+  created_at         DateTime           @default(now())
+  updated_at         DateTime           @updatedAt
+  user_notifications UserNotification[]
+
+  @@index([status])
+  @@map("notifications")
+}
+
+model UserNotification {
+  id              String       @id @default(uuid())
+  notification    Notification @relation(fields: [notification_id], references: [id], onDelete: Cascade)
+  notification_id String
+  user            User         @relation(fields: [user_id], references: [id])
+  user_id         String
+  status          Int          @default(0)
+  created_at      DateTime     @default(now())
+  updated_at      DateTime     @updatedAt
+
+  @@index([notification_id, user_id, status])
+  @@map("user_notifications")
+}
+
+model News {
+  id         String   @id @default(uuid())
+  title      String
+  image      String
+  content    String   @db.LongText
+  slug       String
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  @@index([slug])
+  @@map("news")
+}
