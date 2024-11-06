@@ -65,7 +65,7 @@ export default function HomeProductCard({
     };
 
     return (
-        <View className="min-h-[400px] max-w-[185px] bg-card border-[1px] border-[#ccc] bg-white rounded-md shadow-md m-3">
+        <View className="min-h-[400px] max-w-[185px] border-[1px] border-[#ccc] bg-white rounded-md shadow-md m-3">
             <View className="flex flex-col justify-between gap-4 px-2 py-3">
                 {product?.label && (
                     <Text className="bg-[#f1f1f1] text-[#333] rounded-lg animate-pulse w-1/2">
@@ -75,9 +75,7 @@ export default function HomeProductCard({
                     </Text>
                 )}
                 <Link
-                    href={
-                        `/${product?.category.slug}/${productOption.slug}` as Href
-                    }
+                    href={`/(category)/${productOption.slug}` as Href}
                     className="relative flex flex-col justify-center items-center object-contain"
                 >
                     <View>
@@ -132,8 +130,9 @@ export default function HomeProductCard({
                                     source={icons.star}
                                     resizeMode="contain"
                                     className="w-5 h-5"
+                                    tintColor={'#fbc02d'}
                                 />
-                                <Text className="block font-sans text-base antialiased font-medium leading-relaxed text-gray-500">
+                                <Text className="block text-base antialiased font-medium leading-relaxed text-gray-500">
                                     ({productOption.rating.total_reviews})
                                 </Text>
                             </View>

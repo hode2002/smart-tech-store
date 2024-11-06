@@ -26,7 +26,7 @@ const NotificationItem = ({
         <View
             className={`${
                 notification.status === 0 ? 'bg-accent' : ''
-            } border my-2 p-4 leading-none`}
+            } border border-gray-200 my-2 p-4 leading-none`}
         >
             <View className="flex-row gap-4 items-start capitalize">
                 <View>
