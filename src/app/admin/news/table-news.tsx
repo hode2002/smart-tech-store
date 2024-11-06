@@ -61,9 +61,6 @@ const TableNews = (props: Props) => {
                         Tiêu đề
                     </TableHead>
                     <TableHead className="table-cell text-nowrap">
-                        Nội dung
-                    </TableHead>
-                    <TableHead className="table-cell text-nowrap">
                         Slug
                     </TableHead>
                     <TableHead className="table-cell text-nowrap">
@@ -89,14 +86,6 @@ const TableNews = (props: Props) => {
                             </TableCell>
                             <TableCell className="font-medium text-nowrap max-w-[300px] truncate">
                                 {item.title}
-                            </TableCell>
-                            <TableCell>
-                                <div
-                                    className="font-medium text-nowrap max-w-[500px] truncate"
-                                    dangerouslySetInnerHTML={{
-                                        __html: item.content,
-                                    }}
-                                ></div>
                             </TableCell>
                             <TableCell className="font-medium text-nowrap max-w-[300px] truncate">
                                 {item.slug}
