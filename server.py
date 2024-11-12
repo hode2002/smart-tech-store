@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 from flask import Flask, request, jsonify
 import os
 import requests
@@ -8,14 +9,13 @@ import jwt
 from dotenv import load_dotenv
 load_dotenv()
 
-from annoy_search import get_closest_items, get_item_vector
-from create_tree import vector_features_collection, create_tree_from_node_server
+from annoy_search import get_closest_items, get_closest_items_with_distances, get_item_vector
+from create_tree import vector_features_collection, create_tree_from_node_server, add_item_to_tree
 
 allowed_origins = os.getenv('ALLOWED_ORIGINS')
 access_token_secret = os.getenv('ACCESS_TOKEN_SECRET')
 node_server_url = os.getenv('NODE_SERVER_URL')
 
-# Tạo Flask app
 app = Flask(__name__)
 CORS(app, resources={r"/api/*": {"origins": allowed_origins}},
     methods=['GET', 'POST', 'PUT', 'PATCH','DELETE'])
@@ -27,7 +27,8 @@ def unique(list):
 @app.route('/api/v1/products/closest', methods=['POST'])
 def getClosest():
     try:
-        # Lấy dữ liệu từ request
+        distance_threshold = 30
+        
         if 'image' not in request.files:
             return jsonify({
                 "message": "Missing image file",
@@ -37,54 +38,62 @@ def getClosest():
         image = request.files['image']
         if image.filename == '':
             return jsonify({
-                "message": "image file not found",
+                "message": "Image file not found",
                 "statusCode": 404
             }), 404
         
         if image:
-            closest_items = get_closest_items(image)
+            closest_items, distances = get_closest_items_with_distances(image)
             
             if len(closest_items) == 0:
                 return jsonify({
-                'statusCode': 404,
-                'message': 'Annoy tree does not exist',
-            }), 404
+                    'statusCode': 404,
+                    'message': 'Annoy tree does not exist',
+                }), 404
             
             results = []
-            for i in range(len(closest_items)):
-                index = closest_items[i]
+            for index, distance in zip(closest_items, distances):
+                if distance > distance_threshold:
+                    continue
                 
-                # Lấy vector từ index
                 vector = get_item_vector(index)
                 
-                # Tìm tìm product theo vector
-                product = vector_features_collection.find_one({"vector": vector}, {'product_option_id': 1, '_id': 0})
+                product = vector_features_collection.find_one(
+                    {"vector": vector},
+                    {'product_option_id': 1, '_id': 0}
+                )
                 
-                product_option_id = product.get('product_option_id')
-                
-                # Thêm sản phẩm vào danh sách kết quả
-                results.append(product_option_id)
+                if product:
+                    product_option_id = product.get('product_option_id')
+                    results.append(product_option_id)
             
-            # Gửi yêu cầu POST đến API
+            if not results:
+                return jsonify({
+                'statusCode': 200,
+                'message': 'No related products found for the given image',
+                'data': []
+            }), 200
+            
+            unique_product_option_ids = list(set(results))
+
             url = node_server_url + '/products/get-by-array'
-            products = {'product_option_ids': unique(results)}
+            products = {'product_option_ids': unique_product_option_ids}
 
             response = requests.post(url, json=products)
-            response = response.json()
+            response_data = response.json()
             
-            # Trả về kết quả dự đoán
             return jsonify({
-                'statusCode': response['statusCode'],
-                'message': response['message'],
-                'data': response['data']
-            }), response['statusCode']
+                'statusCode': response_data.get('statusCode', 200),
+                'message': response_data.get('message', 'Success'),
+                'data': response_data.get('data', [])
+            }), response_data.get('statusCode', 200)
 
     except Exception as e:
         return jsonify({
             "message": str(e),
             "statusCode": 500
         }), 500
-
+        
 @app.route('/api/v1/products/create-tree', methods=['POST'])
 def create_annoy_tree():
     token = request.headers.get('Authorization')
@@ -116,6 +125,27 @@ def create_annoy_tree():
             'statusCode': 401,
             'message': 'Invalid token',
         }),401
+        
+@app.route('/api/v1/products/create-vector', methods=['POST'])
+def create_vector():
+    if 'image_url' not in request.json:
+        return jsonify({
+            "message": "Missing image url",
+            "statusCode": 403
+        }), 403
+    
+    if 'product_option_id' not in request.json:
+        return jsonify({
+            "message": "Missing product option id",
+            "statusCode": 403
+        }), 403
+    
+    data = request.json
+    
+    image_url = data['image_url']
+    product_option_id = data['product_option_id']
+    
+    return add_item_to_tree(image_url, product_option_id)
 
 @app.route('/', methods=['GET'])
 def hello():
