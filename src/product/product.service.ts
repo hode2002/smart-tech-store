@@ -20,12 +20,15 @@ import { MediaService } from 'src/media/media.service';
 import { CreateProductComboDto } from 'src/product/dto/create-product-combo.dto';
 import { CreateComboDto } from 'src/product/dto/create-combo.dto';
 import { UpdateProductComboDto } from 'src/product/dto/update-product-combo.dto';
+import axios from 'axios';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class ProductService {
     constructor(
         private readonly prismaService: PrismaService,
         private readonly mediaService: MediaService,
+        private readonly configService: ConfigService,
     ) {}
 
     async create(createProductDto: CreateProductDto) {
@@ -448,11 +451,31 @@ export class ProductService {
                             '-' +
                             generateSlug(other.sku),
                     },
+                    include: {
+                        product_images: true,
+                    },
                 });
             },
         );
 
-        await Promise.all(productOptionPromises);
+        const productOptions = await Promise.all(productOptionPromises);
+
+        const PYTHON_API_URL = this.configService.get('PYTHON_API_URL');
+        productOptions.map(async (productOption) => {
+            for (const item of [
+                ...productOption.product_images,
+                { image_url: productOption.thumbnail, image_alt_text: '' },
+            ])
+                return await axios.post(
+                    PYTHON_API_URL + '/api/v1/products/create-vector',
+                    {
+                        image_url: item.image_url,
+                        product_option_id: productOption.id,
+                    },
+                );
+        });
+
+        await Promise.all(productOptions);
 
         return await this.findById(product_id);
     }
@@ -1454,6 +1477,9 @@ export class ProductService {
                             where: {
                                 parent_id: null,
                             },
+                            orderBy: {
+                                created_at: 'asc',
+                            },
                             select: {
                                 id: true,
                                 user: {
@@ -1474,6 +1500,9 @@ export class ProductService {
                                 },
                                 _count: true,
                                 children: {
+                                    orderBy: {
+                                        created_at: 'asc',
+                                    },
                                     select: {
                                         id: true,
                                         user: {
@@ -2227,6 +2256,23 @@ export class ProductService {
                     },
                 },
             });
+
+        if (product_images) {
+            const PYTHON_API_URL = this.configService.get('PYTHON_API_URL');
+            for (const item of [
+                ...product_images,
+                {
+                    image_url: other.thumbnail,
+                    image_alt_text: '',
+                },
+            ]) {
+                await axios.post(PYTHON_API_URL + '/products/create-vector', {
+                    image_url: item.image_url,
+                    product_option_id: productOptionId,
+                });
+            }
+        }
+
         return await this.prismaService.productOption.update({
             where: { id: productOptionId },
             data: {
