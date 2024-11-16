@@ -13,7 +13,6 @@ import { ProductType, setCartProducts } from '@/lib/store/slices';
 import { ShieldCheck } from 'lucide-react';
 import { formatPrice } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
-import { randomElement } from '../../lib/utils';
 import accountApiRequest, {
     AddToCartResponseType,
 } from '@/apiRequests/account';
@@ -85,7 +84,7 @@ export default function HomeProductCard(props: Props) {
         <div className="w-[200px] lg:w-auto lg:max-w-[300px]">
             <ContextMenu>
                 <ContextMenuTrigger>
-                    <div className="min-h-[410px] lg:h-[650px] bg-card hover:shadow-2xl hover:cursor-pointer hover:scale-[1.00] md:hover:scale-[1.1] transition-all duration-300 border-[1px] border-[#ccc] rounded-md px-2 py-3 max-w-[300px] shadow-md m-3 flex flex-col justify-between">
+                    <div className="min-h-[410px] md:h-[500px] bg-card hover:shadow-2xl hover:cursor-pointer hover:scale-[1.00] md:hover:scale-[1.1] transition-all duration-300 border-[1px] border-[#ccc] rounded-md px-2 py-3 w-[280px] shadow-md m-3 flex flex-col">
                         {product?.label && (
                             <p className="mb-4 opacity-70 text-sm">
                                 <span className="bg-[#f1f1f1] text-[#333] rounded-lg animate-pulse">
@@ -121,7 +120,7 @@ export default function HomeProductCard(props: Props) {
                                 <p className="text-center font-bold capitalize text-pretty">
                                     {productName}
                                 </p>
-                                <div className="flex flex-col lg:flex-row gap-3 mt-2 justify-center items-center">
+                                <div className="flex flex-col gap-3 mt-2 justify-center items-center">
                                     {productOption.discount === 0 ? (
                                         <p className="text-[#E83A45] font-semibold text-[18px]">
                                             {price}
@@ -131,8 +130,13 @@ export default function HomeProductCard(props: Props) {
                                             <p className="text-[#E83A45] font-bold text-[18px]">
                                                 {salePrice}
                                             </p>
-                                            <p className="line-through text-[14px]">
-                                                {price}
+                                            <p className="text-[14px] flex gap-2">
+                                                <span className="line-through">
+                                                    {price}
+                                                </span>
+                                                <span>
+                                                    -{productOption.discount}%
+                                                </span>
                                             </p>
                                         </>
                                     )}
@@ -165,38 +169,11 @@ export default function HomeProductCard(props: Props) {
                                     </p>
                                 </div>
                             )}
-
-                            <div className="text-center text-[12px] hidden lg:block">
-                                <div className="text-[#E83A45] font-semibold flex justify-around items-center gap-2">
-                                    <Image
-                                        priority
-                                        height={15}
-                                        width={15}
-                                        className="animate-ping"
-                                        src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAcCAYAAAB75n/uAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAGVSURBVHgB7VbRTcMwFDyHfvCB2oyQDegIZQM2gE5QOgFlAroB3QCYoGWClAnIBkSCD5Cg5vyS0tR1HAuRH+hJjq28892Lo1wLOKC7uNQ9PMvgGjVgbVThXSMEpbjWMSZcz2TdxYWHN5VR8CbNBj2kJN5UhKbSYYzk+x7X6yYsXmrrRQ6PHApxhTGRe3pjipUcW6byrY57wrOg7Bvs6rwUu+P8WLKOeT3lfIIPrg4w53XB+oMIK/Q5D2g8VC+YeQ0qJmdcJlY7Y15j1kYyb7Ck+L0tLlsoFrOrPkLQwZLHkusjdhsA9YqF4ot52um0Du/kHfI5tOwJwSIKFv8ZBhFaxl8wULhCW2hTe+OBIlv4LSRORkciIXOVGvbl3LcsiOvU3B2pfIg1MDXhuPaWgel7yZnJHvPl1hGkZvIJ7if0GeyIS0SbjouRhJq4DVYYV89dBDUT9E0i2YTd3DLJ8IlhuEGEW/MjsyW+HSlJ1cSceRnhgQYFzFH0HeK2iTeJO74iBVL4kTRx9mH3bwyiMpR+V1n+8nwB+DO/44jWMeQAAAAASUVORK5CYII="
-                                        alt="product promotion"
-                                    />
-                                    <p className="my-2">
-                                        {randomElement(product.promotions)}
-                                    </p>
-                                    <Image
-                                        priority
-                                        height={15}
-                                        width={15}
-                                        className="animate-ping"
-                                        src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAcCAYAAAB75n/uAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAGVSURBVHgB7VbRTcMwFDyHfvCB2oyQDegIZQM2gE5QOgFlAroB3QCYoGWClAnIBkSCD5Cg5vyS0tR1HAuRH+hJjq28892Lo1wLOKC7uNQ9PMvgGjVgbVThXSMEpbjWMSZcz2TdxYWHN5VR8CbNBj2kJN5UhKbSYYzk+x7X6yYsXmrrRQ6PHApxhTGRe3pjipUcW6byrY57wrOg7Bvs6rwUu+P8WLKOeT3lfIIPrg4w53XB+oMIK/Q5D2g8VC+YeQ0qJmdcJlY7Y15j1kYyb7Ck+L0tLlsoFrOrPkLQwZLHkusjdhsA9YqF4ot52um0Du/kHfI5tOwJwSIKFv8ZBhFaxl8wULhCW2hTe+OBIlv4LSRORkciIXOVGvbl3LcsiOvU3B2pfIg1MDXhuPaWgel7yZnJHvPl1hGkZvIJ7if0GeyIS0SbjouRhJq4DVYYV89dBDUT9E0i2YTd3DLJ8IlhuEGEW/MjsyW+HSlJ1cSceRnhgQYFzFH0HeK2iTeJO74iBVL4kTRx9mH3bwyiMpR+V1n+8nwB+DO/44jWMeQAAAAASUVORK5CYII="
-                                        alt="product promotion"
-                                    />
-                                </div>
-                                <div className="my-2">
-                                    <p>{randomElement(product.promotions)}</p>
-                                </div>
-                            </div>
                         </Link>
 
                         <Button
                             onClick={handleAddToCart}
-                            className="py-4 bg-popover-foreground text-popover hover:bg-popover hover:text-popover-foreground hover:border rounded-md"
+                            className="mt-auto py-4 bg-popover-foreground text-popover hover:bg-popover hover:text-popover-foreground hover:border rounded-md"
                         >
                             Thêm vào giỏ hàng
                         </Button>
