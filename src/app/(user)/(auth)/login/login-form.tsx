@@ -22,7 +22,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { ReloadIcon } from '@radix-ui/react-icons';
 import { PasswordInput } from '@/components/ui/password-input';
-import { useAppDispatch } from '@/lib/store';
+import { useAppDispatch, useAppSelector } from '@/lib/store';
 import {
     setAccessToken,
     setProfile,
@@ -33,6 +33,7 @@ import Link from 'next/link';
 export function LoginForm() {
     const router = useRouter();
     const dispatch = useAppDispatch();
+    const registerEmail = useAppSelector((state) => state.auth.registerEmail);
 
     const [loading, setLoading] = useState(false);
     const [password, setPassword] = useState('');
@@ -40,7 +41,7 @@ export function LoginForm() {
     const form = useForm<LoginBodyType>({
         resolver: zodResolver(LoginBody),
         defaultValues: {
-            email: '',
+            email: registerEmail ?? '',
             password,
         },
     });

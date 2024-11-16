@@ -7,9 +7,19 @@ import {
     FacebookLoginButton,
     GoogleLoginButton,
 } from 'react-social-login-buttons';
+import { useEffect } from 'react';
+import { setRegisterEmail } from '@/lib/store/slices';
+import { useAppDispatch } from '@/lib/store';
 
 export default function Login() {
     const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+    const dispatch = useAppDispatch();
+
+    useEffect(() => {
+        return () => {
+            dispatch(setRegisterEmail(''));
+        };
+    }, [dispatch]);
 
     return (
         <div className="py-10 bg-popover min-h-screen">

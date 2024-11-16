@@ -43,6 +43,7 @@ import Link from 'next/link';
 import notificationApiRequest, {
     GetUserNotificationResponseType,
 } from '@/apiRequests/notification';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
 
 export default function Home() {
     const dispatch = useAppDispatch();
@@ -205,29 +206,31 @@ export default function Home() {
                         spaceBetween={isDesktop ? 50 : 30}
                     />
                 </div>
-                <div className="mb-8">
-                    <p className="font-bold text-[26px]">Bài tin</p>
-                    <div className="flex items-center justify-between gap-4 flex-wrap">
+                <Card className="mb-8">
+                    <CardHeader className="font-bold text-[26px] mb-4">
+                        Bài tin
+                    </CardHeader>
+                    <CardContent className="flex items-start justify-start gap-4 flex-wrap">
                         {news &&
                             news.length > 0 &&
                             news.map((item) => (
                                 <Link
                                     href={'/news/' + item.slug}
                                     key={item.id}
-                                    className="w-[20%] flex flex-col justify-center gap-2 text-[14px]"
+                                    className="w-[19%] flex flex-col justify-center gap-2 text-[14px]"
                                 >
                                     <Image
                                         src={item.image}
                                         width={280}
                                         height={162}
-                                        alt=""
+                                        alt={item.slug}
                                         className="rounded-lg"
                                     />
-                                    <p>{item.title}</p>
+                                    <p className="text-left">{item.title}</p>
                                 </Link>
                             ))}
-                    </div>
-                </div>
+                    </CardContent>
+                </Card>
             </div>
             <SubizChat />
         </>

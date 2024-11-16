@@ -545,8 +545,10 @@ const ProductReview = ({
                                                 </p>
                                             </div>
                                             <div className="mt-1">
-                                                <p className="flex gap-2">
-                                                    {child.comment}
+                                                <p className="flex items-center gap-2">
+                                                    <span className="font-semibold">
+                                                        {child.comment}
+                                                    </span>
                                                     {child.user.email ===
                                                         userProfile.email &&
                                                         !replyMode && (

@@ -20,8 +20,7 @@ import { useRouter } from 'next/navigation';
 import { PasswordInput } from '@/components/ui/password-input';
 import { useEffect, useState } from 'react';
 import authApiRequest from '@/apiRequests/auth';
-import { useAppDispatch, useAppSelector } from '@/lib/store';
-import { setRegisterEmail } from '@/lib/store/slices';
+import { useAppSelector } from '@/lib/store';
 
 export function CreatePasswordForm() {
     const router = useRouter();
@@ -33,7 +32,6 @@ export function CreatePasswordForm() {
         }
     }, [router, registerEmail]);
 
-    const dispatch = useAppDispatch();
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
     const [confirmPassword, setConfirmPassword] = useState('');
@@ -57,7 +55,6 @@ export function CreatePasswordForm() {
         setLoading(false);
         if (response.statusCode === 200) {
             router.push('/login');
-            dispatch(setRegisterEmail(''));
         }
     };
 
@@ -72,6 +69,7 @@ export function CreatePasswordForm() {
                             <FormLabel>Mật khẩu</FormLabel>
                             <FormControl>
                                 <PasswordInput
+                                    tabIndex={1}
                                     value={password}
                                     onChange={(e) => {
                                         const password = e.target.value;
@@ -94,6 +92,7 @@ export function CreatePasswordForm() {
                             <FormLabel>Nhập lại mật khẩu</FormLabel>
                             <FormControl>
                                 <PasswordInput
+                                    tabIndex={2}
                                     value={confirmPassword}
                                     onChange={(e) => {
                                         const confirmPassword = e.target.value;

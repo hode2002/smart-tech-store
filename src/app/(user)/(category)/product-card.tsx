@@ -79,19 +79,6 @@ export default function ProductCard(props: Props) {
         [product.price, productOption.discount, productOption.price_modifier],
     );
 
-    const screenSpecs = useCallback(() => {
-        const screenSizes = productOption.technical_specs.find(
-            (spec) => spec.name.toLowerCase() === 'kích thước màn hình',
-        )?.value;
-
-        const screen = productOption.technical_specs
-            .find((spec) => spec.name.toLowerCase() === 'màn hình')
-            ?.value.split(',')
-            .pop();
-
-        return [screen, screenSizes];
-    }, [productOption.technical_specs]);
-
     const handleAddToCart = useCallback(async () => {
         if (!token) {
             toast({
@@ -163,7 +150,7 @@ export default function ProductCard(props: Props) {
         <div className="w-[180px] lg:w-auto lg:max-w-[300px]">
             <ContextMenu>
                 <ContextMenuTrigger>
-                    <div className="min-h-[550px] lg:max-w-[300px] bg-card w-[180px] md:w-[360px] hover:shadow-2xl hover:cursor-pointer hover:scale-[1.01] transition-all duration-300 border-[1px] border-[#ccc] rounded-md px-2 py-3 shadow-md flex flex-col justify-between">
+                    <div className="min-h-[550px] lg:max-w-[280px] bg-card w-[180px] md:w-[360px] hover:shadow-2xl hover:cursor-pointer hover:scale-[1.01] transition-all duration-300 border-[1px] border-[#ccc] rounded-md px-2 py-3 shadow-md flex flex-col">
                         <div>
                             {product?.label && (
                                 <p className="mb-4 opacity-70 text-sm">
@@ -199,91 +186,69 @@ export default function ProductCard(props: Props) {
                                     {productName}
                                 </p>
 
-                                <div className="flex gap-1">
-                                    <p className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-xs md:text-sm font-medium transition-colors bg-secondary text-secondary-foreground shadow-sm h-9 px-2 py-2">
-                                        {screenSpecs()[1]}
-                                    </p>
-                                    <p className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-xs md:text-sm font-medium transition-colors bg-secondary text-secondary-foreground shadow-sm h-9 px-2 py-2">
-                                        {screenSpecs()[0]}
-                                    </p>
-                                </div>
-
-                                {product?.options &&
-                                    product?.options?.length > 0 && (
-                                        <div className="w-full flex flex-col gap-2 md:gap-6 md:my-4">
-                                            {product.options?.map(
-                                                (option, index) => (
-                                                    <div
-                                                        key={index}
-                                                        className="flex gap-2"
-                                                    >
-                                                        {[...option?.values]
-                                                            ?.sort((a, b) => {
-                                                                const numA =
-                                                                    parseInt(
-                                                                        a,
-                                                                        10,
-                                                                    );
-                                                                const numB =
-                                                                    parseInt(
-                                                                        b,
-                                                                        10,
-                                                                    );
-                                                                return (
-                                                                    numA - numB
-                                                                );
-                                                            })
-                                                            .map((el) => {
-                                                                return (
-                                                                    <div
-                                                                        key={el}
-                                                                        onClick={() =>
-                                                                            handleSelectOption(
-                                                                                option.name,
-                                                                                el,
-                                                                            )
+                                <div className="w-full flex flex-col gap-2 md:gap-4 md:my-4">
+                                    {product?.options &&
+                                        product?.options?.length > 0 &&
+                                        product.options?.map(
+                                            (option, index) => (
+                                                <div
+                                                    key={index}
+                                                    className="flex gap-2"
+                                                >
+                                                    {[...option?.values]
+                                                        ?.sort((a, b) => {
+                                                            const numA =
+                                                                parseInt(a, 10);
+                                                            const numB =
+                                                                parseInt(b, 10);
+                                                            return numA - numB;
+                                                        })
+                                                        .map((el) => {
+                                                            return (
+                                                                <div
+                                                                    key={el}
+                                                                    onClick={() =>
+                                                                        handleSelectOption(
+                                                                            option.name,
+                                                                            el,
+                                                                        )
+                                                                    }
+                                                                    className="min-w-max flex flex-wrap"
+                                                                >
+                                                                    <Button
+                                                                        className="capitalize"
+                                                                        size={
+                                                                            isMobile
+                                                                                ? 'sm'
+                                                                                : 'default'
                                                                         }
-                                                                        className="min-w-max flex flex-wrap"
+                                                                        variant={
+                                                                            productOption.slug.includes(
+                                                                                generateSlug(
+                                                                                    el.toLowerCase(),
+                                                                                ),
+                                                                            )
+                                                                                ? 'default'
+                                                                                : 'outline'
+                                                                        }
                                                                     >
-                                                                        <Button
-                                                                            className="capitalize"
-                                                                            size={
-                                                                                isMobile
-                                                                                    ? 'sm'
-                                                                                    : 'default'
-                                                                            }
-                                                                            variant={
-                                                                                productOption.slug.includes(
-                                                                                    generateSlug(
-                                                                                        el.toLowerCase(),
-                                                                                    ),
-                                                                                )
-                                                                                    ? 'default'
-                                                                                    : 'outline'
-                                                                            }
-                                                                        >
-                                                                            {el}
-                                                                        </Button>
-                                                                    </div>
-                                                                );
-                                                            })}
-                                                    </div>
-                                                ),
-                                            )}
-                                        </div>
-                                    )}
-
-                                <div className="flex flex-col-reverse gap-3 mt-2 capitalize justify-center items-center">
+                                                                        {el}
+                                                                    </Button>
+                                                                </div>
+                                                            );
+                                                        })}
+                                                </div>
+                                            ),
+                                        )}
+                                </div>
+                                <div className="flex flex-col-reverse gap-3 capitalize justify-center items-center">
                                     {productOption.discount === 0 ? (
                                         <p className="text-[#E83A45] font-semibold text-[18px]">
                                             {price}
                                         </p>
                                     ) : (
                                         <>
-                                            <p className="text-[#E83A45] font-bold text-[18px]">
-                                                {salePrice}
-                                            </p>
-                                            <p className="text-[14px] flex gap-2">
+                                            <p className="text-[14px] flex gap-2 mb-4">
                                                 <span className="line-through">
                                                     {price}
                                                 </span>
@@ -291,12 +256,14 @@ export default function ProductCard(props: Props) {
                                                     -{productOption.discount}%
                                                 </span>
                                             </p>
+                                            <p className="text-[#E83A45] font-bold text-[18px]">
+                                                {salePrice}
+                                            </p>
                                         </>
                                     )}
                                 </div>
-
                                 {productOption.rating.total_reviews > 0 && (
-                                    <div className="flex justify-start items-center gap-2">
+                                    <div className="flex justify-start items-center gap-2 mb-2">
                                         <span className="font-bold">
                                             {productOption.rating.overall}
                                         </span>
@@ -328,7 +295,7 @@ export default function ProductCard(props: Props) {
                         <Button
                             onClick={handleAddToCart}
                             variant={'default'}
-                            className="my-4 bg-popover-foreground text-popover hover:bg-popover hover:text-popover-foreground hover:border rounded-md"
+                            className="mt-auto bg-popover-foreground text-popover hover:bg-popover hover:text-popover-foreground hover:border rounded-md"
                         >
                             Thêm vào giỏ hàng
                         </Button>
