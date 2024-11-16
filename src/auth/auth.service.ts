@@ -132,10 +132,7 @@ export class AuthService {
             this.configService.get('MAIL_VERIFICATION_URL') + email,
         );
 
-        const data = (await response.json()) as EmailVerificationDto;
-        return {
-            email_available: data.smtpCheck,
-        };
+        return (await response.json()) as EmailVerificationDto;
     }
 
     async register(createUserEmailDto: CreateUserEmailDto) {
@@ -144,6 +141,11 @@ export class AuthService {
         const isExist = await this.userService.findByEmail(email);
         if (isExist) {
             throw new ConflictException('Email Already Exists');
+        }
+
+        const res = await this.emailVerification({ email });
+        if (res?.smtpCheck === 'false') {
+            throw new ConflictException(`Email doesn't exist`);
         }
 
         const isCreated =
