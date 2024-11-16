@@ -29,7 +29,6 @@ export default function HeaderSearchList({
     const handleSearch = (searchItem?: HistorySearchItem) => {
         setSearchSuggestions([]);
         if (searchItem) {
-            console.log('redirecting to search page', searchItem);
             router.push({
                 pathname: '/(root)/search-results',
                 params: {
@@ -84,11 +83,8 @@ export default function HeaderSearchList({
                                             setSearchSuggestions([]);
                                             setSearchTerm('');
                                             router.push(
-                                                '/(root)/search-results' as Href,
+                                                `/(category)/${selectedOption.slug}` as Href,
                                             );
-                                            // router.push(
-                                            //     `${item.category.slug}/${selectedOption.slug}`,
-                                            // );
                                         }}
                                     >
                                         <View className="flex-row items-center p-4 border-t border-gray-200">

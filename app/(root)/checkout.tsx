@@ -32,7 +32,6 @@ import voucherApiRequest, {
 
 export default function Checkout() {
     const { proId, comboIds } = useLocalSearchParams();
-    console.log({ proId, comboIds });
 
     const { accessToken } = useAuthStore((state) => state);
     const {

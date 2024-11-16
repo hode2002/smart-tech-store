@@ -164,7 +164,6 @@ export default function Search() {
 
     const handleSearchByImage = async (file: File) => {
         const response = await productApiRequest.getProductsByImage(file);
-        console.log({ response });
         setLoading(false);
         if (response.statusCode === 200) {
             setProductsSearch(response.data);

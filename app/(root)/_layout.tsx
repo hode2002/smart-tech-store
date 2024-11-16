@@ -132,7 +132,8 @@ const Layout = () => {
             <Stack.Screen
                 name="search-results"
                 options={{
-                    headerShown: false,
+                    headerShown: true,
+                    headerTitle: 'Tìm kiếm',
                     headerRight: () => <></>,
                 }}
             />

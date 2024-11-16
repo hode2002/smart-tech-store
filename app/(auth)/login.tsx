@@ -16,63 +16,63 @@ import {
 } from '@/schemaValidations/auth.schema';
 import authApiRequest from '@/lib/apiRequest/auth';
 import { useRouter, Link } from 'expo-router';
-import { Href } from 'expo-router';
+// import { Href } from 'expo-router';
 import { Button } from '@/components/Button';
 import { icons, images } from '@/constants';
 import { useUserStore, useAuthStore } from '@/store';
-import * as AuthSession from 'expo-auth-session';
-import * as Google from 'expo-auth-session/providers/google';
+// import * as AuthSession from 'expo-auth-session';
+// import * as Google from 'expo-auth-session/providers/google';
 import * as WebBrowser from 'expo-web-browser';
 
-const apiUrl = process.env.EXPO_PUBLIC_API_URL;
-const GOOGLE_APP_ID = process.env.EXPO_PUBLIC_GOOGLE_APP_ID;
+// const apiUrl = process.env.EXPO_PUBLIC_API_URL;
+// const GOOGLE_APP_ID = process.env.EXPO_PUBLIC_GOOGLE_APP_ID;
 
 WebBrowser.maybeCompleteAuthSession();
-const redirectUri = AuthSession.makeRedirectUri({
-    queryParams: { ack_loopback_shutdown: '2024-09-25' },
-});
+// const redirectUri = AuthSession.makeRedirectUri({
+//     queryParams: { ack_loopback_shutdown: '2024-09-25' },
+// });
 
 export default function Login() {
     const router = useRouter();
-    const [request, response, promptAsync] = Google.useAuthRequest({
-        webClientId: GOOGLE_APP_ID,
-        androidClientId:
-            '26311049083-gtv4blfihio29da7slntkskm9g5c5ppb.apps.googleusercontent.com',
-        redirectUri,
-    });
+    // const [request, response, promptAsync] = Google.useAuthRequest({
+    //     webClientId: GOOGLE_APP_ID,
+    //     androidClientId:
+    //         '26311049083-gtv4blfihio29da7slntkskm9g5c5ppb.apps.googleusercontent.com',
+    //     redirectUri,
+    // });
 
     const { setAccessToken, setRefreshToken } = useAuthStore((state) => state);
     const { setProfile } = useUserStore((state) => state);
 
     const [loading, setLoading] = useState(false);
 
-    const handleGoogleLogin = useCallback(
-        async (googleToken: string) => {
-            const response =
-                await authApiRequest.getDataFromGoogleToken(googleToken);
-            if (response.statusCode === 200) {
-                const {
-                    tokens: { accessToken, refreshToken },
-                    profile,
-                } = response.data;
-                setAccessToken(accessToken);
-                setRefreshToken(refreshToken);
-                setProfile(profile);
-                // router.push(profile.role === 'ADMIN' ? '/admin/dashboard' : '/');
-                router.replace('/(root)/(tabs)/home');
-            }
-        },
-        [router, setAccessToken, setProfile, setRefreshToken],
-    );
+    // const handleGoogleLogin = useCallback(
+    //     async (googleToken: string) => {
+    //         const response =
+    //             await authApiRequest.getDataFromGoogleToken(googleToken);
+    //         if (response.statusCode === 200) {
+    //             const {
+    //                 tokens: { accessToken, refreshToken },
+    //                 profile,
+    //             } = response.data;
+    //             setAccessToken(accessToken);
+    //             setRefreshToken(refreshToken);
+    //             setProfile(profile);
+    //             // router.push(profile.role === 'ADMIN' ? '/admin/dashboard' : '/');
+    //             router.replace('/(root)/(tabs)/home');
+    //         }
+    //     },
+    //     [router, setAccessToken, setProfile, setRefreshToken],
+    // );
 
-    useEffect(() => {
-        if (response?.type === 'success') {
-            const { authentication } = response;
-            if (authentication) {
-                handleGoogleLogin(authentication.accessToken);
-            }
-        }
-    }, [response, handleGoogleLogin]);
+    // useEffect(() => {
+    //     if (response?.type === 'success') {
+    //         const { authentication } = response;
+    //         if (authentication) {
+    //             handleGoogleLogin(authentication.accessToken);
+    //         }
+    //     }
+    // }, [response, handleGoogleLogin]);
 
     const {
         control,
@@ -200,9 +200,9 @@ export default function Login() {
                 </View>
                 <View className="flex-row justify-between">
                     <TouchableOpacity
-                        onPress={() =>
-                            router.push((apiUrl + '/auth/facebook') as Href)
-                        }
+                    // onPress={() =>
+                    //     router.push((apiUrl + '/auth/facebook') as Href)
+                    // }
                     >
                         <View className="min-w-48 flex flex-row items-center justify-center gap-2 px-5 py-3 border border-gray-200">
                             <Image
@@ -214,13 +214,13 @@ export default function Login() {
                         </View>
                     </TouchableOpacity>
                     <TouchableOpacity
-                        disabled={!request}
-                        onPress={() => {
-                            promptAsync();
-                        }}
-                        // onPress={() =>
-                        //     router.push((apiUrl + '/auth/google') as Href)
-                        // }
+                    // disabled={!request}
+                    // onPress={() => {
+                    //     promptAsync();
+                    // }}
+                    // onPress={() =>
+                    //     router.push((apiUrl + '/auth/google') as Href)
+                    // }
                     >
                         <View className="min-w-48 flex flex-row items-center justify-center gap-2 px-5 py-3 border border-gray-200">
                             <Image

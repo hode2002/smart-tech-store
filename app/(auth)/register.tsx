@@ -151,9 +151,9 @@ export default function Register() {
                 </View>
                 <View className="flex-row justify-between">
                     <TouchableOpacity
-                        onPress={() =>
-                            router.push((apiUrl + '/auth/facebook') as Href)
-                        }
+                    // onPress={() =>
+                    //     router.push((apiUrl + '/auth/facebook') as Href)
+                    // }
                     >
                         <View className="min-w-48 flex flex-row items-center justify-center gap-2 px-5 py-3 border border-gray-200">
                             <Image
@@ -165,9 +165,9 @@ export default function Register() {
                         </View>
                     </TouchableOpacity>
                     <TouchableOpacity
-                        onPress={() =>
-                            router.push((apiUrl + '/auth/google') as Href)
-                        }
+                    // onPress={() =>
+                    //     router.push((apiUrl + '/auth/google') as Href)
+                    // }
                     >
                         <View className="min-w-48 flex flex-row items-center justify-center gap-2 px-5 py-3 border border-gray-200">
                             <Image
