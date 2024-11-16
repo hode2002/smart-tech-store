@@ -196,6 +196,7 @@ export default function AddVariantProduct() {
                                                 className="flex justify-center"
                                             >
                                                 <Image
+                                                    className="rounded-md"
                                                     src={URL.createObjectURL(
                                                         mainImageFile,
                                                     )}

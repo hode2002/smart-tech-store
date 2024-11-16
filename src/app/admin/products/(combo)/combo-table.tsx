@@ -72,7 +72,6 @@ const ComboTable = ({ combos }: { combos: ComboResponseType[] }) => {
     };
 
     const handleEditProductCombo = async (combo: ComboResponseType) => {
-        console.log({ combo });
         const data = combo.product_combos.map((item) => ({
             product_option_id: item.product_option.id,
             discount: item.discount,

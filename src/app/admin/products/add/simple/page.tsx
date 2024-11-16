@@ -357,6 +357,7 @@ export default function AddSimpleProduct() {
                                                     className="flex justify-center"
                                                 >
                                                     <Image
+                                                        className="rounded-md"
                                                         src={URL.createObjectURL(
                                                             mainImageFile,
                                                         )}
@@ -501,6 +502,7 @@ export default function AddSimpleProduct() {
                                             <Textarea
                                                 id="warranties"
                                                 value={warranties}
+                                                placeholder="Các giá trị cách nhau bằng dấu |"
                                                 onChange={(e) =>
                                                     setWarranties(
                                                         e.target.value,
@@ -516,6 +518,7 @@ export default function AddSimpleProduct() {
                                             <Textarea
                                                 id="promotions"
                                                 value={promotions}
+                                                placeholder="Các giá trị cách nhau bằng dấu |"
                                                 onChange={(e) =>
                                                     setPromotions(
                                                         e.target.value,
@@ -798,6 +801,7 @@ export default function AddSimpleProduct() {
                                 </CardContent>
                             </Card>
                             <TechnicalSpecsCard
+                                category={selectedCategory}
                                 setTechnicalSpecs={setTechnicalSpecs}
                             />
                         </div>

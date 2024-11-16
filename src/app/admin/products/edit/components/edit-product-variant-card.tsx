@@ -3,9 +3,10 @@
 import {
     ProductDetailType,
     ProductImagesType,
+    ProductOptionType,
     TechnicalSpecsItem,
 } from '@/schemaValidations/product.schema';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 import Image from 'next/image';
 import { Upload } from 'lucide-react';
@@ -37,103 +38,166 @@ import {
 } from '@/components/ui/accordion';
 import { toast } from '@/components/ui/use-toast';
 import adminApiRequest, {
-    CreateProductOptionResponseType,
-    CreateProductOptionType,
+    UpdateProductOptionResponseType,
     UploadMultipleFilesResponseType,
     UploadSingleFileResponseType,
 } from '@/apiRequests/admin';
 import { ReloadIcon } from '@radix-ui/react-icons';
-import { AttributeType } from '@/app/admin/products/add/variant/page';
-import TechnicalSpecsCard from '@/app/admin/products/add/components/technical-specs-card';
+import EditTechnicalSpecsCard from '@/app/admin/products/edit/components/edit-technical-specs-card';
 
 type Props = {
-    sku: string;
-    attributes: AttributeType[];
     product: ProductDetailType;
+    productVariant: ProductOptionType;
 };
-const AddProductVariantCard = (props: Props) => {
+const EditProductVariantCard = (props: Props) => {
     const token = useAppSelector((state) => state.auth.accessToken);
 
-    const { sku, attributes, product } = props;
+    const { product, productVariant } = props;
     const [isActive, setIsActive] = useState<boolean>(false);
     const [isSale, setIsSale] = useState<boolean>(false);
     const [stock, setStock] = useState<number>(0);
     const [discount, setDiscount] = useState<number>(0);
     const [priceModifier, setPriceModifier] = useState<number>(0);
-    const [thumbnailFile, setThumbnailFile] = useState<File>();
-    const [labelImageFile, setLabelImageFile] = useState<File>();
-    const [otherImageFiles, setOtherImageFiles] = useState<FileList>();
+    const [thumbnail, setThumbnail] = useState<string>('');
+    const [thumbnailFile, setThumbnailFile] = useState<File | undefined>();
+    const [labelImage, setLabelImage] = useState<string>('');
+    const [labelImageFile, setLabelImageFile] = useState<File | undefined>();
+    const [otherImages, setOtherImages] = useState<ProductImagesType>();
+    const [otherImageFiles, setOtherImageFiles] = useState<
+        FileList | undefined
+    >();
     const [technicalSpecs, setTechnicalSpecs] = useState<TechnicalSpecsItem[]>(
         [],
     );
+
+    useEffect(() => {
+        setStock(productVariant.stock);
+        setPriceModifier(productVariant.price_modifier);
+        setDiscount(productVariant.discount);
+        setIsSale(productVariant.is_sale as boolean);
+        setIsActive(productVariant.is_deleted as boolean);
+        setLabelImage(productVariant.label_image);
+        setThumbnail(productVariant.thumbnail);
+        setOtherImages(productVariant.product_images);
+        setTechnicalSpecs(productVariant.technical_specs);
+    }, [productVariant]);
+
+    const [hasChanges, setHasChanges] = useState<boolean>(false);
+    useEffect(() => {
+        const initialProduct = {
+            sku: productVariant.sku,
+            stock: productVariant.stock,
+            priceModifier: productVariant.price_modifier,
+            discount: productVariant.discount,
+            isSale: productVariant.is_sale as boolean,
+            isActive: productVariant.is_deleted as boolean,
+            thumbnail: productVariant.thumbnail,
+            labelImage: productVariant.label_image,
+            otherImages: productVariant.product_images,
+            technicalSpecs: productVariant.technical_specs,
+        };
+
+        const currentProduct = {
+            stock,
+            priceModifier,
+            discount,
+            isSale,
+            isActive,
+            thumbnailFile,
+            labelImageFile,
+            otherImageFiles,
+            technicalSpecs,
+        };
+
+        setHasChanges(
+            JSON.stringify(initialProduct) !== JSON.stringify(currentProduct),
+        );
+    }, [
+        stock,
+        priceModifier,
+        discount,
+        isSale,
+        isActive,
+        thumbnailFile,
+        labelImageFile,
+        otherImageFiles,
+        technicalSpecs,
+        productVariant.discount,
+        productVariant.is_deleted,
+        productVariant.is_sale,
+        productVariant.label_image,
+        productVariant.price_modifier,
+        productVariant.product_images,
+        productVariant.sku,
+        productVariant.stock,
+        productVariant.technical_specs,
+        productVariant.thumbnail,
+    ]);
 
     const [loading, setLoading] = useState(false);
     const handleSubmit = async () => {
         if (loading) return;
         setLoading(true);
-
-        const thumbnailResponse = (await adminApiRequest.uploadFile(
-            token,
-            thumbnailFile as File,
-            '/Products/' + product.category.slug,
-        )) as UploadSingleFileResponseType;
-        const thumbnailS3 = thumbnailResponse.data?.key;
-
-        const labelImageResponse = (await adminApiRequest.uploadFile(
-            token,
-            labelImageFile as File,
-            '/Products/Labels',
-        )) as UploadSingleFileResponseType;
-        const labelImageS3 = labelImageResponse.data?.key;
-
+        let thumbnailS3: string | undefined = undefined;
+        let labelImageS3: string | undefined = undefined;
         const otherImagesS3: ProductImagesType = [];
-        const otherImageResponse = (await adminApiRequest.uploadMultipleFiles(
-            token,
-            otherImageFiles as FileList,
-            '/Products/' + product.category.slug,
-        )) as UploadMultipleFilesResponseType;
-        otherImageResponse.data.map((res) => {
-            return otherImagesS3.push({
-                image_url: res.key,
-                image_alt_text: sku.toLowerCase().replaceAll('-', ' '),
+
+        if (thumbnailFile) {
+            const response = (await adminApiRequest.uploadFile(
+                token,
+                thumbnailFile,
+                '/Products/' + product.category.slug,
+            )) as UploadSingleFileResponseType;
+            thumbnailS3 = response.data?.key;
+        }
+        if (labelImageFile) {
+            const response = (await adminApiRequest.uploadFile(
+                token,
+                labelImageFile,
+                '/Products/Labels',
+            )) as UploadSingleFileResponseType;
+            labelImageS3 = response.data?.key;
+        }
+        if (otherImageFiles) {
+            const response = (await adminApiRequest.uploadMultipleFiles(
+                token,
+                otherImageFiles,
+                '/Products/' + product.category.slug,
+            )) as UploadMultipleFilesResponseType;
+            response.data.map((res) => {
+                return otherImagesS3.push({
+                    image_url: res.key,
+                    image_alt_text: productVariant.sku
+                        .toLowerCase()
+                        .replaceAll('-', ' '),
+                });
             });
-        });
+        }
 
-        const productOptionValue = attributes.flatMap((attr: AttributeType) => {
-            const data: { option_id: string; value: string }[] = [];
-            for (const value of attr.value.split(' | ')) {
-                if (sku.split('-').includes(value)) {
-                    data.push({ option_id: attr.id, value });
-                    break;
-                }
-            }
-            return data;
-        });
-
-        const newVariant: CreateProductOptionType = {
-            sku,
-            thumbnail: thumbnailS3,
-            label_image: labelImageS3,
-            product_images: otherImagesS3,
+        const productEdited = {
+            ...(thumbnailS3 && { thumbnail: thumbnailS3 }),
+            ...(labelImageS3 && { label_image: labelImageS3 }),
+            ...(otherImagesS3 &&
+                otherImagesS3?.length > 0 && { product_images: otherImagesS3 }),
             price_modifier: priceModifier,
             stock,
             discount,
             is_deleted: isActive,
             is_sale: isSale,
-            technical_specs: technicalSpecs.map((spec) => ({
-                key: spec.name,
-                value: spec.value,
+            technical_specs: technicalSpecs.map((item) => ({
+                key: item.name,
+                value: item.value,
             })),
-            product_option_value: productOptionValue,
         };
 
-        const response = (await adminApiRequest.createProductOption(token, {
-            product_id: product.id,
-            product_options: [newVariant],
-        })) as CreateProductOptionResponseType;
-
+        const response = (await adminApiRequest.updateProductOption(
+            token,
+            productVariant.id,
+            productEdited,
+        )) as UpdateProductOptionResponseType;
         setLoading(false);
-        if (response?.statusCode === 201) {
+        if (response?.statusCode === 200) {
+            setHasChanges(false);
             toast({
                 title: 'Success',
                 description: response.message,
@@ -143,26 +207,38 @@ const AddProductVariantCard = (props: Props) => {
 
     return (
         <div className="grid auto-rows-max items-start gap-4 lg:gap-8">
-            <Card>
-                <Accordion defaultValue={sku} type="single" collapsible>
-                    <AccordionItem value={sku}>
-                        <CardHeader>
-                            <AccordionTrigger>
-                                <CardTitle>Biến thể {sku}</CardTitle>
-                            </AccordionTrigger>
-                            <CardDescription>
-                                Chỉnh sửa biến thể sản phẩm
-                            </CardDescription>
-                        </CardHeader>
+            <Card
+                className={`${product?.product_options[0]?.options?.length > 1 ? '' : 'border-0 shadow-none'}`}
+            >
+                <Accordion
+                    defaultValue={productVariant.sku}
+                    type="single"
+                    collapsible
+                >
+                    <AccordionItem value={productVariant.sku}>
+                        {product?.product_options[0]?.options?.length > 1 && (
+                            <CardHeader>
+                                <AccordionTrigger>
+                                    <CardTitle>
+                                        Biến thể {productVariant.sku}
+                                    </CardTitle>
+                                </AccordionTrigger>
+                                <CardDescription>
+                                    Chỉnh sửa biến thể sản phẩm
+                                </CardDescription>
+                            </CardHeader>
+                        )}
                         <AccordionContent>
-                            <CardContent>
+                            <CardContent
+                                className={`${product?.product_options[0]?.options?.length > 1 ? '' : 'px-0'}`}
+                            >
                                 <div className="grid gap-6">
                                     <div className="grid gap-3">
                                         <Label>SKU</Label>
                                         <Input
                                             type="text"
                                             className="w-full"
-                                            value={sku}
+                                            value={productVariant.sku}
                                             disabled
                                         />
                                     </div>
@@ -201,14 +277,14 @@ const AddProductVariantCard = (props: Props) => {
                                                 className="min-w-[80px]"
                                             >
                                                 <Label
-                                                    htmlFor={`thumbnail-${sku}`}
+                                                    htmlFor={`thumbnail-${productVariant.sku}`}
                                                 >
                                                     Chọn ảnh
                                                 </Label>
                                             </Button>
                                         </div>
                                         <Input
-                                            id={`thumbnail-${sku}`}
+                                            id={`thumbnail-${productVariant.sku}`}
                                             type="file"
                                             onChange={(e) =>
                                                 setThumbnailFile(
@@ -219,32 +295,25 @@ const AddProductVariantCard = (props: Props) => {
                                             accept="image/*"
                                         />
                                         {thumbnailFile ? (
-                                            <Label
-                                                htmlFor={`thumbnail-${sku}`}
-                                                className="flex justify-center"
-                                            >
+                                            <Image
+                                                alt="Product thumbnail"
+                                                className="w-full rounded-md object-contain"
+                                                height="1000"
+                                                width="1000"
+                                                src={URL.createObjectURL(
+                                                    thumbnailFile,
+                                                )}
+                                            />
+                                        ) : (
+                                            thumbnail && (
                                                 <Image
                                                     alt="Product thumbnail"
-                                                    className="w-full rounded-md object-contain"
+                                                    className="aspect-square w-full rounded-md object-contain"
                                                     height="1000"
                                                     width="1000"
-                                                    src={URL.createObjectURL(
-                                                        thumbnailFile,
-                                                    )}
+                                                    src={thumbnail}
                                                 />
-                                            </Label>
-                                        ) : (
-                                            <div className="grid grid-cols-3 gap-2">
-                                                <Label
-                                                    htmlFor={`thumbnail-${sku}`}
-                                                    className="flex aspect-square w-full items-center justify-center rounded-md border border-dashed"
-                                                >
-                                                    <Upload className="h-4 w-4 text-muted-foreground" />
-                                                    <span className="sr-only">
-                                                        Upload
-                                                    </span>
-                                                </Label>
-                                            </div>
+                                            )
                                         )}
                                         <div className="flex justify-between items-center gap-3">
                                             <Label>Hình ảnh khác</Label>
@@ -253,7 +322,7 @@ const AddProductVariantCard = (props: Props) => {
                                                 className="min-w-[80px]"
                                             >
                                                 <Label
-                                                    htmlFor={`other-images-${sku}`}
+                                                    htmlFor={`other-images-${productVariant.sku}`}
                                                 >
                                                     Chọn ảnh
                                                 </Label>
@@ -261,7 +330,7 @@ const AddProductVariantCard = (props: Props) => {
                                         </div>
                                         <div className="grid grid-cols-3 gap-2">
                                             <Input
-                                                id={`other-images-${sku}`}
+                                                id={`other-images-${productVariant.sku}`}
                                                 type="file"
                                                 onChange={(e) =>
                                                     setOtherImageFiles(
@@ -274,24 +343,39 @@ const AddProductVariantCard = (props: Props) => {
                                                 accept="image/*"
                                             />
 
-                                            {otherImageFiles &&
-                                                Array.from(otherImageFiles).map(
-                                                    (file, index) => (
-                                                        <button key={index}>
-                                                            <Image
-                                                                alt="Product image"
-                                                                className="aspect-square w-full rounded-md object-cover"
-                                                                height="300"
-                                                                width="300"
-                                                                src={URL.createObjectURL(
-                                                                    file,
-                                                                )}
-                                                            />
-                                                        </button>
-                                                    ),
-                                                )}
+                                            {otherImageFiles
+                                                ? Array.from(
+                                                      otherImageFiles,
+                                                  ).map((file, index) => (
+                                                      <button key={index}>
+                                                          <Image
+                                                              alt="Product image"
+                                                              className="aspect-square w-full rounded-md object-cover"
+                                                              height="300"
+                                                              width="300"
+                                                              src={URL.createObjectURL(
+                                                                  file,
+                                                              )}
+                                                          />
+                                                      </button>
+                                                  ))
+                                                : otherImages?.map((image) => (
+                                                      <button key={image.id}>
+                                                          <Image
+                                                              alt={
+                                                                  image.image_alt_text
+                                                              }
+                                                              className="aspect-square w-full rounded-md object-cover"
+                                                              height="300"
+                                                              width="300"
+                                                              src={
+                                                                  image.image_url
+                                                              }
+                                                          />
+                                                      </button>
+                                                  ))}
                                             <Label
-                                                htmlFor={`other-images-${sku}`}
+                                                htmlFor={`other-images-${productVariant.sku}`}
                                                 className="flex aspect-square w-full items-center justify-center rounded-md border border-dashed"
                                             >
                                                 <Upload className="h-4 w-4 text-muted-foreground" />
@@ -304,12 +388,12 @@ const AddProductVariantCard = (props: Props) => {
                                     <div className="grid gap-3">
                                         <div className="flex items-center space-x-2">
                                             <Label
-                                                htmlFor={`product-sale-${sku}`}
+                                                htmlFor={`product-sale-${productVariant.sku}`}
                                             >
                                                 Sản phẩm nổi bật
                                             </Label>
                                             <Switch
-                                                id={`product-sale-${sku}`}
+                                                id={`product-sale-${productVariant.sku}`}
                                                 checked={isSale}
                                                 onCheckedChange={setIsSale}
                                             />
@@ -338,14 +422,14 @@ const AddProductVariantCard = (props: Props) => {
                                                 className="min-w-[80px]"
                                             >
                                                 <Label
-                                                    htmlFor={`label-image-${sku}`}
+                                                    htmlFor={`label-image-${productVariant.sku}`}
                                                 >
                                                     Chọn ảnh
                                                 </Label>
                                             </Button>
                                         </div>
                                         <Input
-                                            id={`label-image-${sku}`}
+                                            id={`label-image-${productVariant.sku}`}
                                             type="file"
                                             onChange={(e) =>
                                                 setLabelImageFile(
@@ -355,11 +439,11 @@ const AddProductVariantCard = (props: Props) => {
                                             className="hidden"
                                             accept="image/*"
                                         />
-                                        {labelImageFile ? (
-                                            <Label
-                                                htmlFor={`label-image-${sku}`}
-                                                className="flex justify-start"
-                                            >
+                                        <Label
+                                            htmlFor="label-image"
+                                            className="flex justify-start"
+                                        >
+                                            {labelImageFile ? (
                                                 <Image
                                                     alt="Label image"
                                                     className="aspect-square rounded-md object-cover"
@@ -369,20 +453,18 @@ const AddProductVariantCard = (props: Props) => {
                                                         labelImageFile,
                                                     )}
                                                 />
-                                            </Label>
-                                        ) : (
-                                            <div className="grid grid-cols-3 gap-2">
-                                                <Label
-                                                    htmlFor={`label-image-${sku}`}
-                                                    className="flex aspect-square w-full items-center justify-center rounded-md border border-dashed"
-                                                >
-                                                    <Upload className="h-4 w-4 text-muted-foreground" />
-                                                    <span className="sr-only">
-                                                        Upload
-                                                    </span>
-                                                </Label>
-                                            </div>
-                                        )}
+                                            ) : (
+                                                labelImage && (
+                                                    <Image
+                                                        alt="Label image"
+                                                        className="aspect-square rounded-md object-cover"
+                                                        height="85"
+                                                        width="85"
+                                                        src={labelImage}
+                                                    />
+                                                )
+                                            )}
+                                        </Label>
                                     </div>
                                     <div className="grid gap-3">
                                         <Label>Trạng thái</Label>
@@ -410,8 +492,8 @@ const AddProductVariantCard = (props: Props) => {
                                         </Select>
                                     </div>
                                     <div className="grid gap-3">
-                                        <TechnicalSpecsCard
-                                            category={product.category.slug}
+                                        <EditTechnicalSpecsCard
+                                            technicalSpecs={technicalSpecs}
                                             setTechnicalSpecs={
                                                 setTechnicalSpecs
                                             }
@@ -434,6 +516,7 @@ const AddProductVariantCard = (props: Props) => {
                                             onClick={handleSubmit}
                                             size="sm"
                                             className="min-w-[100px]"
+                                            disabled={!hasChanges}
                                         >
                                             Lưu
                                         </Button>
@@ -448,4 +531,4 @@ const AddProductVariantCard = (props: Props) => {
     );
 };
 
-export default AddProductVariantCard;
+export default EditProductVariantCard;

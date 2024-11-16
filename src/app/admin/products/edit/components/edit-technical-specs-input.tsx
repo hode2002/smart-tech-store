@@ -1,19 +1,13 @@
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { TechnicalSpecsItem } from '@/schemaValidations/product.schema';
-import { Trash2 } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 
-const TechnicalSpecsInput = ({
+const EditTechnicalSpecsInput = ({
     setSpecs,
-    onDeleteSpec,
     spec,
-    addEmptyInput,
 }: {
     setSpecs: React.Dispatch<React.SetStateAction<TechnicalSpecsItem[]>>;
-    onDeleteSpec: (name: string, value: string) => void;
-    spec: TechnicalSpecsItem & { disabled?: boolean };
-    addEmptyInput: () => void;
+    spec: TechnicalSpecsItem;
 }) => {
     useEffect(() => {
         setName(spec.name);
@@ -44,15 +38,12 @@ const TechnicalSpecsInput = ({
                         : item,
                 );
             });
-
-            addEmptyInput();
         }
     };
 
     return (
         <div className="flex gap-3 my-1 items-center justify-between">
             <Input
-                disabled={spec?.disabled ?? false}
                 className="w-[30%]"
                 type="text"
                 autoComplete="off"
@@ -68,16 +59,8 @@ const TechnicalSpecsInput = ({
                 onChange={(e) => handleInputChange(name, e.target.value)}
                 placeholder="Giá trị"
             />
-            {name && value && (
-                <Button
-                    onClick={() => onDeleteSpec(name, value)}
-                    variant={'outline'}
-                >
-                    <Trash2 />
-                </Button>
-            )}
         </div>
     );
 };
 
-export default TechnicalSpecsInput;
+export default EditTechnicalSpecsInput;

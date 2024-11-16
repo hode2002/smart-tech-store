@@ -66,7 +66,7 @@ export default function HeaderSearchList(props: Props) {
                 <>
                     <div className="p-2 bg-blue-gray-50">Sản phẩm gợi ý</div>
                     {searchSuggestions && searchSuggestions?.length > 0 ? (
-                        <div className="left-0 p-4">
+                        <div className="left-0">
                             <ScrollArea className="">
                                 {searchSuggestions
                                     .slice(0, 5)
@@ -120,7 +120,7 @@ export default function HeaderSearchList(props: Props) {
                                                     setSearchTerm('');
                                                 }}
                                                 className={
-                                                    'block space-y-1 rounded-md p-3 leading-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground'
+                                                    'block space-y-1 rounded-md p-4 leading-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground'
                                                 }
                                             >
                                                 <div className="flex gap-3 items-center capitalize">
@@ -176,7 +176,7 @@ export default function HeaderSearchList(props: Props) {
                             </ScrollArea>
                         </div>
                     ) : (
-                        <div className="flex text-[14px] md:text-[16px] px-4 py-2 justify-between items-center w-full hover:cursor-pointer hover:bg-popover-foreground hover:text-popover">
+                        <div className="flex text-[14px] md:text-[16px] px-4 py-2 justify-between items-center w-full">
                             <div
                                 onMouseDown={(e) => e.stopPropagation()}
                                 className="truncate"

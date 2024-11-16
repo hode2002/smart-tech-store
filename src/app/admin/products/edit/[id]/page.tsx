@@ -39,11 +39,11 @@ import {
 } from '@/schemaValidations/category.schema';
 import { BrandResponseType, BrandType } from '@/schemaValidations/brand.schema';
 import categoryApiRequest from '@/apiRequests/category';
-import ProductVariantCard from '@/app/admin/products/edit/components/product-variant-card';
 import { toast } from '@/components/ui/use-toast';
 import { ReloadIcon } from '@radix-ui/react-icons';
 import { Editor as TinyMCEEditor } from 'tinymce';
 import dynamic from 'next/dynamic';
+import EditProductVariantCard from '@/app/admin/products/edit/components/edit-product-variant-card';
 
 const CustomEditor = dynamic(() => import('@/components/custom-editor'), {
     ssr: false,
@@ -271,6 +271,7 @@ export default function EditProduct({ params }: Props) {
                                             >
                                                 {mainImageFile ? (
                                                     <Image
+                                                        className="rounded-md"
                                                         src={URL.createObjectURL(
                                                             mainImageFile,
                                                         )}
@@ -281,6 +282,7 @@ export default function EditProduct({ params }: Props) {
                                                     />
                                                 ) : (
                                                     <Image
+                                                        className="rounded-md"
                                                         src={mainImage}
                                                         width={1080}
                                                         height={1080}
@@ -336,9 +338,9 @@ export default function EditProduct({ params }: Props) {
                                         </div>
                                         {!product?.product_options[0]?.options
                                             ?.length && (
-                                            <ProductVariantCard
+                                            <EditProductVariantCard
                                                 product={product}
-                                                productOption={
+                                                productVariant={
                                                     product?.product_options[0]
                                                 }
                                             />
@@ -476,23 +478,19 @@ export default function EditProduct({ params }: Props) {
                         </div>
                     </div>
                     {product?.product_options[0]?.options?.length > 0 && (
-                        <>
-                            <div className="grid gap-4 md:grid-cols-3 lg:gap-8">
-                                {product?.product_options?.map(
-                                    (productVariant) => (
-                                        <div
-                                            key={productVariant.id}
-                                            className="grid auto-rows-max items-start gap-4 lg:gap-8"
-                                        >
-                                            <ProductVariantCard
-                                                product={product}
-                                                productOption={productVariant}
-                                            />
-                                        </div>
-                                    ),
-                                )}
-                            </div>
-                        </>
+                        <div className="grid gap-4 md:grid-cols-3 lg:gap-8">
+                            {product?.product_options?.map((productVariant) => (
+                                <div
+                                    key={productVariant.id}
+                                    className="grid auto-rows-max items-start gap-4 lg:gap-8"
+                                >
+                                    <EditProductVariantCard
+                                        product={product}
+                                        productVariant={productVariant}
+                                    />
+                                </div>
+                            ))}
+                        </div>
                     )}
                 </div>
             </section>
