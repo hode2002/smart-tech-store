@@ -842,6 +842,9 @@ export class OrderService {
 
     async getAllByAdmin(): Promise<OrderResponse[]> {
         const orders = (await this.prismaService.order.findMany({
+            orderBy: {
+                order_date: 'desc',
+            },
             select: {
                 id: true,
                 name: true,
