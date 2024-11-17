@@ -46,6 +46,14 @@ const TechnicalSpecsCard = ({
                 { name: 'ram', value: '', disabled: true },
                 { name: '', value: '' },
             ],
+            accessory: [
+                { name: 'Khối lượng', value: '', disabled: true },
+                { name: '', value: '' },
+            ],
+            watch: [
+                { name: 'Khối lượng', value: '', disabled: true },
+                { name: '', value: '' },
+            ],
         };
     }, []);
 

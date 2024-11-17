@@ -77,7 +77,7 @@ export default function Navbar() {
         },
         {
             name: 'Phụ kiện',
-            link: '/earphone',
+            link: '/accessory',
             icon: Headphones,
         },
         {

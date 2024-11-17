@@ -410,6 +410,16 @@ export default function Product() {
                         value="combo"
                         className="flex items-center gap-2 capitalize mt-0"
                     >
+                        <div className="relative ml-auto md:grow-0 flex gap-2">
+                            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                            <Input
+                                value={searchText}
+                                onChange={(e) => setSearchText(e.target.value)}
+                                type="search"
+                                placeholder="Nhập tên sản phẩm"
+                                className="w-full rounded-lg bg-background pl-8 md:w-[200px] lg:w-[320px]"
+                            />
+                        </div>
                         <Button size="sm" className="h-7 gap-1 py-4">
                             <PlusCircle className="h-3.5 w-3.5" />
                             <span className="not-sr-only whitespace-nowrap">

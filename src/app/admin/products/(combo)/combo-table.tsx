@@ -116,7 +116,7 @@ const ComboTable = ({ combos }: { combos: ComboResponseType[] }) => {
                 </TableRow>
             </TableHeader>
             <TableBody>
-                {filterCombos &&
+                {filterCombos && filterCombos?.length > 0 ? (
                     filterCombos?.map((combo) => {
                         const product = combo?.product_option.product;
                         const discountPercent = combo.product_option.discount;
@@ -299,7 +299,14 @@ const ComboTable = ({ combos }: { combos: ComboResponseType[] }) => {
                                 </TableCell>
                             </TableRow>
                         );
-                    })}
+                    })
+                ) : (
+                    <TableRow>
+                        <TableCell colSpan={12} className="h-24 text-center">
+                            No results.
+                        </TableCell>
+                    </TableRow>
+                )}
             </TableBody>
         </Table>
     );

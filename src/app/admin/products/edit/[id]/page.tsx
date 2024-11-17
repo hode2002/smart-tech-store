@@ -78,8 +78,8 @@ export default function EditProduct({ params }: Props) {
         fetchProduct().then((data) => {
             setSelectedCategory(data.category.slug);
             setSelectedBrand(data.brand.slug);
-            setPromotions(data.promotions.join('###'));
-            setWarranties(data.warranties.join('###'));
+            setPromotions(data.promotions.join(' | '));
+            setWarranties(data.warranties.join(' | '));
             setMainImage(data.main_image);
             setProductName(data.name);
             setLabel(data.label);
@@ -141,8 +141,8 @@ export default function EditProduct({ params }: Props) {
                 ?.id as string,
             cateId: categories.find((cate) => cate.slug === selectedCategory)
                 ?.id as string,
-            warranties: warranties.split('###'),
-            promotions: promotions.split('###'),
+            warranties: warranties.split(' | '),
+            promotions: promotions.split(' | '),
             descriptions: [{ content: editorRef.current!.getContent() }],
         };
 
@@ -175,7 +175,7 @@ export default function EditProduct({ params }: Props) {
                                 <span className="sr-only">Back</span>
                             </Button>
                         </Link>
-                        <h1 className="flex-1 shrink-0 whitespace-nowrap text-xl font-semibold tracking-tight sm:grow-0">
+                        <h1 className="py-2 flex-1 shrink-0 whitespace-nowrap text-xl font-semibold tracking-tight sm:grow-0">
                             Chỉnh sửa sản phẩm
                         </h1>
                         <div className="items-center gap-2 ml-auto flex">
@@ -311,6 +311,7 @@ export default function EditProduct({ params }: Props) {
                                                 Bảo hành
                                             </Label>
                                             <Textarea
+                                                placeholder="Các giá trị cách nhau bằng dấu |"
                                                 id="warranties"
                                                 value={warranties}
                                                 onChange={(e) =>
@@ -326,6 +327,7 @@ export default function EditProduct({ params }: Props) {
                                                 Khuyến mãi
                                             </Label>
                                             <Textarea
+                                                placeholder="Các giá trị cách nhau bằng dấu |"
                                                 id="promotions"
                                                 value={promotions}
                                                 onChange={(e) =>

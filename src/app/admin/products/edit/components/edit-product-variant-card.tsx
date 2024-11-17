@@ -208,7 +208,7 @@ const EditProductVariantCard = (props: Props) => {
     return (
         <div className="grid auto-rows-max items-start gap-4 lg:gap-8">
             <Card
-                className={`${product?.product_options[0]?.options?.length > 1 ? '' : 'border-0 shadow-none'}`}
+                className={`${product?.product_options[0]?.options?.length > 0 ? '' : 'border-0 shadow-none'}`}
             >
                 <Accordion
                     defaultValue={productVariant.sku}
@@ -216,7 +216,7 @@ const EditProductVariantCard = (props: Props) => {
                     collapsible
                 >
                     <AccordionItem value={productVariant.sku}>
-                        {product?.product_options[0]?.options?.length > 1 && (
+                        {product?.product_options[0]?.options?.length > 0 && (
                             <CardHeader>
                                 <AccordionTrigger>
                                     <CardTitle>
@@ -230,7 +230,7 @@ const EditProductVariantCard = (props: Props) => {
                         )}
                         <AccordionContent>
                             <CardContent
-                                className={`${product?.product_options[0]?.options?.length > 1 ? '' : 'px-0'}`}
+                                className={`${product?.product_options[0]?.options?.length > 0 ? '' : 'px-0'}`}
                             >
                                 <div className="grid gap-6">
                                     <div className="grid gap-3">

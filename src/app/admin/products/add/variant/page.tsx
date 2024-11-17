@@ -312,35 +312,36 @@ export default function AddVariantProduct() {
                             setSelectedCategory={setSelectedCategory}
                         />
                         <SelectBrandCard setSelectedBrand={setSelectedBrand} />
-
-                        <div className="hidden items-center gap-2 md:ml-auto md:flex">
-                            <Link href={'/admin/products'}>
-                                <Button
-                                    variant="outline"
-                                    size="sm"
-                                    className="min-w-[100px]"
-                                >
-                                    Quay lại
-                                </Button>
-                            </Link>
-                            {loading ? (
-                                <Button
-                                    disabled
-                                    size="sm"
-                                    className="min-w-[100px]"
-                                >
-                                    <ReloadIcon className="mr-2 animate-spin" />
-                                </Button>
-                            ) : (
-                                <Button
-                                    onClick={handleSubmit}
-                                    size="sm"
-                                    className="min-w-[100px]"
-                                >
-                                    Lưu
-                                </Button>
-                            )}
-                        </div>
+                        {!product && (
+                            <div className="hidden items-center gap-2 md:ml-auto md:flex">
+                                <Link href={'/admin/products'}>
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        className="min-w-[100px]"
+                                    >
+                                        Quay lại
+                                    </Button>
+                                </Link>
+                                {loading ? (
+                                    <Button
+                                        disabled
+                                        size="sm"
+                                        className="min-w-[100px]"
+                                    >
+                                        <ReloadIcon className="mr-2 animate-spin" />
+                                    </Button>
+                                ) : (
+                                    <Button
+                                        onClick={handleSubmit}
+                                        size="sm"
+                                        className="min-w-[100px]"
+                                    >
+                                        Lưu
+                                    </Button>
+                                )}
+                            </div>
+                        )}
                     </div>
                 </div>
 
