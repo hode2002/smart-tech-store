@@ -145,7 +145,12 @@ def create_vector():
     image_url = data['image_url']
     product_option_id = data['product_option_id']
     
-    return add_item_to_tree(image_url, product_option_id)
+    add_item_to_tree(image_url, product_option_id)
+    
+    return jsonify({
+            'statusCode': 201,
+            'message': 'Added new item to annoy tree successfully',
+        }), 201
 
 @app.route('/', methods=['GET'])
 def hello():

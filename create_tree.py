@@ -91,8 +91,3 @@ def add_item_to_tree(image_url, product_option_id):
         'vector': new_vector.tolist()
     }
     vector_features_collection.insert_one(new_vector_data)
-
-    return jsonify({
-        'statusCode': 201,
-        'message': 'Added new item to annoy tree successfully',
-    }), 201
