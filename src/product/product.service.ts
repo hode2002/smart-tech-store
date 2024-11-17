@@ -2257,13 +2257,7 @@ export class ProductService {
 
         if (product_images) {
             const PYTHON_API_URL = this.configService.get('PYTHON_API_URL');
-            for (const item of [
-                ...product_images,
-                {
-                    image_url: other.thumbnail,
-                    image_alt_text: '',
-                },
-            ]) {
+            for (const item of product_images) {
                 await axios.post(PYTHON_API_URL + '/products/create-vector', {
                     image_url: item.image_url,
                     product_option_id: productOptionId,
