@@ -64,30 +64,38 @@ def create_tree_from_node_server(token):
 
 def add_item_to_tree(image_url, product_option_id):
     vector_size = 2048
-    file_path = os.path.abspath('./annoySearch.ann')
+    file_path = os.path.join(os.getcwd(), 'annoySearch.ann')
     
-    if os.path.exists(file_path):
+    try:
+        if os.path.exists(file_path):
+            t = AnnoyIndex(vector_size, 'euclidean')
+            t.load(file_path)
+        else:
+            t = AnnoyIndex(vector_size, 'euclidean')
+        
+        all_vectors = list(vector_features_collection.find())
+        
         t = AnnoyIndex(vector_size, 'euclidean')
-        t.load(file_path)
-    else:
-        t = AnnoyIndex(vector_size, 'euclidean')
-    
-    all_vectors = list(vector_features_collection.find())
-    
-    t = AnnoyIndex(vector_size, 'euclidean')
-    
-    for i, item in enumerate(all_vectors):
-        t.add_item(i, item['vector'])
-    
-    new_vector = extract_features(image_url)
-    new_index = len(all_vectors)
-    t.add_item(new_index, new_vector)
-    
-    t.build(20)
-    t.save(file_path)
-    
-    new_vector_data = {
-        'product_option_id': product_option_id,
-        'vector': new_vector.tolist()
-    }
-    vector_features_collection.insert_one(new_vector_data)
+        
+        for i, item in enumerate(all_vectors):
+            t.add_item(i, item['vector'])
+        
+        new_vector = extract_features(image_url)
+        new_index = len(all_vectors)
+        t.add_item(new_index, new_vector)
+        
+        t.build(20)
+        t.save(file_path)
+        
+        new_vector_data = {
+            'product_option_id': product_option_id,
+            'vector': new_vector.tolist()
+        }
+        vector_features_collection.insert_one(new_vector_data)
+        
+        return jsonify({
+            'statusCode': 201,
+            'message': 'Added new item to annoy tree successfully',
+        }), 201
+    except OSError as e:
+        print(f"Error: Unable to save the tree due to {str(e)}")
