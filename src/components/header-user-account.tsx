@@ -54,7 +54,7 @@ export default function HeaderUserAccount() {
                 .then((response: GetUserNotificationResponseType) =>
                     dispatch(
                         setNotificationList(
-                            response?.data.map((i) => ({
+                            response?.data?.map((i) => ({
                                 ...i.notification,
                                 status: i.status,
                             })),
