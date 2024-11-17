@@ -467,15 +467,13 @@ export class ProductService {
                 { image_url: productOption.thumbnail, image_alt_text: '' },
             ])
                 return await axios.post(
-                    PYTHON_API_URL + '/api/v1/products/create-vector',
+                    PYTHON_API_URL + '/products/create-vector',
                     {
                         image_url: item.image_url,
                         product_option_id: productOption.id,
                     },
                 );
         });
-
-        await Promise.all(productOptions);
 
         return await this.findById(product_id);
     }
