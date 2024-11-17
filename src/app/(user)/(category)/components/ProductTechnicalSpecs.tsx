@@ -11,10 +11,10 @@ const ProductTechnicalSpecs = ({
 }) => {
     return (
         <div className="mt-8">
-            <div className="flex gap-2 items-center font-bold text-[20px] capitalize">
+            <div className="flex text-nowrap gap-2 items-center font-bold text-[20px] capitalize">
                 <span className="text-nowrap">Cấu hình</span>{' '}
                 {technicalSpecs ? (
-                    <>{convertProductName()}</>
+                    <p className="truncate">{convertProductName()}</p>
                 ) : (
                     <Skeleton className="h-[24px] w-full rounded-lg" />
                 )}

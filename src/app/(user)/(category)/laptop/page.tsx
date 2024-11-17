@@ -94,23 +94,6 @@ export default function LaptopPage() {
         ],
         [],
     );
-    const operatingSystems: Array<FilterFieldType> = useMemo(
-        () => [
-            {
-                id: 'all',
-                label: 'Tất cả',
-            },
-            {
-                id: 'android',
-                label: 'Android',
-            },
-            {
-                id: 'ios',
-                label: 'iOS (iPhone)',
-            },
-        ],
-        [],
-    );
     const rams: Array<FilterFieldType> = useMemo(
         () => [
             {
@@ -181,11 +164,6 @@ export default function LaptopPage() {
                 items: prices,
             },
             {
-                name: 'operatingSystems',
-                label: 'Loại điện thoại',
-                items: operatingSystems,
-            },
-            {
                 name: 'rams',
                 label: 'RAM',
                 items: rams,
@@ -196,7 +174,7 @@ export default function LaptopPage() {
                 items: roms,
             },
         ],
-        [brandsFilter, prices, operatingSystems, rams, roms],
+        [brandsFilter, prices, rams, roms],
     );
 
     const form = useForm<ProductFilterType>({
@@ -204,7 +182,6 @@ export default function LaptopPage() {
         defaultValues: {
             brands: ['all'],
             prices: ['all'],
-            operatingSystems: ['all'],
             rams: ['all'],
             roms: ['all'],
         },
