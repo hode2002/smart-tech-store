@@ -239,7 +239,8 @@ const ProductReview = ({
                             </div>
                         </div>
                         <div className="mt-2 inline-flex items-center">
-                            {editMode ? (
+                            {editMode &&
+                            review.user.email === userProfile.email ? (
                                 <Rating
                                     value={Math.floor(review.star)}
                                     onChange={(value) => setRated(value)}
@@ -252,7 +253,8 @@ const ProductReview = ({
                             )}
                         </div>
                         <div className="mt-2 flex flex-col gap-4">
-                            {editMode ? (
+                            {editMode &&
+                            review.user.email === userProfile.email ? (
                                 <div className="grid w-full gap-2 mb-4">
                                     {review.review_images && (
                                         <div className="flex flex-col gap-2 flex-wrap">

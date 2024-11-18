@@ -212,7 +212,7 @@ export function EditOrderModal(props: Props) {
                                 Tổng thanh toán:
                             </Label>
                             <p className="font-bold">
-                                {formatPrice(order.total_amount + order.fee)}
+                                {formatPrice(order.total_amount)}
                             </p>
                         </div>
                         <DropdownMenuSeparator />
