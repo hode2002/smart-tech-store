@@ -69,8 +69,8 @@ const ProductComboItem = ({
                         height={68}
                         alt={selectedProduct.product_option.slug}
                     />
-                    <p className="font-semibold text-[#039855] py-1 text-[12px]">
-                        Giảm{' '}
+                    <p className="font-semibold text-[#039855] flex justify-center gap-1 py-1 text-[12px]">
+                        <span>Giảm </span>
                         <span className="font-bold">
                             {selectedProduct.discount}%
                         </span>
@@ -78,15 +78,8 @@ const ProductComboItem = ({
                 </Link>
                 <div className="px-2">
                     <p className="font-semibold flex gap-1">
-                        <span>
-                            {selectedProduct.product_option.product.name}
-                        </span>
-                        <span>
-                            {selectedProduct.product_option.sku.replace(
-                                '-',
-                                ' ',
-                            )}
-                        </span>
+                        {selectedProduct.product_option.product.name}
+                        {selectedProduct.product_option.sku.replace('-', ' ')}
                     </p>
                     <div className="flex gap-2 items-center">
                         <p className="text-[#E83A45] font-semibold">

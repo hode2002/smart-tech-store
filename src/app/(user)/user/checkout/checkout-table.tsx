@@ -95,7 +95,9 @@ export default function CheckoutTable() {
                                 width={80}
                                 height={80}
                             />
-                            <p>{product.name}</p>
+                            <p className="capitalize truncate">
+                                {product.name}
+                            </p>
                         </div>
                     );
                 },
@@ -121,7 +123,7 @@ export default function CheckoutTable() {
                                         {formatPrice(priceModifier)}
                                     </div>
                                     {row.original.discount !== 0 && (
-                                        <div className="text-center font-medium">
+                                        <div className="text-center font-medium text-nowrap">
                                             <span className="line-through">
                                                 {formatPrice(
                                                     unitPrice +
@@ -129,7 +131,7 @@ export default function CheckoutTable() {
                                                             .priceModifier,
                                                 )}
                                             </span>
-                                            <span>
+                                            <span className="text-nowrap">
                                                 {' '}
                                                 - {row.original.discount} %
                                             </span>
