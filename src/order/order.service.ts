@@ -984,6 +984,9 @@ export class OrderService {
                           status,
                       }),
             },
+            orderBy: {
+                created_at: 'desc',
+            },
             select: {
                 id: true,
                 name: true,
@@ -1369,18 +1372,19 @@ export class OrderService {
 
             totalPrice += orderDetailItem.quantity * modifiedPrice;
 
+            const weight = Number(
+                productOption.technical_specs.specs[0].value.replace(
+                    /\D+$/g,
+                    '',
+                ),
+            );
+
             const result = {
                 name:
                     productOption.product.name +
                     ' ' +
                     productOption.sku.replaceAll('-', ' '),
-                weight:
-                    Number(
-                        productOption.technical_specs.specs[0].value.replace(
-                            /\D+$/g,
-                            '',
-                        ),
-                    ) / 1000,
+                weight: weight / (weight < 10 ? 100 : 1000),
                 quantity: orderDetailItem.quantity,
             };
 
