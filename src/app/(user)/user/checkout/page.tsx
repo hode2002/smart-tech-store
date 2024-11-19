@@ -18,7 +18,6 @@ import orderApiRequest, {
 } from '@/apiRequests/order';
 import {
     addNotification,
-    CartItem,
     setCartProducts,
     setPaymentId,
 } from '@/lib/store/slices';
@@ -30,6 +29,7 @@ import voucherApiRequest, {
 import notificationApiRequest, {
     CreateUserNotificationResponseType,
 } from '@/apiRequests/notification';
+import accountApiRequest from '@/apiRequests/account';
 
 export default function CheckoutPage() {
     const searchParams = useSearchParams();
@@ -40,7 +40,6 @@ export default function CheckoutPage() {
     const dispatch = useAppDispatch();
     const productCheckout = useAppSelector((state) => state.user.checkout);
     const deliveryList = useAppSelector((state) => state.delivery.deliveryList);
-    const userCart = useAppSelector((state) => state.user.cart);
     const token = useAppSelector((state) => state.auth.accessToken);
     const [paymentMethod, setPaymentMethod] = useState<string>('cod');
     const profile = useAppSelector((state) => state.user.profile);
@@ -145,8 +144,8 @@ export default function CheckoutPage() {
                         'VNPAY chỉ hỗ trợ thanh toán trong khoảng 1 <= <=' +
                         formatPrice(LIMIT_VNPAY_PAYMENT_PRICE),
                 });
+                return setLoading(false);
             }
-            return setLoading(false);
         }
 
         const orderInfo = {
@@ -191,15 +190,11 @@ export default function CheckoutPage() {
 
         setLoading(false);
         if (createOrderResponse?.statusCode === 201) {
-            const cartItemAfterCheckout: CartItem[] = [];
-
-            userCart.forEach((c) => {
-                if (productCheckout.find((el) => el.id !== c.id)) {
-                    cartItemAfterCheckout.push(c);
+            accountApiRequest.getProductsFromCart(token).then((response) => {
+                if (response?.statusCode === 200) {
+                    dispatch(setCartProducts(response?.data));
                 }
             });
-
-            dispatch(setCartProducts(cartItemAfterCheckout));
 
             const jsonImages = JSON.stringify(
                 createOrderResponse.data.order_details?.map(
