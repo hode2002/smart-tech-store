@@ -37,30 +37,37 @@ def create_tree_from_node_server(token):
             'message': 'No images available in node server',
         }), 404
     
-    vector_size = 2048
-    t = AnnoyIndex(vector_size, 'euclidean')
-    
-    vectors = []
-
-    for i, item in enumerate(api_data):
-        image_url = item['image_url']
-        product_option_id = item['product_option_id']
+    try:
+        file_path = os.path.join(os.getcwd(), 'annoySearch.ann')
+        vector_size = 2048
+        t = AnnoyIndex(vector_size, 'euclidean')
         
-        vector = extract_features(image_url)
-        t.add_item(i, vector)
-        
-        vectors.append({'product_option_id': product_option_id, 'vector': vector.tolist()})
+        vectors = []
 
-    t.build(20)
-    t.save('./annoySearch.ann')
+        for i, item in enumerate(api_data):
+            image_url = item['image_url']
+            product_option_id = item['product_option_id']
+            
+            vector = extract_features(image_url)
+            t.add_item(i, vector)
+            
+            vectors.append({'product_option_id': product_option_id, 'vector': vector.tolist()})
 
-    vector_features_collection.delete_many({})
-    vector_features_collection.insert_many(vectors)
+        t.build(20)
+        t.save(file_path)
 
-    return jsonify({
-        'statusCode': 201,
-        'message': 'Create annoy tree successfully',
-    }), 201
+        vector_features_collection.delete_many({})
+        vector_features_collection.insert_many(vectors)
+
+        return jsonify({
+            'statusCode': 201,
+            'message': 'Create annoy tree successfully',
+        }), 201
+    except OSError as e:
+        return jsonify({
+            'statusCode': 500,
+            'message': f"Error: Unable to save the tree due to {str(e)}",
+        }), 500
 
 def add_item_to_tree(image_url, product_option_id):
     vector_size = 2048
@@ -98,4 +105,7 @@ def add_item_to_tree(image_url, product_option_id):
             'message': 'Added new item to annoy tree successfully',
         }), 201
     except OSError as e:
-        print(f"Error: Unable to save the tree due to {str(e)}")
+        return jsonify({
+            'statusCode': 500,
+            'message': f"Error: Unable to save the tree due to {str(e)}",
+        }), 500
