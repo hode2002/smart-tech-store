@@ -332,7 +332,6 @@ export default function CartTable() {
                 const productOption = row.original?.selectedOption;
                 const unitPrice = row.original.unitPrice;
                 const quantity = row.getValue<number>('quantity');
-                const productId = row.original.id;
 
                 const handleUpdateQuantity = async (
                     type: 'DECREASE' | 'INCREASE',
@@ -352,7 +351,11 @@ export default function CartTable() {
                                     { productOptionId },
                                 )) as RemoveCartProductResponseType;
                             if (response?.statusCode === 200) {
-                                dispatch(removeCartItem({ productId }));
+                                dispatch(
+                                    removeCartItem({
+                                        productId: productOptionId,
+                                    }),
+                                );
                                 toast({ description: 'Xóa thành công' });
                                 return;
                             }
@@ -438,14 +441,15 @@ export default function CartTable() {
             enableHiding: false,
             cell: ({ row }) => {
                 const handleDeleteProduct = async () => {
-                    const productId = row.original.id;
                     const productOptionId = row.original.selectedOption.id;
                     const response =
                         (await accountApiRequest.removeProductFromCart(token, {
                             productOptionId,
                         })) as RemoveCartProductResponseType;
                     if (response?.statusCode === 200) {
-                        dispatch(removeCartItem({ productId }));
+                        dispatch(
+                            removeCartItem({ productId: productOptionId }),
+                        );
                         toast({ description: 'Xóa thành công' });
                     }
                 };

@@ -44,6 +44,7 @@ import notificationApiRequest, {
     GetUserNotificationResponseType,
 } from '@/apiRequests/notification';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import moment from 'moment';
 
 export default function Home() {
     const dispatch = useAppDispatch();
@@ -177,11 +178,19 @@ export default function Home() {
         <>
             <Banner />
             <div className="md:container">
-                <ProductBox
-                    title="Gợi ý hôm nay"
-                    products={productSale}
-                    option="today"
-                />
+                {productSale &&
+                    productSale?.filter((product) =>
+                        moment(product.created_at).isSame(
+                            moment(new Date()),
+                            'day',
+                        ),
+                    )?.length > 0 && (
+                        <ProductBox
+                            title="Gợi ý hôm nay"
+                            products={productSale}
+                            option="today"
+                        />
+                    )}
                 <ProductBox title="Khuyến mãi hot" products={productSale} />
                 <div className="mx-2 md:mx-0">
                     <SwiperBox
