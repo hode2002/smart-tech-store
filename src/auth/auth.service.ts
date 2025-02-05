@@ -106,18 +106,16 @@ export class AuthService {
         res.cookie('accessToken', tokens.accessToken, {
             path: '/',
             httpOnly: false,
-            // sameSite: 'none',
-            // secure: false,
+            sameSite: 'none',
+            secure: true,
             maxAge: 60 * 60 * 1000,
-            // domain: this.configService.get<string>('FRONTEND_DOMAIN'),
         });
         res.cookie('refreshToken', tokens.refreshToken, {
             path: '/',
             httpOnly: false,
-            // sameSite: 'none',
-            // secure: false,
+            sameSite: 'none',
+            secure: true,
             maxAge: 60 * 60 * 1000,
-            // domain: this.configService.get<string>('FRONTEND_DOMAIN'),
         });
 
         return res.redirect(
