@@ -109,6 +109,7 @@ export class AuthService {
             sameSite: 'none',
             secure: true,
             maxAge: 60 * 60 * 1000,
+            domain: this.configService.get('FRONTEND_DOMAIN'),
         });
         res.cookie('refreshToken', tokens.refreshToken, {
             path: '/',
@@ -116,6 +117,7 @@ export class AuthService {
             sameSite: 'none',
             secure: true,
             maxAge: 60 * 60 * 1000,
+            domain: this.configService.get('FRONTEND_DOMAIN'),
         });
 
         return res.redirect(
