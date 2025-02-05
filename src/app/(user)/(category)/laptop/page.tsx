@@ -9,12 +9,12 @@ import {
 } from '@/schemaValidations/product.schema';
 
 type FilterFieldType = { id: string; label: string };
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 
-import { CheckboxMultiple } from '@/app/(user)/(category)/checkbox-mutiple';
+import { CheckboxMultiple } from '@/app/(user)/(category)/checkbox-multiple';
 import {
     Breadcrumb,
     BreadcrumbItem,
@@ -38,24 +38,107 @@ import CategoryProductList from '@/app/(user)/(category)/cate-product-list';
 import { Brand, ProductType } from '@/lib/store/slices';
 import productApiRequest from '@/apiRequests/product';
 import brandApiRequest from '@/apiRequests/brand';
-import { BrandResponseType } from '@/schemaValidations/brand.schema';
-export default function LaptopPage() {
-    const [isCLient, setIsClient] = useState(false);
-    useEffect(() => setIsClient(true), []);
+import { useQuery } from '@tanstack/react-query';
 
+const fetchByCategory = async () => {
+    const res = await productApiRequest.getProductsByCategory('laptop');
+    return res.data;
+};
+
+const fetchBrands = async () => {
+    const res = await brandApiRequest.getByCategoryName('laptop');
+    return res.data;
+};
+
+const prices: Array<FilterFieldType> = [
+    {
+        id: 'all',
+        label: 'Tất cả',
+    },
+    {
+        id: 'pt=10',
+        label: 'Dưới 10 triệu',
+    },
+    {
+        id: 'pf=10&pt=15',
+        label: 'Từ 10 - 15 triệu',
+    },
+    {
+        id: 'pf=15&pt=20',
+        label: 'Từ 15 - 20 triệu',
+    },
+    {
+        id: 'pf=25',
+        label: 'Trên 25 triệu',
+    },
+];
+const rams: Array<FilterFieldType> = [
+    {
+        id: 'all',
+        label: 'Tất cả',
+    },
+    {
+        id: '4gb',
+        label: '4 GB',
+    },
+    {
+        id: '8gb',
+        label: '8 GB',
+    },
+    {
+        id: '16gb',
+        label: '16 GB',
+    },
+    {
+        id: '32gb',
+        label: '32 GB',
+    },
+];
+const roms: Array<FilterFieldType> = [
+    {
+        id: 'all',
+        label: 'Tất cả',
+    },
+    {
+        id: '128gb',
+        label: '128 GB',
+    },
+    {
+        id: '256gb',
+        label: '256 GB',
+    },
+    {
+        id: '512gb',
+        label: '512 GB',
+    },
+    {
+        id: '1tb',
+        label: '1 TB',
+    },
+];
+
+export default function LaptopPage() {
     const [products, setProducts] = useState<ProductType[]>([]);
     const [brands, setBrands] = useState<Brand[]>([]);
 
+    const { data: productFromApi } = useQuery<ProductType[]>({
+        queryKey: ['cate-laptop'],
+        queryFn: fetchByCategory,
+        refetchOnWindowFocus: false,
+        refetchOnMount: false,
+    });
+
+    const { data: brandsFromApi } = useQuery<Brand[]>({
+        queryKey: ['brands-laptop'],
+        queryFn: fetchBrands,
+        refetchOnWindowFocus: false,
+        refetchOnMount: false,
+    });
+
     useEffect(() => {
-        productApiRequest
-            .getProductsByCategory('laptop')
-            .then((response: GetProductsResponseType) => {
-                setProducts(response.data);
-            });
-        brandApiRequest
-            .getByCategoryName('laptop')
-            .then((res: BrandResponseType) => setBrands(res.data));
-    }, []);
+        if (productFromApi) setProducts(productFromApi);
+        if (brandsFromApi) setBrands(brandsFromApi);
+    }, [productFromApi, brandsFromApi]);
 
     const brandsFilter: Array<FilterFieldType> = useMemo(
         () => [
@@ -68,81 +151,6 @@ export default function LaptopPage() {
                 .reverse(),
         ],
         [brands],
-    );
-    const prices: Array<FilterFieldType> = useMemo(
-        () => [
-            {
-                id: 'all',
-                label: 'Tất cả',
-            },
-            {
-                id: 'pt=10',
-                label: 'Dưới 10 triệu',
-            },
-            {
-                id: 'pf=10&pt=15',
-                label: 'Từ 10 - 15 triệu',
-            },
-            {
-                id: 'pf=15&pt=20',
-                label: 'Từ 15 - 20 triệu',
-            },
-            {
-                id: 'pf=25',
-                label: 'Trên 25 triệu',
-            },
-        ],
-        [],
-    );
-    const rams: Array<FilterFieldType> = useMemo(
-        () => [
-            {
-                id: 'all',
-                label: 'Tất cả',
-            },
-            {
-                id: '4gb',
-                label: '4 GB',
-            },
-            {
-                id: '8gb',
-                label: '8 GB',
-            },
-            {
-                id: '16gb',
-                label: '16 GB',
-            },
-            {
-                id: '32gb',
-                label: '32 GB',
-            },
-        ],
-        [],
-    );
-    const roms: Array<FilterFieldType> = useMemo(
-        () => [
-            {
-                id: 'all',
-                label: 'Tất cả',
-            },
-            {
-                id: '128gb',
-                label: '128 GB',
-            },
-            {
-                id: '256gb',
-                label: '256 GB',
-            },
-            {
-                id: '512gb',
-                label: '512 GB',
-            },
-            {
-                id: '1tb',
-                label: '1 TB',
-            },
-        ],
-        [],
     );
 
     const productFilterBox = useMemo<
@@ -174,7 +182,7 @@ export default function LaptopPage() {
                 items: roms,
             },
         ],
-        [brandsFilter, prices, rams, roms],
+        [brandsFilter],
     );
 
     const form = useForm<ProductFilterType>({
@@ -187,7 +195,7 @@ export default function LaptopPage() {
         },
     });
 
-    const handleFilterProduct = async () => {
+    const handleFilterProduct = useCallback(async () => {
         const filterDataObj = form.getValues();
         const keys = Object.keys(filterDataObj);
 
@@ -207,16 +215,16 @@ export default function LaptopPage() {
         });
 
         const response = (await productApiRequest.getProductsByUserFilter(
-            'laptop',
+            'tablet',
             form.getValues(),
         )) as GetProductsResponseType;
 
         if (response?.statusCode === 200) {
             setProducts(response.data);
         }
-    };
+    }, [form]);
 
-    const filterBy = (): string => {
+    const filterBy = useCallback((): string => {
         return Object.values(form.getValues())
             .reduce((items: string[], values: any) => {
                 if (!values.includes('all')) {
@@ -237,153 +245,149 @@ export default function LaptopPage() {
                 return items;
             }, [])
             .join(',');
-    };
+    }, [form]);
 
-    const handleClearFilter = () => {
+    const handleClearFilter = useCallback(() => {
         form.reset();
         productApiRequest
-            .getProductsByCategory('laptop')
+            .getProductsByCategory('smartphone')
             .then((response: GetProductsResponseType) => {
                 setProducts(response.data);
             });
-    };
+    }, [form]);
 
     return (
-        isCLient && (
-            <div className="bg-popover">
-                <Breadcrumb>
-                    <BreadcrumbList>
-                        <BreadcrumbItem>
-                            <Link className="underline" href="/">
-                                Trang chủ
-                            </Link>
-                        </BreadcrumbItem>
-                        <BreadcrumbSeparator />
-                        <BreadcrumbItem>Danh mục</BreadcrumbItem>
-                        <BreadcrumbSeparator />
-                        <BreadcrumbItem>
-                            <BreadcrumbPage>Laptop</BreadcrumbPage>
-                        </BreadcrumbItem>
-                    </BreadcrumbList>
-                </Breadcrumb>
-                <Sheet key={'left'}>
-                    <div className="my-8 flex">
-                        <div className="w-0 md:w-[25%] md:pr-4">
-                            <SheetTrigger
-                                asChild
-                                className="block md:hidden fixed left-8 bottom-8 py-2 bg-popover z-50 shadow-lg"
+        <div className="bg-popover">
+            <Breadcrumb>
+                <BreadcrumbList>
+                    <BreadcrumbItem>
+                        <Link className="underline" href="/">
+                            Trang chủ
+                        </Link>
+                    </BreadcrumbItem>
+                    <BreadcrumbSeparator />
+                    <BreadcrumbItem>Danh mục</BreadcrumbItem>
+                    <BreadcrumbSeparator />
+                    <BreadcrumbItem>
+                        <BreadcrumbPage>Laptop</BreadcrumbPage>
+                    </BreadcrumbItem>
+                </BreadcrumbList>
+            </Breadcrumb>
+            <Sheet key={'left'}>
+                <div className="my-8 flex">
+                    <div className="w-0 md:w-[25%] md:pr-4">
+                        <SheetTrigger
+                            asChild
+                            className="block md:hidden fixed left-8 bottom-8 py-2 bg-popover z-50 shadow-lg"
+                        >
+                            <Button
+                                variant="outline"
+                                className="flex items-center"
                             >
-                                <Button
-                                    variant="outline"
-                                    className="flex items-center"
-                                >
-                                    <Menu />
-                                </Button>
-                            </SheetTrigger>
-                            <SheetContent side={'left'}>
-                                <ScrollArea className="h-full">
-                                    <CheckboxMultiple
-                                        form={form}
-                                        handleFilterProduct={
-                                            handleFilterProduct
-                                        }
-                                        productFilterBox={productFilterBox}
-                                    />
-                                </ScrollArea>
-                            </SheetContent>
-
-                            <div className="hidden md:block">
-                                <div>
-                                    <p className="flex items-center justify-between py-3 font-bold text-xl">
-                                        <span className="flex items-center">
-                                            <ListFilter className="mr-1" />
-                                            Bộ lọc tìm kiếm
-                                        </span>
-                                    </p>
-                                </div>
-
+                                <Menu />
+                            </Button>
+                        </SheetTrigger>
+                        <SheetContent side={'left'}>
+                            <ScrollArea className="h-full">
                                 <CheckboxMultiple
                                     form={form}
                                     handleFilterProduct={handleFilterProduct}
                                     productFilterBox={productFilterBox}
                                 />
-                            </div>
-                        </div>
+                            </ScrollArea>
+                        </SheetContent>
 
-                        <div className="w-full md:w-[75%] px-0 md:px-7 border-0 md:border-l border-border bg-background">
-                            <div className="w-full py-3">
-                                <div className="flex gap-2 items-center">
-                                    <h1 className="font-bold text-[28px] pb-2">
-                                        Laptop
-                                    </h1>
-                                    <span className="opacity-90 font-semibold text-md">
-                                        ({products?.length} sản phẩm)
-                                    </span>
-                                </div>
-                            </div>
+                        <div className="hidden md:block">
                             <div>
-                                <div className="flex flex-col-reverse md:flex-row justify-between md:items-center gap-4">
-                                    <div className="flex flex-row flex-wrap gap-2">
-                                        {Object.values(form.getValues()).some(
-                                            (v) => !v.includes('all'),
-                                        ) && (
-                                            <div className="flex items-center gap-2">
-                                                <p>Lọc theo:</p>
-                                                <p className="font-bold capitalize">
-                                                    {filterBy()}
-                                                </p>
-                                                <Button
-                                                    variant={'link'}
-                                                    className="text-red-500"
-                                                    onClick={handleClearFilter}
-                                                >
-                                                    Xóa tất cả
-                                                </Button>
-                                            </div>
-                                        )}
-                                    </div>
-                                    <div className="flex justify-between md:justify-end">
-                                        <SheetTrigger asChild>
-                                            <Button
-                                                variant={'outline'}
-                                                className="flex md:hidden items-center gap-2"
-                                            >
-                                                <Filter />
-                                                Lọc
-                                                <strong className="number count-total hidden">
-                                                    0
-                                                </strong>
-                                            </Button>
-                                        </SheetTrigger>
-                                        <Select>
-                                            <SelectTrigger className="w-[180px]">
-                                                <SelectValue placeholder="Sắp xếp theo" />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                <SelectGroup>
-                                                    <SelectItem value="new">
-                                                        Mới
-                                                    </SelectItem>
-                                                    <SelectItem value="discount">
-                                                        % Giảm
-                                                    </SelectItem>
-                                                    <SelectItem value="decrease">
-                                                        Giá cao đến thấp
-                                                    </SelectItem>
-                                                    <SelectItem value="increase">
-                                                        Giá thấp đến cao
-                                                    </SelectItem>
-                                                </SelectGroup>
-                                            </SelectContent>
-                                        </Select>
-                                    </div>
-                                </div>
-                                <CategoryProductList products={products} />
+                                <p className="flex items-center justify-between py-3 font-bold text-xl">
+                                    <span className="flex items-center">
+                                        <ListFilter className="mr-1" />
+                                        Bộ lọc tìm kiếm
+                                    </span>
+                                </p>
                             </div>
+
+                            <CheckboxMultiple
+                                form={form}
+                                handleFilterProduct={handleFilterProduct}
+                                productFilterBox={productFilterBox}
+                            />
                         </div>
                     </div>
-                </Sheet>
-            </div>
-        )
+
+                    <div className="w-full md:w-[75%] px-0 md:px-7 border-0 md:border-l border-border bg-background">
+                        <div className="w-full py-3">
+                            <div className="flex gap-2 items-center">
+                                <h1 className="font-bold text-[28px] pb-2">
+                                    Laptop
+                                </h1>
+                                <span className="opacity-90 font-semibold text-md">
+                                    ({products?.length} sản phẩm)
+                                </span>
+                            </div>
+                        </div>
+                        <div>
+                            <div className="flex flex-col-reverse md:flex-row justify-between md:items-center gap-4">
+                                <div className="flex flex-row flex-wrap gap-2">
+                                    {Object.values(form.getValues()).some(
+                                        (v) => !v.includes('all'),
+                                    ) && (
+                                        <div className="flex items-center gap-2">
+                                            <p>Lọc theo:</p>
+                                            <p className="font-bold capitalize">
+                                                {filterBy()}
+                                            </p>
+                                            <Button
+                                                variant={'link'}
+                                                className="text-red-500"
+                                                onClick={handleClearFilter}
+                                            >
+                                                Xóa tất cả
+                                            </Button>
+                                        </div>
+                                    )}
+                                </div>
+                                <div className="flex justify-between md:justify-end">
+                                    <SheetTrigger asChild>
+                                        <Button
+                                            variant={'outline'}
+                                            className="flex md:hidden items-center gap-2"
+                                        >
+                                            <Filter />
+                                            Lọc
+                                            <strong className="number count-total hidden">
+                                                0
+                                            </strong>
+                                        </Button>
+                                    </SheetTrigger>
+                                    <Select>
+                                        <SelectTrigger className="w-[180px]">
+                                            <SelectValue placeholder="Sắp xếp theo" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectGroup>
+                                                <SelectItem value="new">
+                                                    Mới
+                                                </SelectItem>
+                                                <SelectItem value="discount">
+                                                    % Giảm
+                                                </SelectItem>
+                                                <SelectItem value="decrease">
+                                                    Giá cao đến thấp
+                                                </SelectItem>
+                                                <SelectItem value="increase">
+                                                    Giá thấp đến cao
+                                                </SelectItem>
+                                            </SelectGroup>
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                            </div>
+                            <CategoryProductList products={products} />
+                        </div>
+                    </div>
+                </div>
+            </Sheet>
+        </div>
     );
 }

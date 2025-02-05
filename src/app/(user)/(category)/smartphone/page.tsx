@@ -9,12 +9,13 @@ import {
 } from '@/schemaValidations/product.schema';
 
 type FilterFieldType = { id: string; label: string };
-import React, { useState, useEffect, useMemo } from 'react';
+
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 
-import { CheckboxMultiple } from '@/app/(user)/(category)/checkbox-mutiple';
+import { CheckboxMultiple } from '@/app/(user)/(category)/checkbox-multiple';
 import {
     Breadcrumb,
     BreadcrumbItem,
@@ -39,25 +40,92 @@ import CategoryProductList from '@/app/(user)/(category)/cate-product-list';
 import { Brand, ProductType } from '@/lib/store/slices';
 import productApiRequest from '@/apiRequests/product';
 import brandApiRequest from '@/apiRequests/brand';
-import { BrandResponseType } from '@/schemaValidations/brand.schema';
+
+import { useQuery } from '@tanstack/react-query';
+
+const fetchByCategory = async () => {
+    const res = await productApiRequest.getProductsByCategory('smartphone');
+    return res.data;
+};
+
+const fetchBrands = async () => {
+    const res = await brandApiRequest.getByCategoryName('smartphone');
+    return res.data;
+};
+
+const filterFields = {
+    prices: [
+        { id: 'all', label: 'Tất cả' },
+        { id: 'pt=2', label: 'Dưới 2 triệu' },
+        { id: 'pf=2&pt=4', label: 'Từ 2 - 4 triệu' },
+        { id: 'pf=4&pt=7', label: 'Từ 4 - 7 triệu' },
+        { id: 'pf=7&pt=13', label: 'Từ 7 - 13 triệu' },
+        { id: 'pf=13', label: 'Trên 13 triệu' },
+    ],
+    operatingSystems: [
+        { id: 'all', label: 'Tất cả' },
+        { id: 'android', label: 'Android' },
+        { id: 'ios', label: 'iOS (iPhone)' },
+    ],
+    rams: [
+        { id: 'all', label: 'Tất cả' },
+        { id: '2gb', label: '2 GB' },
+        { id: '3gb', label: '3 GB' },
+        { id: '4gb', label: '4 GB' },
+        { id: '6gb', label: '6 GB' },
+        { id: '8gb', label: '8 GB' },
+        { id: '12gb', label: '12 GB' },
+    ],
+    roms: [
+        { id: 'all', label: 'Tất cả' },
+        { id: '32gb', label: '32 GB' },
+        { id: '64gb', label: '64 GB' },
+        { id: '128gb', label: '128 GB' },
+        { id: '256gb', label: '256 GB' },
+        { id: '512gb', label: '512 GB' },
+        { id: '1tb', label: '1 TB' },
+    ],
+    specialFeatures: [
+        { id: 'all', label: 'Tất cả' },
+        { id: '5g', label: 'Hỗ trợ 5G' },
+    ],
+    charger: [
+        { id: 'all', label: 'Tất cả' },
+        { id: '20W', label: 'Sạc nhanh (từ 20W)' },
+        { id: '40W', label: 'Sạc siêu nhanh (từ 40W)' },
+    ],
+    pin: [
+        { id: 'all', label: 'Tất cả' },
+        { id: '3000 mAh', label: '3000 mAh' },
+        { id: '4000 mAh', label: '4000 mAh' },
+    ],
+};
 
 export default function SmartphonePage() {
-    const [isCLient, setIsClient] = useState(false);
-    useEffect(() => setIsClient(true), []);
-
     const [products, setProducts] = useState<ProductType[]>([]);
     const [brands, setBrands] = useState<Brand[]>([]);
 
+    const { data: productFromApi } = useQuery<ProductType[]>({
+        queryKey: ['cate-smartphone'],
+        queryFn: fetchByCategory,
+        refetchOnWindowFocus: false,
+        refetchOnMount: false,
+    });
+
+    const { data: brandsFromApi } = useQuery<Brand[]>({
+        queryKey: ['brands-smartphone'],
+        queryFn: fetchBrands,
+        refetchOnWindowFocus: false,
+        refetchOnMount: false,
+    });
+
     useEffect(() => {
-        productApiRequest
-            .getProductsByCategory('smartphone')
-            .then((response: GetProductsResponseType) => {
-                setProducts(response.data);
-            });
-        brandApiRequest
-            .getByCategoryName('smartphone')
-            .then((res: BrandResponseType) => setBrands(res.data));
-    }, []);
+        if (productFromApi) setProducts(productFromApi);
+    }, [productFromApi]);
+
+    useEffect(() => {
+        if (brandsFromApi) setBrands(brandsFromApi);
+    }, [brandsFromApi]);
 
     const brandsFilter: Array<FilterFieldType> = useMemo(
         () => [
@@ -71,226 +139,37 @@ export default function SmartphonePage() {
         ],
         [brands],
     );
-    const prices: Array<FilterFieldType> = useMemo(
-        () => [
-            {
-                id: 'all',
-                label: 'Tất cả',
-            },
-            {
-                id: 'pt=2',
-                label: 'Dưới 2 triệu',
-            },
-            {
-                id: 'pf=2&pt=4',
-                label: 'Từ 2 - 4 triệu',
-            },
-            {
-                id: 'pf=4&pt=7',
-                label: 'Từ 4 - 7 triệu',
-            },
-            {
-                id: 'pf=7&pt=13',
-                label: 'Từ 7 - 13 triệu',
-            },
-            {
-                id: 'pf=13',
-                label: 'Trên 13 triệu',
-            },
-        ],
-        [],
-    );
-    const operatingSystems: Array<FilterFieldType> = useMemo(
-        () => [
-            {
-                id: 'all',
-                label: 'Tất cả',
-            },
-            {
-                id: 'android',
-                label: 'Android',
-            },
-            {
-                id: 'ios',
-                label: 'iOS (iPhone)',
-            },
-        ],
-        [],
-    );
-    const rams: Array<FilterFieldType> = useMemo(
-        () => [
-            {
-                id: 'all',
-                label: 'Tất cả',
-            },
-            {
-                id: '2gb',
-                label: '2 GB',
-            },
-            {
-                id: '3gb',
-                label: '3 GB',
-            },
-            {
-                id: '4gb',
-                label: '4 GB',
-            },
-            {
-                id: '6gb',
-                label: '6 GB',
-            },
-            {
-                id: '8gb',
-                label: '8 GB',
-            },
-            {
-                id: '12gb',
-                label: '12 GB',
-            },
-        ],
-        [],
-    );
-    const roms: Array<FilterFieldType> = useMemo(
-        () => [
-            {
-                id: 'all',
-                label: 'Tất cả',
-            },
-            {
-                id: '32gb',
-                label: '32 GB',
-            },
-            {
-                id: '64gb',
-                label: '64 GB',
-            },
-            {
-                id: '128gb',
-                label: '128 GB',
-            },
-            {
-                id: '256gb',
-                label: '256 GB',
-            },
-            {
-                id: '512gb',
-                label: '512 GB',
-            },
-            {
-                id: '1tb',
-                label: '1 TB',
-            },
-        ],
-        [],
-    );
-    const specialFeatures: Array<FilterFieldType> = useMemo(
-        () => [
-            {
-                id: 'all',
-                label: 'Tất cả',
-            },
-            {
-                id: '5g',
-                label: 'Hỗ trợ 5G',
-            },
-        ],
-        [],
-    );
-    const charger: Array<FilterFieldType> = useMemo(
-        () => [
-            {
-                id: 'all',
-                label: 'Tất cả',
-            },
-            {
-                id: '20W',
-                label: 'Sạc nhanh (từ 20W)',
-            },
-            {
-                id: '40W',
-                label: 'Sạc siêu nhanh (từ 40W)',
-            },
-        ],
-        [],
-    );
-    const pin: Array<FilterFieldType> = useMemo(
-        () => [
-            {
-                id: 'all',
-                label: 'Tất cả',
-            },
-            {
-                id: '3000 mAh',
-                label: '3000 mAh',
-            },
-            {
-                id: '4000 mAh',
-                label: '4000 mAh',
-            },
-        ],
-        [],
-    );
+
     const [sortedBy, setSortedBy] = useState<string>('new');
 
-    const productFilterBox = useMemo<
-        Array<{
-            name: string;
-            label: string;
-            items: Array<FilterFieldType>;
-        }>
-    >(
+    const productFilterBox = useMemo(
         () => [
-            {
-                name: 'brands',
-                label: 'Hãng sản xuất',
-                items: brandsFilter,
-            },
-            {
-                name: 'prices',
-                label: 'Mức giá',
-                items: prices,
-            },
+            { name: 'brands', label: 'Hãng sản xuất', items: brandsFilter },
+            { name: 'prices', label: 'Mức giá', items: filterFields.prices },
             {
                 name: 'operatingSystems',
                 label: 'Loại điện thoại',
-                items: operatingSystems,
+                items: filterFields.operatingSystems,
             },
-            {
-                name: 'rams',
-                label: 'RAM',
-                items: rams,
-            },
+            { name: 'rams', label: 'RAM', items: filterFields.rams },
             {
                 name: 'roms',
                 label: 'Dung lượng lưu trữ',
-                items: roms,
+                items: filterFields.roms,
             },
             {
                 name: 'specialFeatures',
                 label: 'Tính năng đặc biệt',
-                items: specialFeatures,
+                items: filterFields.specialFeatures,
             },
             {
                 name: 'charger',
                 label: 'Tính năng sạc',
-                items: charger,
+                items: filterFields.charger,
             },
-            {
-                name: 'pin',
-                label: 'Pin',
-                items: pin,
-            },
+            { name: 'pin', label: 'Pin', items: filterFields.pin },
         ],
-        [
-            brandsFilter,
-            prices,
-            operatingSystems,
-            rams,
-            roms,
-            specialFeatures,
-            charger,
-            pin,
-        ],
+        [brandsFilter],
     );
 
     const form = useForm<ProductFilterType>({
@@ -336,7 +215,7 @@ export default function SmartphonePage() {
         }
     };
 
-    const filterBy = (): string => {
+    const filterBy = useCallback((): string => {
         return Object.values(form.getValues())
             .reduce((items: string[], values: any) => {
                 if (!values.includes('all')) {
@@ -357,159 +236,155 @@ export default function SmartphonePage() {
                 return items;
             }, [])
             .join(',');
-    };
+    }, [form]);
 
-    const handleClearFilter = () => {
+    const handleClearFilter = useCallback(() => {
         form.reset();
         productApiRequest
             .getProductsByCategory('smartphone')
             .then((response: GetProductsResponseType) => {
                 setProducts(response.data);
             });
-    };
+    }, [form]);
 
     return (
-        isCLient && (
-            <div className="bg-popover">
-                <Breadcrumb>
-                    <BreadcrumbList>
-                        <BreadcrumbItem>
-                            <Link className="underline" href="/">
-                                Trang chủ
-                            </Link>
-                        </BreadcrumbItem>
-                        <BreadcrumbSeparator />
-                        <BreadcrumbItem>Danh mục</BreadcrumbItem>
-                        <BreadcrumbSeparator />
-                        <BreadcrumbItem>
-                            <BreadcrumbPage>Điện thoại</BreadcrumbPage>
-                        </BreadcrumbItem>
-                    </BreadcrumbList>
-                </Breadcrumb>
-                <Sheet key={'left'}>
-                    <div className="my-8 flex">
-                        <div className="w-0 md:w-[25%] md:pr-4">
-                            <SheetTrigger
-                                asChild
-                                className="block md:hidden fixed left-8 bottom-8 py-2 bg-popover z-50 shadow-lg"
+        <div className="bg-popover">
+            <Breadcrumb>
+                <BreadcrumbList>
+                    <BreadcrumbItem>
+                        <Link className="underline" href="/">
+                            Trang chủ
+                        </Link>
+                    </BreadcrumbItem>
+                    <BreadcrumbSeparator />
+                    <BreadcrumbItem>Danh mục</BreadcrumbItem>
+                    <BreadcrumbSeparator />
+                    <BreadcrumbItem>
+                        <BreadcrumbPage>Điện thoại</BreadcrumbPage>
+                    </BreadcrumbItem>
+                </BreadcrumbList>
+            </Breadcrumb>
+            <Sheet key={'left'}>
+                <div className="my-8 flex">
+                    <div className="w-0 md:w-[25%] md:pr-4">
+                        <SheetTrigger
+                            asChild
+                            className="block md:hidden fixed left-8 bottom-8 py-2 bg-popover z-50 shadow-lg"
+                        >
+                            <Button
+                                variant="outline"
+                                className="flex items-center"
                             >
-                                <Button
-                                    variant="outline"
-                                    className="flex items-center"
-                                >
-                                    <Menu />
-                                </Button>
-                            </SheetTrigger>
+                                <Menu />
+                            </Button>
+                        </SheetTrigger>
 
-                            <SheetContent side={'left'}>
-                                <ScrollArea className="h-full capitalize">
-                                    <CheckboxMultiple
-                                        form={form}
-                                        handleFilterProduct={
-                                            handleFilterProduct
-                                        }
-                                        productFilterBox={productFilterBox}
-                                    />
-                                </ScrollArea>
-                            </SheetContent>
-
-                            <div className="hidden md:block">
-                                <div>
-                                    <p className="flex items-center justify-between py-3 font-bold text-xl">
-                                        <span className="flex items-center">
-                                            <ListFilter className="mr-1" />
-                                            Bộ lọc tìm kiếm
-                                        </span>
-                                    </p>
-                                </div>
+                        <SheetContent side={'left'}>
+                            <ScrollArea className="h-full capitalize">
                                 <CheckboxMultiple
                                     form={form}
                                     handleFilterProduct={handleFilterProduct}
                                     productFilterBox={productFilterBox}
                                 />
-                            </div>
-                        </div>
+                            </ScrollArea>
+                        </SheetContent>
 
-                        <div className="w-full md:w-[75%] px-0 md:px-7 border-0 md:border-l border-border bg-background">
-                            <div className="w-full py-3">
-                                <div className="flex gap-2 items-center">
-                                    <h1 className="font-bold text-[28px] pb-2">
-                                        Điện thoại
-                                    </h1>
-                                    <span className="opacity-90 font-semibold text-md">
-                                        ({products?.length ?? 0} sản phẩm)
-                                    </span>
-                                </div>
-                            </div>
+                        <div className="hidden md:block">
                             <div>
-                                <div className="flex flex-col-reverse md:flex-row justify-between md:items-center gap-4">
-                                    <div className="flex flex-row flex-wrap gap-2">
-                                        {Object.values(form.getValues()).some(
-                                            (v) => !v.includes('all'),
-                                        ) && (
-                                            <div className="flex items-center gap-2">
-                                                <p>Lọc theo:</p>
-                                                <p className="font-bold capitalize">
-                                                    {filterBy()}
-                                                </p>
-                                                <Button
-                                                    variant={'link'}
-                                                    className="text-red-500"
-                                                    onClick={handleClearFilter}
-                                                >
-                                                    Xóa tất cả
-                                                </Button>
-                                            </div>
-                                        )}
-                                    </div>
-                                    <div className="flex justify-between md:justify-end">
-                                        <SheetTrigger asChild>
-                                            <Button
-                                                variant={'outline'}
-                                                className="flex md:hidden items-center gap-2"
-                                            >
-                                                <Filter />
-                                                Lọc
-                                                <strong className="number count-total hidden">
-                                                    0
-                                                </strong>
-                                            </Button>
-                                        </SheetTrigger>
-                                        <Select
-                                            value={sortedBy}
-                                            onValueChange={setSortedBy}
-                                        >
-                                            <SelectTrigger className="w-[180px]">
-                                                <SelectValue placeholder="Sắp xếp theo" />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                <SelectGroup>
-                                                    <SelectLabel>
-                                                        Sắp xếp theo
-                                                    </SelectLabel>
-                                                    <SelectItem value="new">
-                                                        Mới
-                                                    </SelectItem>
-                                                    <SelectItem value="discount">
-                                                        % Giảm
-                                                    </SelectItem>
-                                                    <SelectItem value="decrease">
-                                                        Giá cao đến thấp
-                                                    </SelectItem>
-                                                    <SelectItem value="increase">
-                                                        Giá thấp đến cao
-                                                    </SelectItem>
-                                                </SelectGroup>
-                                            </SelectContent>
-                                        </Select>
-                                    </div>
-                                </div>
-                                <CategoryProductList products={products} />
+                                <p className="flex items-center justify-between py-3 font-bold text-xl">
+                                    <span className="flex items-center">
+                                        <ListFilter className="mr-1" />
+                                        Bộ lọc tìm kiếm
+                                    </span>
+                                </p>
                             </div>
+                            <CheckboxMultiple
+                                form={form}
+                                handleFilterProduct={handleFilterProduct}
+                                productFilterBox={productFilterBox}
+                            />
                         </div>
                     </div>
-                </Sheet>
-            </div>
-        )
+
+                    <div className="w-full md:w-[75%] px-0 md:px-7 border-0 md:border-l border-border bg-background">
+                        <div className="w-full py-3">
+                            <div className="flex gap-2 items-center">
+                                <h1 className="font-bold text-[28px] pb-2">
+                                    Điện thoại
+                                </h1>
+                                <span className="opacity-90 font-semibold text-md">
+                                    ({products?.length ?? 0} sản phẩm)
+                                </span>
+                            </div>
+                        </div>
+                        <div>
+                            <div className="flex flex-col-reverse md:flex-row justify-between md:items-center gap-4">
+                                <div className="flex flex-row flex-wrap gap-2">
+                                    {Object.values(form.getValues()).some(
+                                        (v) => !v.includes('all'),
+                                    ) && (
+                                        <div className="flex items-center gap-2">
+                                            <p>Lọc theo:</p>
+                                            <p className="font-bold capitalize">
+                                                {filterBy()}
+                                            </p>
+                                            <Button
+                                                variant={'link'}
+                                                className="text-red-500"
+                                                onClick={handleClearFilter}
+                                            >
+                                                Xóa tất cả
+                                            </Button>
+                                        </div>
+                                    )}
+                                </div>
+                                <div className="flex justify-between md:justify-end">
+                                    <SheetTrigger asChild>
+                                        <Button
+                                            variant={'outline'}
+                                            className="flex md:hidden items-center gap-2"
+                                        >
+                                            <Filter />
+                                            Lọc
+                                            <strong className="number count-total hidden">
+                                                0
+                                            </strong>
+                                        </Button>
+                                    </SheetTrigger>
+                                    <Select
+                                        value={sortedBy}
+                                        onValueChange={setSortedBy}
+                                    >
+                                        <SelectTrigger className="w-[180px]">
+                                            <SelectValue placeholder="Sắp xếp theo" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectGroup>
+                                                <SelectLabel>
+                                                    Sắp xếp theo
+                                                </SelectLabel>
+                                                <SelectItem value="new">
+                                                    Mới
+                                                </SelectItem>
+                                                <SelectItem value="discount">
+                                                    % Giảm
+                                                </SelectItem>
+                                                <SelectItem value="decrease">
+                                                    Giá cao đến thấp
+                                                </SelectItem>
+                                                <SelectItem value="increase">
+                                                    Giá thấp đến cao
+                                                </SelectItem>
+                                            </SelectGroup>
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                            </div>
+                            <CategoryProductList products={products} />
+                        </div>
+                    </div>
+                </div>
+            </Sheet>
+        </div>
     );
 }

@@ -4,6 +4,7 @@ import { ThemeProvider } from '@/components/theme-provider';
 import ReduxProvider from '@/lib/store/redux-provider';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { CookiesProvider } from 'next-client-cookies/server';
+import ReactQueryProvider from '@/components/QueryClientProvider';
 
 import '../globals.css';
 import 'swiper/css';
@@ -39,9 +40,11 @@ export default function RootLayout({
                         <ReduxProvider>
                             <TooltipProvider>
                                 <PageHeader />
-                                <main className="min-h-screen min-w-[400px]">
-                                    {children}
-                                </main>
+                                <ReactQueryProvider>
+                                    <main className="min-h-screen min-w-[400px]">
+                                        {children}
+                                    </main>
+                                </ReactQueryProvider>
                                 <Toaster />
                                 <PageFooter />
                             </TooltipProvider>

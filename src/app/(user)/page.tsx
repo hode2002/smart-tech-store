@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import deliveryApiRequest from '@/apiRequests/delivery';
 import SwiperBox from '@/components/home/swiper-box';
 import { useAppDispatch, useAppSelector } from '@/lib/store';
@@ -9,7 +9,6 @@ import { DeliveryResponseType } from '@/schemaValidations/delivery.schema';
 import { useLayoutEffect, useState } from 'react';
 import Banner from '@/components/banner';
 import productApiRequest from '@/apiRequests/product';
-import { GetProductsResponseType } from '@/schemaValidations/product.schema';
 import {
     ProductType,
     setAccessToken,
@@ -17,7 +16,6 @@ import {
     setBrands,
     setCategories,
     setNotificationList,
-    setProductList,
     setProfile,
     setRefreshToken,
 } from '@/lib/store/slices';
@@ -46,11 +44,23 @@ import notificationApiRequest, {
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import moment from 'moment';
 
+import { useQuery } from '@tanstack/react-query';
+
+const fetchByCategory = async (slug: string) => {
+    const res = await productApiRequest.getProductsByCategory(slug);
+    return res.data;
+};
+
+const fetchProductSale = async () => {
+    const res = await productApiRequest.getProductsSale();
+    return res.data;
+};
+
 export default function Home() {
     const dispatch = useAppDispatch();
     const cookies = useCookies();
 
-    useLayoutEffect(() => {
+    useEffect(() => {
         const accessToken = cookies.get('accessToken');
         const refreshToken = cookies.get('refreshToken');
         if (accessToken && refreshToken) {
@@ -76,10 +86,6 @@ export default function Home() {
     const token = useAppSelector((state) => state.auth.accessToken);
     const userAddress = useAppSelector((state) => state.user.address);
 
-    const [laptop, setLaptop] = useState<ProductType[]>([]);
-    const [tablet, setTablet] = useState<ProductType[]>([]);
-    const [smartphone, setSmartphone] = useState<ProductType[]>([]);
-    const [productSale, setProductSale] = useState<ProductType[]>([]);
     const [news, setNews] = useState<NewsResponseType[]>([]);
 
     useLayoutEffect(() => {
@@ -142,37 +148,33 @@ export default function Home() {
         deliveryList?.length,
     ]);
 
-    useLayoutEffect(() => {
-        productApiRequest
-            .getProductsByCategory('smartphone')
-            .then((response: GetProductsResponseType) =>
-                dispatch(setProductList(response.data)),
-            );
+    const { data: productSale } = useQuery<ProductType[]>({
+        queryKey: ['productSale'],
+        queryFn: fetchProductSale,
+        refetchOnWindowFocus: false,
+        refetchOnMount: false,
+    });
 
-        productApiRequest
-            .getProductsByCategory('smartphone')
-            .then((response: GetProductsResponseType) => {
-                setSmartphone(response.data);
-            });
+    const { data: smartphone } = useQuery({
+        queryKey: ['smartphone'],
+        queryFn: () => fetchByCategory('smartphone'),
+        refetchOnWindowFocus: false,
+        refetchOnMount: false,
+    });
 
-        productApiRequest
-            .getProductsByCategory('tablet')
-            .then((response: GetProductsResponseType) =>
-                setTablet(response.data),
-            );
+    const { data: laptop } = useQuery({
+        queryKey: ['laptop'],
+        queryFn: () => fetchByCategory('laptop'),
+        refetchOnWindowFocus: false,
+        refetchOnMount: false,
+    });
 
-        productApiRequest
-            .getProductsByCategory('laptop')
-            .then((response: GetProductsResponseType) =>
-                setLaptop(response.data),
-            );
-
-        productApiRequest
-            .getProductsSale()
-            .then((response: GetProductsResponseType) =>
-                setProductSale(response.data),
-            );
-    }, [dispatch]);
+    const { data: tablet } = useQuery({
+        queryKey: ['tablet'],
+        queryFn: () => fetchByCategory('tablet'),
+        refetchOnWindowFocus: false,
+        refetchOnMount: false,
+    });
 
     return (
         <>
@@ -191,7 +193,10 @@ export default function Home() {
                             option="today"
                         />
                     )}
-                <ProductBox title="Khuyến mãi hot" products={productSale} />
+                <ProductBox
+                    title="Khuyến mãi hot"
+                    products={productSale as ProductType[]}
+                />
                 <div className="mx-2 md:mx-0">
                     <SwiperBox
                         title="Điện thoại"

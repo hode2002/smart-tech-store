@@ -7,10 +7,14 @@ import { Skeleton } from '@/components/ui/skeleton';
 import Image from 'next/image';
 import Link from 'next/link';
 import React, { useLayoutEffect, useState } from 'react';
-import {
-    BannersResponseType,
-    FetchAllBannersResponseType,
-} from '@/apiRequests/admin';
+import { BannersResponseType } from '@/apiRequests/admin';
+
+import { useQuery } from '@tanstack/react-query';
+
+const fetchByCategory = async () => {
+    const res = await bannerImageApiRequest.getImages();
+    return res.data;
+};
 
 export default function Banner() {
     const [bigBanner, setBigBanner] = useState<BannersResponseType>();
@@ -19,22 +23,24 @@ export default function Banner() {
         [],
     );
 
+    const { data: bannerImages, isSuccess } = useQuery<BannersResponseType[]>({
+        queryKey: ['banners'],
+        queryFn: fetchByCategory,
+        refetchOnWindowFocus: false,
+        refetchOnMount: false,
+    });
+
     useLayoutEffect(() => {
-        bannerImageApiRequest
-            .getImages()
-            .then((response: FetchAllBannersResponseType) => {
-                const bannerImages = response.data;
-                setBigBanner(
-                    bannerImages?.find((image) => image.type === 'big'),
-                );
-                setCarouselImages(
-                    bannerImages?.filter((image) => image.type === 'slide'),
-                );
-                setSideImages(
-                    bannerImages?.filter((image) => image.type === 'side'),
-                );
-            });
-    }, []);
+        if (isSuccess) {
+            setBigBanner(bannerImages?.find((image) => image.type === 'big'));
+            setCarouselImages(
+                bannerImages?.filter((image) => image.type === 'slide'),
+            );
+            setSideImages(
+                bannerImages?.filter((image) => image.type === 'side'),
+            );
+        }
+    }, [bannerImages, isSuccess]);
 
     return (
         <div className="relative">

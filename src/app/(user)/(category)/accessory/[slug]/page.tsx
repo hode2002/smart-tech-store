@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useCallback, useLayoutEffect } from 'react';
+import React, { useState, useCallback, useLayoutEffect, useMemo } from 'react';
 import {
     Breadcrumb,
     BreadcrumbItem,
@@ -32,12 +32,26 @@ import ProductOptionCard from '@/app/(user)/(category)/components/ProductOptionC
 import { Skeleton } from '@/components/ui/skeleton';
 import ProductReviewOverview from '@/app/(user)/(category)/components/ProductReviewOverview';
 import ProductComboCard from '@/app/(user)/(category)/components/ProductComboCard';
+import { useQuery } from '@tanstack/react-query';
 
 type Props = {
     params: { slug: string };
 };
 
+const fetchProductBySlug = async (slug: string) => {
+    const res = (await productApiRequest.getProductsBySlug(
+        slug,
+    )) as GetProductDetailResponseType;
+    return res.data;
+};
+
 export default function AccessoryDetailPage({ params }: Props) {
+    const [productInfo, setProductInfo] = useState<ProductDetailType>();
+    const [selectedOptionIndex, setSelectedOptionIndex] = useState<number>(0);
+    const [selectedOptionObj, setSelectedOptionObj] = useState<
+        { name: string; value: string; adjust_price: number }[]
+    >([]);
+
     const fetchProduct = useCallback(async () => {
         const response = (await productApiRequest.getProductsBySlug(
             params.slug,
@@ -45,35 +59,24 @@ export default function AccessoryDetailPage({ params }: Props) {
         setProductInfo(response.data);
     }, [params.slug]);
 
-    useLayoutEffect(() => {
-        (async () => await fetchProduct())();
-    }, [fetchProduct]);
-
-    const [productInfo, setProductInfo] = useState<ProductDetailType>();
-    const [selectedOptionIndex, setSelectedOptionIndex] = useState<number>(0);
-    const [selectedOptionObj, setSelectedOptionObj] = useState<
-        { name: string; value: string; adjust_price: number }[]
-    >([]);
-    const warranties = productInfo?.warranties as string[];
-    const promotions = productInfo?.promotions as string[];
-    const descriptions = productInfo?.descriptions as ProductDescriptionType[];
-    const technicalSpecs = productInfo?.product_options?.[selectedOptionIndex]
-        ?.technical_specs as TechnicalSpecsItem[];
-    const rating = productInfo?.product_options?.[selectedOptionIndex]
-        ?.rating as RatingType;
-    const reviews = productInfo?.product_options?.[selectedOptionIndex]
-        ?.reviews as ReviewItem[];
-    const combos = productInfo?.product_options?.[selectedOptionIndex]
-        ?.combos as ComboType[];
+    const { data } = useQuery<ProductDetailType>({
+        queryKey: [params.slug],
+        queryFn: () => fetchProductBySlug(params.slug),
+        refetchOnWindowFocus: false,
+        refetchOnMount: false,
+    });
 
     useLayoutEffect(() => {
-        productInfo?.product_options?.forEach((item, index) => {
-            if (item.slug === params.slug) {
-                setSelectedOptionIndex(index);
-                setSelectedOptionObj(item.options);
-            }
-        });
-    }, [productInfo, params.slug]);
+        setProductInfo(data);
+        if (data) {
+            data.product_options.forEach((item, index) => {
+                if (item.slug === params.slug) {
+                    setSelectedOptionIndex(index);
+                    setSelectedOptionObj(item.options);
+                }
+            });
+        }
+    }, [data, params.slug]);
 
     const convertProductName = useCallback(() => {
         return (
@@ -85,6 +88,29 @@ export default function AccessoryDetailPage({ params }: Props) {
             )
         ).toLocaleLowerCase();
     }, [productInfo?.name, productInfo?.product_options, selectedOptionIndex]);
+
+    const {
+        warranties,
+        promotions,
+        descriptions,
+        technicalSpecs,
+        rating,
+        reviews,
+        combos,
+    } = useMemo(() => {
+        const selectedOption =
+            productInfo?.product_options?.[selectedOptionIndex];
+        return {
+            warranties: productInfo?.warranties as string[],
+            promotions: productInfo?.promotions as string[],
+            descriptions: productInfo?.descriptions as ProductDescriptionType[],
+            technicalSpecs:
+                selectedOption?.technical_specs as TechnicalSpecsItem[],
+            rating: selectedOption?.rating as RatingType,
+            reviews: selectedOption?.reviews as ReviewItem[],
+            combos: selectedOption?.combos as ComboType[],
+        };
+    }, [productInfo, selectedOptionIndex]);
 
     return (
         <div className="py-2 bg-popover min-h-screen">

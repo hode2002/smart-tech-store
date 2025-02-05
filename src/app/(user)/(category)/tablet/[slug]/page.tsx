@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useCallback, useLayoutEffect } from 'react';
+import React, { useState, useCallback, useLayoutEffect, useMemo } from 'react';
 import {
     Breadcrumb,
     BreadcrumbItem,
@@ -32,12 +32,26 @@ import ProductReviewOverview from '@/app/(user)/(category)/components/ProductRev
 import ProductPromotion from '@/app/(user)/(category)/components/ProductPromotion';
 import ProductTechnicalSpecs from '@/app/(user)/(category)/components/ProductTechnicalSpecs';
 import ProductComboCard from '@/app/(user)/(category)/components/ProductComboCard';
+import { useQuery } from '@tanstack/react-query';
 
 type Props = {
     params: { slug: string };
 };
 
+const fetchProductBySlug = async (slug: string) => {
+    const res = (await productApiRequest.getProductsBySlug(
+        slug,
+    )) as GetProductDetailResponseType;
+    return res.data;
+};
+
 export default function TabletDetailPage({ params }: Props) {
+    const [productInfo, setProductInfo] = useState<ProductDetailType>();
+    const [selectedOptionIndex, setSelectedOptionIndex] = useState<number>(0);
+    const [selectedOptionObj, setSelectedOptionObj] = useState<
+        { name: string; value: string; adjust_price: number }[]
+    >([]);
+
     const fetchProduct = useCallback(async () => {
         const response = (await productApiRequest.getProductsBySlug(
             params.slug,
@@ -45,36 +59,24 @@ export default function TabletDetailPage({ params }: Props) {
         setProductInfo(response.data);
     }, [params.slug]);
 
-    useLayoutEffect(() => {
-        (async () => await fetchProduct())();
-    }, [fetchProduct]);
-
-    const [productInfo, setProductInfo] = useState<ProductDetailType>();
-    const [selectedOptionIndex, setSelectedOptionIndex] = useState<number>(0);
-    const [selectedOptionObj, setSelectedOptionObj] = useState<
-        { name: string; value: string; adjust_price: number }[]
-    >([]);
-
-    const warranties = productInfo?.warranties as string[];
-    const promotions = productInfo?.promotions as string[];
-    const descriptions = productInfo?.descriptions as ProductDescriptionType[];
-    const technicalSpecs = productInfo?.product_options?.[selectedOptionIndex]
-        ?.technical_specs as TechnicalSpecsItem[];
-    const rating = productInfo?.product_options?.[selectedOptionIndex]
-        ?.rating as RatingType;
-    const reviews = productInfo?.product_options?.[selectedOptionIndex]
-        ?.reviews as ReviewItem[];
-    const combos = productInfo?.product_options?.[selectedOptionIndex]
-        ?.combos as ComboType[];
+    const { data } = useQuery<ProductDetailType>({
+        queryKey: [params.slug],
+        queryFn: () => fetchProductBySlug(params.slug),
+        refetchOnWindowFocus: false,
+        refetchOnMount: false,
+    });
 
     useLayoutEffect(() => {
-        productInfo?.product_options?.forEach((item, index) => {
-            if (item.slug === params.slug) {
-                setSelectedOptionIndex(index);
-                setSelectedOptionObj(item.options);
-            }
-        });
-    }, [productInfo, params.slug]);
+        setProductInfo(data);
+        if (data) {
+            data.product_options.forEach((item, index) => {
+                if (item.slug === params.slug) {
+                    setSelectedOptionIndex(index);
+                    setSelectedOptionObj(item.options);
+                }
+            });
+        }
+    }, [data, params.slug]);
 
     const convertProductName = useCallback(() => {
         return (
@@ -87,154 +89,175 @@ export default function TabletDetailPage({ params }: Props) {
         ).toLocaleLowerCase();
     }, [productInfo?.name, productInfo?.product_options, selectedOptionIndex]);
 
-    return (
-        productInfo && (
-            <div className="py-2 bg-popover min-h-screen">
-                <Breadcrumb>
-                    <BreadcrumbList>
-                        <BreadcrumbItem>
-                            <Link className="underline" href="/">
-                                Trang chủ
-                            </Link>
-                        </BreadcrumbItem>
-                        <BreadcrumbSeparator />
-                        <BreadcrumbItem>
-                            <Link className="underline" href="/tablet">
-                                Máy tính bảng
-                            </Link>
-                        </BreadcrumbItem>
-                        <BreadcrumbSeparator />
-                        <BreadcrumbItem>
-                            <BreadcrumbPage className="capitalize">
-                                {convertProductName()}
-                            </BreadcrumbPage>
-                        </BreadcrumbItem>
-                    </BreadcrumbList>
-                </Breadcrumb>
+    const {
+        warranties,
+        promotions,
+        descriptions,
+        technicalSpecs,
+        rating,
+        reviews,
+        combos,
+    } = useMemo(() => {
+        const selectedOption =
+            productInfo?.product_options?.[selectedOptionIndex];
+        return {
+            warranties: productInfo?.warranties as string[],
+            promotions: productInfo?.promotions as string[],
+            descriptions: productInfo?.descriptions as ProductDescriptionType[],
+            technicalSpecs:
+                selectedOption?.technical_specs as TechnicalSpecsItem[],
+            rating: selectedOption?.rating as RatingType,
+            reviews: selectedOption?.reviews as ReviewItem[],
+            combos: selectedOption?.combos as ComboType[],
+        };
+    }, [productInfo, selectedOptionIndex]);
 
-                <div className="w-full flex flex-col md:flex-row md:gap-16 py-4 border-b-2 border-border bg-background">
-                    {productInfo ? (
-                        <p className="font-bold text-[24px] capitalize">
+    return (
+        <div className="py-2 bg-popover min-h-screen">
+            <Breadcrumb>
+                <BreadcrumbList>
+                    <BreadcrumbItem>
+                        <Link className="underline" href="/">
+                            Trang chủ
+                        </Link>
+                    </BreadcrumbItem>
+                    <BreadcrumbSeparator />
+                    <BreadcrumbItem>
+                        <Link className="underline" href="/tablet">
+                            Máy tính bảng
+                        </Link>
+                    </BreadcrumbItem>
+                    <BreadcrumbSeparator />
+                    <BreadcrumbItem>
+                        <BreadcrumbPage className="capitalize">
                             {convertProductName()}
+                        </BreadcrumbPage>
+                    </BreadcrumbItem>
+                </BreadcrumbList>
+            </Breadcrumb>
+
+            <div className="w-full flex flex-col md:flex-row md:gap-16 py-4 border-b-2 border-border bg-background">
+                {productInfo ? (
+                    <p className="font-bold text-[24px] capitalize">
+                        {convertProductName()}
+                    </p>
+                ) : (
+                    <Skeleton className="h-[36px] w-1/2 rounded-lg" />
+                )}
+                {rating && rating?.total_reviews !== 0 && (
+                    <div className="flex justify-start items-center gap-2 mt-2 md:mt-0">
+                        <span className="font-bold text-[24px]">
+                            {rating.overall}
+                        </span>
+                        <div className="inline-flex items-center">
+                            <Rating
+                                value={Math.floor(rating.overall)}
+                                readonly
+                            />
+                        </div>
+                        <p className="block font-sans text-base antialiased font-medium leading-relaxed text-gray-500">
+                            ({rating.total_reviews})
                         </p>
-                    ) : (
-                        <Skeleton className="h-[36px] w-1/2 rounded-lg" />
-                    )}
-                    {rating && rating?.total_reviews !== 0 && (
-                        <div className="flex justify-start items-center gap-2 mt-2 md:mt-0">
-                            <span className="font-bold text-[24px]">
-                                {rating.overall}
-                            </span>
-                            <div className="inline-flex items-center">
-                                <Rating
-                                    value={Math.floor(rating.overall)}
-                                    readonly
-                                />
-                            </div>
-                            <p className="block font-sans text-base antialiased font-medium leading-relaxed text-gray-500">
-                                ({rating.total_reviews})
-                            </p>
-                        </div>
-                    )}
-                </div>
-                <div className="my-8 flex flex-col md:flex-row">
-                    <div className="w-full md:w-[60%] md:pr-4">
-                        <Swiper
-                            className="h-auto rounded-lg"
-                            modules={[Navigation, Pagination, Scrollbar, A11y]}
-                            spaceBetween={50}
-                            slidesPerView={1}
-                            navigation
-                            pagination={{ clickable: true }}
-                            scrollbar={{ draggable: true }}
-                        >
-                            {productInfo ? (
-                                productInfo?.product_options[
-                                    selectedOptionIndex
-                                ].product_images.map((item) => {
-                                    return (
-                                        <SwiperSlide key={item.id}>
-                                            <Link href={'#'} className="h-full">
-                                                <Image
-                                                    className="rounded-lg"
-                                                    src={item.image_url}
-                                                    height={400}
-                                                    width={786}
-                                                    alt={item.image_alt_text}
-                                                />
-                                            </Link>
-                                        </SwiperSlide>
-                                    );
-                                })
-                            ) : (
-                                <SwiperSlide>
-                                    <Link href={'#'} className="h-full">
-                                        <Skeleton className="h-[400px] w-[786px] rounded-lg" />
-                                    </Link>
-                                </SwiperSlide>
-                            )}
-                        </Swiper>
                     </div>
-                    <ProductOptionCard
-                        productInfo={productInfo}
-                        selectedOptionIndex={selectedOptionIndex}
-                        selectedOptionObj={selectedOptionObj}
-                        slug={params.slug}
-                    />
+                )}
+            </div>
+            <div className="my-8 flex flex-col md:flex-row">
+                <div className="w-full md:w-[60%] md:pr-4">
+                    <Swiper
+                        className="h-auto rounded-lg"
+                        modules={[Navigation, Pagination, Scrollbar, A11y]}
+                        spaceBetween={50}
+                        slidesPerView={1}
+                        navigation
+                        pagination={{ clickable: true }}
+                        scrollbar={{ draggable: true }}
+                    >
+                        {productInfo ? (
+                            productInfo?.product_options[
+                                selectedOptionIndex
+                            ].product_images.map((item) => {
+                                return (
+                                    <SwiperSlide key={item.id}>
+                                        <Link href={'#'} className="h-full">
+                                            <Image
+                                                className="rounded-lg"
+                                                src={item.image_url}
+                                                height={400}
+                                                width={786}
+                                                alt={item.image_alt_text}
+                                            />
+                                        </Link>
+                                    </SwiperSlide>
+                                );
+                            })
+                        ) : (
+                            <SwiperSlide>
+                                <Link href={'#'} className="h-full">
+                                    <Skeleton className="h-[400px] w-[786px] rounded-lg" />
+                                </Link>
+                            </SwiperSlide>
+                        )}
+                    </Swiper>
                 </div>
-                <div className="my-8 flex flex-col-reverse md:flex-row">
-                    <div className="w-full md:w-[60%] md:pr-4 h-full">
-                        <ProductWarranty warranties={warranties} />
-                        <div className="mt-4">
-                            {productInfo ? (
-                                <Image
-                                    src={productInfo?.main_image}
-                                    width={710}
-                                    height={533}
-                                    alt={convertProductName()}
-                                />
-                            ) : (
-                                <Skeleton className="h-[533px] w-[710] rounded-lg" />
-                            )}
-                        </div>
-                        <ProductDescription descriptions={descriptions} />
-                        {productInfo && (
-                            <>
-                                <ProductReviewOverview
-                                    convertProductName={convertProductName}
-                                    fetchProduct={fetchProduct}
-                                    product_option_id={
-                                        productInfo?.product_options?.[
-                                            selectedOptionIndex
-                                        ].id
-                                    }
-                                    rating={rating}
-                                    reviews={reviews}
-                                />
-                            </>
+                <ProductOptionCard
+                    productInfo={productInfo}
+                    selectedOptionIndex={selectedOptionIndex}
+                    selectedOptionObj={selectedOptionObj}
+                    slug={params.slug}
+                />
+            </div>
+            <div className="my-8 flex flex-col-reverse md:flex-row">
+                <div className="w-full md:w-[60%] md:pr-4 h-full">
+                    <ProductWarranty warranties={warranties} />
+                    <div className="mt-4">
+                        {productInfo ? (
+                            <Image
+                                src={productInfo?.main_image}
+                                width={710}
+                                height={533}
+                                alt={convertProductName()}
+                            />
+                        ) : (
+                            <Skeleton className="h-[533px] w-[710] rounded-lg" />
                         )}
                     </div>
-                    <div className="flex md:block flex-col-reverse w-full md:w-[40%] py-4 md:py-0 md:px-7">
-                        <ProductPromotion promotions={promotions} />
-                        <ProductTechnicalSpecs
-                            convertProductName={convertProductName}
-                            technicalSpecs={technicalSpecs}
-                        />
-                        {productInfo && combos && combos[0]?.product_combos && (
-                            <ProductComboCard
-                                mainProduct={
+                    <ProductDescription descriptions={descriptions} />
+                    {productInfo && (
+                        <>
+                            <ProductReviewOverview
+                                convertProductName={convertProductName}
+                                fetchProduct={fetchProduct}
+                                product_option_id={
                                     productInfo?.product_options?.[
                                         selectedOptionIndex
-                                    ] as ProductOptionType
+                                    ].id
                                 }
-                                originalPrice={productInfo?.price}
-                                convertProductName={convertProductName}
-                                combos={combos}
+                                rating={rating}
+                                reviews={reviews}
                             />
-                        )}
-                    </div>
+                        </>
+                    )}
+                </div>
+                <div className="flex md:block flex-col-reverse w-full md:w-[40%] py-4 md:py-0 md:px-7">
+                    <ProductPromotion promotions={promotions} />
+                    <ProductTechnicalSpecs
+                        convertProductName={convertProductName}
+                        technicalSpecs={technicalSpecs}
+                    />
+                    {productInfo && combos && combos[0]?.product_combos && (
+                        <ProductComboCard
+                            mainProduct={
+                                productInfo?.product_options?.[
+                                    selectedOptionIndex
+                                ] as ProductOptionType
+                            }
+                            originalPrice={productInfo?.price}
+                            convertProductName={convertProductName}
+                            combos={combos}
+                        />
+                    )}
                 </div>
             </div>
-        )
+        </div>
     );
 }
