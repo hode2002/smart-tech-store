@@ -1,9 +1,21 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { PrismaService } from 'src/prisma/prisma.service';
-import { UserService } from 'src/user/user.service';
-import { CreateReplyReviewDto, CreateReviewDto } from './dto';
-import { OrderStatus } from 'src/order/types';
+
 import { MediaService } from 'src/media/media.service';
+import { OrderStatus } from 'src/order/types';
+import { PrismaService } from 'src/prisma/prisma.service';
+import {
+    REPLY_REVIEW_SELECT,
+    REVIEW_DELETE_SELECT,
+    REVIEW_DETAIL_SELECT,
+    REVIEW_IMAGE_SELECT,
+    REVIEW_PARENT_SELECT,
+    REVIEW_UPDATE_SELECT,
+    REVIEW_WITH_PRODUCT_SELECT,
+    USER_COMMENT_SELECT,
+} from 'src/prisma/selectors';
+import { UserService } from 'src/user/user.service';
+
+import { CreateReplyReviewDto, CreateReviewDto } from './dto';
 
 @Injectable()
 export class ReviewService {
@@ -18,56 +30,7 @@ export class ReviewService {
             where: {
                 parent_id: null,
             },
-            select: {
-                id: true,
-                user: {
-                    select: {
-                        id: true,
-                        name: true,
-                        email: true,
-                        avatar: true,
-                    },
-                },
-                product_option: {
-                    select: {
-                        id: true,
-                        sku: true,
-                        thumbnail: true,
-                        product: {
-                            select: {
-                                id: true,
-                                name: true,
-                            },
-                        },
-                    },
-                },
-                star: true,
-                comment: true,
-                _count: true,
-                video_url: true,
-                review_images: {
-                    select: {
-                        image_url: true,
-                    },
-                },
-                children: {
-                    select: {
-                        id: true,
-                        user: {
-                            select: {
-                                id: true,
-                                name: true,
-                                email: true,
-                                avatar: true,
-                                role: true,
-                            },
-                        },
-                        comment: true,
-                        _count: true,
-                    },
-                },
-                created_at: true,
-            },
+            select: REVIEW_WITH_PRODUCT_SELECT,
         });
     }
 
@@ -98,9 +61,7 @@ export class ReviewService {
         });
 
         if (!product) {
-            throw new NotFoundException(
-                'Forbidden: Please purchase this product for reviews',
-            );
+            throw new NotFoundException('Forbidden: Please purchase this product for reviews');
         }
 
         const review = await this.prismaService.review.findFirst({
@@ -123,15 +84,7 @@ export class ReviewService {
                     star,
                     comment,
                 },
-                select: {
-                    id: true,
-                    star: true,
-                    comment: true,
-                    video_url: true,
-                    review_images: {
-                        select: { image_url: true },
-                    },
-                },
+                select: REVIEW_UPDATE_SELECT,
             });
 
             if (createReviewDto?.video_url) {
@@ -148,30 +101,22 @@ export class ReviewService {
                     data: { video_url: createReviewDto.video_url },
                 });
 
-                await Promise.all([
-                    deleteCloudinaryVideoPromise,
-                    updateNewVideoPromise,
-                ]);
+                await Promise.all([deleteCloudinaryVideoPromise, updateNewVideoPromise]);
             }
 
             if (createReviewDto?.images && createReviewDto.images?.length > 0) {
-                const deleteCloudImagePromises = review.review_images.map(
-                    (item) => {
-                        return this.mediaService.deleteV2(item.image_url);
-                    },
-                );
-                const deleteReviewImagePromises =
-                    this.prismaService.reviewImage.deleteMany({
-                        where: { review_id: review.id },
-                    });
+                const deleteCloudImagePromises = review.review_images.map(item => {
+                    return this.mediaService.deleteV2(item.image_url);
+                });
+                const deleteReviewImagePromises = this.prismaService.reviewImage.deleteMany({
+                    where: { review_id: review.id },
+                });
 
-                const updateNewImagePromises = createReviewDto.images.map(
-                    (imageUrl) => {
-                        return this.prismaService.reviewImage.create({
-                            data: { review_id: review.id, image_url: imageUrl },
-                        });
-                    },
-                );
+                const updateNewImagePromises = createReviewDto.images.map(imageUrl => {
+                    return this.prismaService.reviewImage.create({
+                        data: { review_id: review.id, image_url: imageUrl },
+                    });
+                });
                 await Promise.all([
                     deleteCloudImagePromises,
                     deleteReviewImagePromises,
@@ -192,15 +137,7 @@ export class ReviewService {
                 user_id: userId,
                 product_option_id,
             },
-            select: {
-                id: true,
-                star: true,
-                comment: true,
-                video_url: true,
-                review_images: {
-                    select: { image_url: true },
-                },
-            },
+            select: REVIEW_UPDATE_SELECT,
         });
 
         if (createReviewDto?.video_url) {
@@ -212,12 +149,10 @@ export class ReviewService {
         }
 
         if (createReviewDto?.images && createReviewDto.images?.length > 0) {
-            const createImagePromises = createReviewDto.images.map((image) => {
+            const createImagePromises = createReviewDto.images.map(image => {
                 return this.prismaService.reviewImage.create({
                     data: { review_id: newReview.id, image_url: image },
-                    select: {
-                        image_url: true,
-                    },
+                    select: REVIEW_IMAGE_SELECT,
                 });
             });
 
@@ -231,11 +166,7 @@ export class ReviewService {
         };
     }
 
-    async reply(
-        reviewId: string,
-        userId: string,
-        createReplyReviewDto: CreateReplyReviewDto,
-    ) {
+    async reply(reviewId: string, userId: string, createReplyReviewDto: CreateReplyReviewDto) {
         const user = await this.userService.findById(userId);
         if (!user) {
             throw new NotFoundException('User not found');
@@ -243,12 +174,7 @@ export class ReviewService {
 
         const review = await this.prismaService.review.findUnique({
             where: { id: reviewId },
-            select: {
-                user: {
-                    select: { id: true },
-                },
-                product_option_id: true,
-            },
+            select: REVIEW_PARENT_SELECT,
         });
         if (!review) {
             throw new NotFoundException('Reviews not found');
@@ -256,13 +182,7 @@ export class ReviewService {
 
         const userComment = await this.prismaService.review.findFirst({
             where: { parent_id: reviewId, user_id: userId },
-            select: {
-                id: true,
-                user: {
-                    select: { id: true },
-                },
-                product_option_id: true,
-            },
+            select: USER_COMMENT_SELECT,
         });
 
         const { comment } = createReplyReviewDto;
@@ -276,10 +196,7 @@ export class ReviewService {
                     comment,
                     star: null,
                 },
-                select: {
-                    id: true,
-                    comment: true,
-                },
+                select: REPLY_REVIEW_SELECT,
             });
 
             return {
@@ -294,10 +211,7 @@ export class ReviewService {
                 comment,
                 star: null,
             },
-            select: {
-                id: true,
-                comment: true,
-            },
+            select: REPLY_REVIEW_SELECT,
         });
 
         return {
@@ -319,42 +233,7 @@ export class ReviewService {
                 product_option_id: productOptionId,
                 parent_id: null,
             },
-            select: {
-                id: true,
-                user: {
-                    select: {
-                        id: true,
-                        name: true,
-                        email: true,
-                        avatar: true,
-                    },
-                },
-                star: true,
-                comment: true,
-                _count: true,
-                video_url: true,
-                review_images: {
-                    select: {
-                        image_url: true,
-                    },
-                },
-                children: {
-                    select: {
-                        id: true,
-                        user: {
-                            select: {
-                                id: true,
-                                name: true,
-                                email: true,
-                                avatar: true,
-                            },
-                        },
-                        comment: true,
-                        _count: true,
-                    },
-                },
-                created_at: true,
-            },
+            select: REVIEW_DETAIL_SELECT,
         });
     }
 
@@ -368,35 +247,7 @@ export class ReviewService {
 
         return await this.prismaService.review.findMany({
             where: { parent_id: parentId },
-            select: {
-                id: true,
-                user: {
-                    select: {
-                        id: true,
-                        name: true,
-                        email: true,
-                        avatar: true,
-                    },
-                },
-                comment: true,
-                _count: true,
-                children: {
-                    select: {
-                        id: true,
-                        user: {
-                            select: {
-                                id: true,
-                                name: true,
-                                email: true,
-                                avatar: true,
-                            },
-                        },
-                        comment: true,
-                        _count: true,
-                    },
-                },
-                created_at: true,
-            },
+            select: REVIEW_DETAIL_SELECT,
         });
     }
 
@@ -407,21 +258,7 @@ export class ReviewService {
         }
         const review = await this.prismaService.review.findUnique({
             where: { id: reviewId, user_id: userId },
-            select: {
-                id: true,
-                user: {
-                    select: { id: true },
-                },
-                star: true,
-                parent_id: true,
-                product_option_id: true,
-                video_url: true,
-                review_images: {
-                    select: {
-                        image_url: true,
-                    },
-                },
-            },
+            select: REVIEW_DELETE_SELECT,
         });
 
         if (!review) {
@@ -432,14 +269,11 @@ export class ReviewService {
             deleteImagePromises: Promise<any>[] = [];
 
         if (review?.video_url) {
-            deleteVideoPromise = this.mediaService.deleteV2(
-                review.video_url,
-                'video',
-            );
+            deleteVideoPromise = this.mediaService.deleteV2(review.video_url, 'video');
         }
 
         if (review?.review_images?.length > 0) {
-            deleteImagePromises = review.review_images.map((item) => {
+            deleteImagePromises = review.review_images.map(item => {
                 return this.mediaService.deleteV2(item.image_url);
             });
         }
@@ -448,24 +282,10 @@ export class ReviewService {
             where: {
                 id: review.id,
             },
-            select: {
-                id: true,
-                star: true,
-                comment: true,
-                video_url: true,
-                review_images: {
-                    select: {
-                        image_url: true,
-                    },
-                },
-            },
+            select: REVIEW_UPDATE_SELECT,
         });
 
-        await Promise.all([
-            deleteVideoPromise,
-            ...deleteImagePromises,
-            deleteReviewPromise,
-        ]);
+        await Promise.all([deleteVideoPromise, ...deleteImagePromises, deleteReviewPromise]);
 
         return {
             is_success: true,

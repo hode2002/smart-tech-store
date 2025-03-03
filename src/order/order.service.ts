@@ -1,3 +1,6 @@
+import * as crypto from 'crypto';
+
+import { HttpService } from '@nestjs/axios';
 import {
     ForbiddenException,
     Injectable,
@@ -5,11 +8,13 @@ import {
     NotFoundException,
     UnprocessableEntityException,
 } from '@nestjs/common';
-import { CreateOrderDto } from './dto/create-order.dto';
-import { PrismaService } from 'src/prisma/prisma.service';
-import { UserService } from 'src/user/user.service';
 import { ConfigService } from '@nestjs/config';
-import { HttpService } from '@nestjs/axios';
+import { VoucherType } from '@prisma/client';
+import { Request, Response } from 'express';
+import * as moment from 'moment';
+import * as querystring from 'qs';
+
+import { CreateOrderComboDto } from 'src/order/dto/create-order-combo';
 import {
     CalculateShippingFee,
     GHTKCancelResponse,
@@ -18,20 +23,24 @@ import {
     OrderDBResponse,
     OrderResponse,
     OrderStatus,
-} from './types';
+} from 'src/order/types';
+import { PrismaService } from 'src/prisma/prisma.service';
+import {
+    ORDER_CANCEL_SELECT,
+    ORDER_FULL_SELECT,
+    ORDER_PRODUCT_OPTION_WITH_SPECS_SELECT,
+    ORDER_UPDATE_STATUS_SELECT,
+} from 'src/prisma/selectors';
+import { UserService } from 'src/user/user.service';
+import { VoucherService } from 'src/voucher/voucher.service';
+
 import {
     AdminUpdateOrderStatusDto,
     CalculateShippingFeeDto,
     UpdateOrderStatusDto,
     UpdatePaymentStatusDto,
 } from './dto';
-import { Request, Response } from 'express';
-import * as moment from 'moment';
-import * as querystring from 'qs';
-import * as crypto from 'crypto';
-import { VoucherService } from '../voucher/voucher.service';
-import { VoucherType } from '@prisma/client';
-import { CreateOrderComboDto } from 'src/order/dto/create-order-combo';
+import { CreateOrderDto } from './dto/create-order.dto';
 
 @Injectable()
 export class OrderService {
@@ -71,7 +80,7 @@ export class OrderService {
             throw new NotFoundException('Delivery service not found');
         }
 
-        const result = await this.prismaService.$transaction(async (prisma) => {
+        const result = await this.prismaService.$transaction(async prisma => {
             const order = await prisma.order.create({
                 data: {
                     user_id: userId,
@@ -91,110 +100,98 @@ export class OrderService {
                 product_option: { thumbnail: string };
             }[] = [];
 
-            const orderDetailPromises = order_details.map(
-                async (orderDetail) => {
-                    const { product_option_id, quantity } = orderDetail;
+            const orderDetailPromises = order_details.map(async orderDetail => {
+                const { product_option_id, quantity } = orderDetail;
 
-                    const userCart = await prisma.cart.findFirst({
-                        where: {
-                            user_id: userId,
-                            product_option_id,
-                            quantity: { gte: 1 },
+                const userCart = await prisma.cart.findFirst({
+                    where: {
+                        user_id: userId,
+                        product_option_id,
+                        quantity: { gte: 1 },
+                    },
+                });
+
+                if (!userCart) {
+                    throw new NotFoundException('Product does not exist in cart');
+                }
+
+                const productOption = await prisma.productOption.findUnique({
+                    where: { id: product_option_id, stock: { gte: 1 } },
+                    select: {
+                        thumbnail: true,
+                        stock: true,
+                        discount: true,
+                        price_modifier: true,
+                        product: {
+                            select: { price: true },
                         },
-                    });
+                    },
+                });
 
-                    if (!userCart) {
-                        throw new NotFoundException(
-                            'Product does not exist in cart',
-                        );
-                    }
-
-                    const productOption = await prisma.productOption.findUnique(
-                        {
-                            where: { id: product_option_id, stock: { gte: 1 } },
-                            select: {
-                                thumbnail: true,
-                                stock: true,
-                                discount: true,
-                                price_modifier: true,
-                                product: {
-                                    select: { price: true },
-                                },
-                            },
-                        },
+                if (!productOption) {
+                    throw new UnprocessableEntityException(
+                        'There are not enough products left, please try again',
                     );
+                }
 
-                    if (!productOption) {
-                        throw new UnprocessableEntityException(
-                            'There are not enough products left, please try again',
-                        );
-                    }
+                if (userCart.quantity < quantity) {
+                    throw new UnprocessableEntityException(
+                        'The number of products in the shopping cart is not enough, please try again',
+                    );
+                }
 
-                    if (userCart.quantity < quantity) {
-                        throw new UnprocessableEntityException(
-                            'The number of products in the shopping cart is not enough, please try again',
-                        );
-                    }
+                productOptionThumbs.push({
+                    product_option: {
+                        thumbnail: productOption.thumbnail,
+                    },
+                });
 
-                    productOptionThumbs.push({
-                        product_option: {
-                            thumbnail: productOption.thumbnail,
-                        },
-                    });
-
-                    if (userCart.quantity - quantity === 0) {
-                        await prisma.cart.delete({
-                            where: {
-                                id: userCart.id,
-                            },
-                        });
-                    } else {
-                        await prisma.cart.update({
-                            where: {
-                                id: userCart.id,
-                            },
-                            data: {
-                                quantity: userCart.quantity - quantity,
-                            },
-                        });
-                    }
-
-                    await prisma.productOption.update({
+                if (userCart.quantity - quantity === 0) {
+                    await prisma.cart.delete({
                         where: {
-                            id: product_option_id,
-                            stock: { gte: 1 },
+                            id: userCart.id,
                         },
-                        data: { stock: productOption.stock - quantity },
                     });
-
-                    const discount =
-                        ((productOption.product.price +
-                            productOption.price_modifier) *
-                            productOption.discount) /
-                        100;
-                    const modifiedPrice =
-                        productOption.product.price +
-                        productOption.price_modifier -
-                        discount;
-                    const subtotal = quantity * modifiedPrice;
-
-                    totalOrderPrice += subtotal;
-
-                    return prisma.orderDetail.create({
+                } else {
+                    await prisma.cart.update({
+                        where: {
+                            id: userCart.id,
+                        },
                         data: {
-                            order_id: order.id,
-                            product_option_id,
-                            price: modifiedPrice,
-                            quantity,
-                            subtotal,
+                            quantity: userCart.quantity - quantity,
                         },
                     });
-                },
-            );
-            const GHTKOrder = await this.createGHTKOrder(
-                order.id,
-                createOrderDto,
-            );
+                }
+
+                await prisma.productOption.update({
+                    where: {
+                        id: product_option_id,
+                        stock: { gte: 1 },
+                    },
+                    data: { stock: productOption.stock - quantity },
+                });
+
+                const discount =
+                    ((productOption.product.price + productOption.price_modifier) *
+                        productOption.discount) /
+                    100;
+                const modifiedPrice =
+                    productOption.product.price + productOption.price_modifier - discount;
+                const subtotal = quantity * modifiedPrice;
+
+                totalOrderPrice += subtotal;
+
+                return prisma.orderDetail.create({
+                    data: {
+                        order_id: order.id,
+                        product_option_id,
+                        price: modifiedPrice,
+                        quantity,
+                        subtotal,
+                    },
+                });
+            });
+            const GHTKOrder = await this.createGHTKOrder(order.id, createOrderDto);
 
             if (!GHTKOrder?.success) {
                 throw new UnprocessableEntityException(GHTKOrder.message);
@@ -226,12 +223,7 @@ export class OrderService {
                 },
             });
 
-            await Promise.all([
-                payment,
-                orderShipping,
-                updateShippingFee,
-                ...orderDetailPromises,
-            ]);
+            await Promise.all([payment, orderShipping, updateShippingFee, ...orderDetailPromises]);
 
             return {
                 is_success: true,
@@ -246,8 +238,7 @@ export class OrderService {
         });
 
         if (voucherCodes.length > 0) {
-            let totalOrderPrice =
-                result.total_order_price + result.GKTK_order_fee;
+            let totalOrderPrice = result.total_order_price + result.GKTK_order_fee;
             for (const code of voucherCodes) {
                 const voucher = await this.voucherService.applyVoucherToOrder(
                     result.order_id,
@@ -266,26 +257,18 @@ export class OrderService {
                 data: { total_amount: totalOrderPrice },
             });
 
-            const updatePaymentPricePromise = this.prismaService.payment.update(
-                {
-                    where: { id: result.payment_id },
-                    data: { total_price: totalOrderPrice },
-                },
-            );
+            const updatePaymentPricePromise = this.prismaService.payment.update({
+                where: { id: result.payment_id },
+                data: { total_price: totalOrderPrice },
+            });
 
-            await Promise.all([
-                updateOrderPricePromise,
-                updatePaymentPricePromise,
-            ]);
+            await Promise.all([updateOrderPricePromise, updatePaymentPricePromise]);
         }
 
         return result;
     }
 
-    async createOrderCombo(
-        userId: string,
-        createOrderComboDto: CreateOrderComboDto,
-    ) {
+    async createOrderCombo(userId: string, createOrderComboDto: CreateOrderComboDto) {
         const user = await this.prismaService.user.findUnique({
             where: { id: userId },
         });
@@ -314,7 +297,7 @@ export class OrderService {
             throw new NotFoundException('Delivery service not found');
         }
 
-        const productComboPromises = productComboIds.map((id) =>
+        const productComboPromises = productComboIds.map(id =>
             this.prismaService.productCombo.findUnique({
                 where: { id },
                 select: {
@@ -327,7 +310,7 @@ export class OrderService {
 
         const order_details = await Promise.all(productComboPromises);
 
-        const result = await this.prismaService.$transaction(async (prisma) => {
+        const result = await this.prismaService.$transaction(async prisma => {
             const order = await prisma.order.create({
                 data: {
                     user_id: userId,
@@ -350,9 +333,7 @@ export class OrderService {
             });
 
             if (!orderCombo) {
-                throw new UnprocessableEntityException(
-                    `Cannot create order combo`,
-                );
+                throw new UnprocessableEntityException(`Cannot create order combo`);
             }
 
             let totalOrderPrice = 0;
@@ -363,7 +344,7 @@ export class OrderService {
             const orderDetailPromises = [
                 { product_option_id: productOptionId, discount: 0 },
                 ...order_details,
-            ].map(async (orderDetail) => {
+            ].map(async orderDetail => {
                 const { product_option_id, discount } = orderDetail;
 
                 const productOption = await prisma.productOption.findUnique({
@@ -400,11 +381,8 @@ export class OrderService {
                 });
 
                 const discountPercent =
-                    product_option_id === productOptionId
-                        ? productOption.discount
-                        : discount;
-                const originalPrice =
-                    productOption.product.price + productOption.price_modifier;
+                    product_option_id === productOptionId ? productOption.discount : discount;
+                const originalPrice = productOption.product.price + productOption.price_modifier;
                 const discountPrice = (originalPrice * discountPercent) / 100;
                 const modifiedPrice = originalPrice - discountPrice;
 
@@ -425,7 +403,7 @@ export class OrderService {
                 ...createOrderComboDto,
                 order_details: [
                     { product_option_id: productOptionId, quantity: 1 },
-                    ...order_details.map((item) => ({
+                    ...order_details.map(item => ({
                         product_option_id: item.product_option_id,
                         quantity: 1,
                     })),
@@ -462,12 +440,7 @@ export class OrderService {
                 },
             });
 
-            await Promise.all([
-                payment,
-                orderShipping,
-                updateShippingFee,
-                ...orderDetailPromises,
-            ]);
+            await Promise.all([payment, orderShipping, updateShippingFee, ...orderDetailPromises]);
 
             return {
                 is_success: true,
@@ -482,8 +455,7 @@ export class OrderService {
         });
 
         if (voucherCodes.length > 0) {
-            let totalOrderPrice =
-                result.total_order_price + result.GKTK_order_fee;
+            let totalOrderPrice = result.total_order_price + result.GKTK_order_fee;
             for (const code of voucherCodes) {
                 const voucher = await this.voucherService.applyVoucherToOrder(
                     result.order_id,
@@ -502,17 +474,12 @@ export class OrderService {
                 data: { total_amount: totalOrderPrice },
             });
 
-            const updatePaymentPricePromise = this.prismaService.payment.update(
-                {
-                    where: { id: result.payment_id },
-                    data: { total_price: totalOrderPrice },
-                },
-            );
+            const updatePaymentPricePromise = this.prismaService.payment.update({
+                where: { id: result.payment_id },
+                data: { total_price: totalOrderPrice },
+            });
 
-            await Promise.all([
-                updateOrderPricePromise,
-                updatePaymentPricePromise,
-            ]);
+            await Promise.all([updateOrderPricePromise, updatePaymentPricePromise]);
         }
 
         return result;
@@ -525,53 +492,36 @@ export class OrderService {
         }
 
         const order = await this.prismaService.order.findUnique({
-            where: { id, status: OrderStatus.PENDING },
+            where: { id, user_id: user.id },
             select: {
-                id: true,
                 status: true,
                 shipping: {
-                    select: { order_label: true },
+                    select: {
+                        order_label: true,
+                    },
                 },
             },
         });
 
         if (!order) {
             throw new NotFoundException('Order not found');
-        } else if (order.status === OrderStatus.SHIPPING) {
+        }
+
+        if (order.status !== OrderStatus.PENDING) {
             throw new ForbiddenException('Order cannot be canceled');
         }
 
         const isUpdated = await this.prismaService.order.update({
             where: { id, status: OrderStatus.PENDING },
             data: { status: OrderStatus.CANCEL },
-            select: {
-                order_details: {
-                    select: {
-                        product_option: {
-                            select: {
-                                thumbnail: true,
-                            },
-                        },
-                    },
-                },
-                user_id: true,
-                payment: {
-                    select: {
-                        transaction_id: true,
-                    },
-                },
-            },
+            select: ORDER_CANCEL_SELECT,
         });
 
         if (!isUpdated) {
-            throw new NotFoundException(
-                'Order not found or cannot be canceled',
-            );
+            throw new NotFoundException('Order not found or cannot be canceled');
         }
 
-        const GHTKCancel = await this.cancelGHTKOrder(
-            order.shipping.order_label,
-        );
+        const GHTKCancel = await this.cancelGHTKOrder(order.shipping.order_label);
         if (!GHTKCancel?.success) {
             throw new InternalServerErrorException('Internal server error');
         }
@@ -592,122 +542,7 @@ export class OrderService {
 
         const order = await this.prismaService.order.findUnique({
             where: { id, user_id: user.id },
-            select: {
-                id: true,
-                name: true,
-                phone: true,
-                note: true,
-                order_date: true,
-                status: true,
-                total_amount: true,
-                User: {
-                    select: {
-                        email: true,
-                        avatar: true,
-                    },
-                },
-                shipping: {
-                    select: {
-                        id: true,
-                        address: true,
-                        province: true,
-                        district: true,
-                        ward: true,
-                        hamlet: true,
-                        fee: true,
-                        estimate_date: true,
-                        tracking_number: true,
-                        delivery: {
-                            select: {
-                                name: true,
-                                slug: true,
-                            },
-                        },
-                    },
-                },
-                payment: {
-                    select: {
-                        id: true,
-                        payment_method: true,
-                        total_price: true,
-                        transaction_id: true,
-                    },
-                },
-                order_details: {
-                    select: {
-                        id: true,
-                        product_option: {
-                            select: {
-                                id: true,
-                                sku: true,
-                                product: {
-                                    select: {
-                                        id: true,
-                                        name: true,
-                                        brand: {
-                                            select: {
-                                                id: true,
-                                                name: true,
-                                                slug: true,
-                                                logo_url: true,
-                                            },
-                                        },
-                                        category: {
-                                            select: {
-                                                id: true,
-                                                name: true,
-                                                slug: true,
-                                            },
-                                        },
-                                        descriptions: {
-                                            select: {
-                                                id: true,
-                                                content: true,
-                                            },
-                                        },
-                                        label: true,
-                                        price: true,
-                                        promotions: true,
-                                        warranties: true,
-                                    },
-                                },
-                                thumbnail: true,
-                                product_option_value: {
-                                    select: {
-                                        option: {
-                                            select: {
-                                                name: true,
-                                            },
-                                        },
-                                        value: true,
-                                        adjust_price: true,
-                                    },
-                                },
-                                technical_specs: {
-                                    select: {
-                                        specs: {
-                                            where: {
-                                                key: 'Khối lượng',
-                                            },
-                                            select: {
-                                                key: true,
-                                                value: true,
-                                            },
-                                        },
-                                    },
-                                },
-                                label_image: true,
-                                price_modifier: true,
-                                discount: true,
-                                slug: true,
-                            },
-                        },
-                        price: true,
-                        quantity: true,
-                        subtotal: true,
-                    },
-                },
-            },
+            select: ORDER_FULL_SELECT,
         });
 
         if (!order) {
@@ -718,264 +553,28 @@ export class OrderService {
     }
 
     async findAll(): Promise<OrderResponse[]> {
-        const orders = (await this.prismaService.order.findMany({
-            select: {
-                id: true,
-                name: true,
-                phone: true,
-                note: true,
-                order_date: true,
-                status: true,
-                total_amount: true,
-                User: {
-                    select: {
-                        email: true,
-                        avatar: true,
-                    },
-                },
-                shipping: {
-                    select: {
-                        id: true,
-                        address: true,
-                        province: true,
-                        district: true,
-                        ward: true,
-                        hamlet: true,
-                        fee: true,
-                        estimate_date: true,
-                        tracking_number: true,
-                        delivery: {
-                            select: {
-                                name: true,
-                                slug: true,
-                            },
-                        },
-                    },
-                },
-                payment: {
-                    select: {
-                        id: true,
-                        payment_method: true,
-                        total_price: true,
-                        transaction_id: true,
-                    },
-                },
-                order_details: {
-                    select: {
-                        id: true,
-                        product_option: {
-                            select: {
-                                id: true,
-                                sku: true,
-                                product: {
-                                    select: {
-                                        id: true,
-                                        name: true,
-                                        brand: {
-                                            select: {
-                                                id: true,
-                                                name: true,
-                                                slug: true,
-                                                logo_url: true,
-                                            },
-                                        },
-                                        category: {
-                                            select: {
-                                                id: true,
-                                                name: true,
-                                                slug: true,
-                                            },
-                                        },
-                                        descriptions: {
-                                            select: {
-                                                id: true,
-                                                content: true,
-                                            },
-                                        },
-                                        label: true,
-                                        price: true,
-                                        promotions: true,
-                                        warranties: true,
-                                    },
-                                },
-                                thumbnail: true,
-                                product_option_value: {
-                                    select: {
-                                        option: {
-                                            select: {
-                                                name: true,
-                                            },
-                                        },
-                                        value: true,
-                                        adjust_price: true,
-                                    },
-                                },
-                                technical_specs: {
-                                    select: {
-                                        specs: {
-                                            where: {
-                                                key: 'Khối lượng',
-                                            },
-                                            select: {
-                                                key: true,
-                                                value: true,
-                                            },
-                                        },
-                                    },
-                                },
-                                label_image: true,
-                                price_modifier: true,
-                                discount: true,
-                                slug: true,
-                            },
-                        },
-                        price: true,
-                        quantity: true,
-                        subtotal: true,
-                    },
-                },
-            },
-        })) as OrderDBResponse[];
+        const orders = await this.prismaService.order.findMany({
+            select: ORDER_FULL_SELECT,
+        });
 
-        return orders.map((order) => this.convertOrderResponse(order));
+        return orders.map(order => this.convertOrderResponse(order));
     }
 
     async getAllByAdmin(): Promise<OrderResponse[]> {
-        const orders = (await this.prismaService.order.findMany({
-            orderBy: {
-                order_date: 'desc',
-            },
-            select: {
-                id: true,
-                name: true,
-                phone: true,
-                note: true,
-                order_date: true,
-                status: true,
-                total_amount: true,
-                User: {
-                    select: {
-                        email: true,
-                        avatar: true,
-                    },
-                },
-                shipping: {
-                    select: {
-                        id: true,
-                        address: true,
-                        province: true,
-                        district: true,
-                        ward: true,
-                        hamlet: true,
-                        fee: true,
-                        estimate_date: true,
-                        tracking_number: true,
-                        delivery: {
-                            select: {
-                                name: true,
-                                slug: true,
-                            },
-                        },
-                    },
-                },
-                payment: {
-                    select: {
-                        id: true,
-                        payment_method: true,
-                        total_price: true,
-                        transaction_id: true,
-                    },
-                },
-                order_details: {
-                    select: {
-                        id: true,
-                        product_option: {
-                            select: {
-                                id: true,
-                                sku: true,
-                                product: {
-                                    select: {
-                                        id: true,
-                                        name: true,
-                                        brand: {
-                                            select: {
-                                                id: true,
-                                                name: true,
-                                                slug: true,
-                                                logo_url: true,
-                                            },
-                                        },
-                                        category: {
-                                            select: {
-                                                id: true,
-                                                name: true,
-                                                slug: true,
-                                            },
-                                        },
-                                        descriptions: {
-                                            select: {
-                                                id: true,
-                                                content: true,
-                                            },
-                                        },
-                                        label: true,
-                                        price: true,
-                                        promotions: true,
-                                        warranties: true,
-                                    },
-                                },
-                                thumbnail: true,
-                                product_option_value: {
-                                    select: {
-                                        option: {
-                                            select: {
-                                                name: true,
-                                            },
-                                        },
-                                        value: true,
-                                        adjust_price: true,
-                                    },
-                                },
-                                technical_specs: {
-                                    select: {
-                                        specs: {
-                                            where: {
-                                                key: 'Khối lượng',
-                                            },
-                                            select: {
-                                                key: true,
-                                                value: true,
-                                            },
-                                        },
-                                    },
-                                },
-                                label_image: true,
-                                price_modifier: true,
-                                discount: true,
-                                slug: true,
-                            },
-                        },
-                        price: true,
-                        quantity: true,
-                        subtotal: true,
-                    },
-                },
-            },
-        })) as OrderDBResponse[];
+        const orders = await this.prismaService.order.findMany({
+            select: ORDER_FULL_SELECT,
+        });
 
-        return orders.map((order) => this.convertOrderResponse(order));
+        return orders.map(order => this.convertOrderResponse(order));
     }
 
-    async findByStatus(
-        userId: string,
-        status: number,
-    ): Promise<OrderResponse[]> {
+    async findByStatus(userId: string, status: number): Promise<OrderResponse[]> {
         const user = await this.userService.findById(userId);
         if (!user) {
             throw new NotFoundException('User not found');
         }
 
-        const orders = (await this.prismaService.order.findMany({
+        const orders = await this.prismaService.order.findMany({
             where: {
                 user_id: user.id,
                 ...(status && status === 5
@@ -984,134 +583,16 @@ export class OrderService {
                           status,
                       }),
             },
+            select: ORDER_FULL_SELECT,
             orderBy: {
                 created_at: 'desc',
             },
-            select: {
-                id: true,
-                name: true,
-                phone: true,
-                note: true,
-                order_date: true,
-                status: true,
-                total_amount: true,
-                User: {
-                    select: {
-                        email: true,
-                        avatar: true,
-                    },
-                },
-                shipping: {
-                    select: {
-                        id: true,
-                        address: true,
-                        province: true,
-                        district: true,
-                        ward: true,
-                        hamlet: true,
-                        fee: true,
-                        estimate_date: true,
-                        tracking_number: true,
-                        delivery: {
-                            select: {
-                                name: true,
-                                slug: true,
-                            },
-                        },
-                    },
-                },
-                payment: {
-                    select: {
-                        id: true,
-                        payment_method: true,
-                        total_price: true,
-                        transaction_id: true,
-                    },
-                },
-                order_details: {
-                    select: {
-                        id: true,
-                        product_option: {
-                            select: {
-                                id: true,
-                                sku: true,
-                                product: {
-                                    select: {
-                                        id: true,
-                                        name: true,
-                                        brand: {
-                                            select: {
-                                                id: true,
-                                                name: true,
-                                                slug: true,
-                                                logo_url: true,
-                                            },
-                                        },
-                                        category: {
-                                            select: {
-                                                id: true,
-                                                name: true,
-                                                slug: true,
-                                            },
-                                        },
-                                        descriptions: {
-                                            select: {
-                                                id: true,
-                                                content: true,
-                                            },
-                                        },
-                                        label: true,
-                                        price: true,
-                                        promotions: true,
-                                        warranties: true,
-                                    },
-                                },
-                                thumbnail: true,
-                                product_option_value: {
-                                    select: {
-                                        option: {
-                                            select: {
-                                                name: true,
-                                            },
-                                        },
-                                        value: true,
-                                        adjust_price: true,
-                                    },
-                                },
-                                technical_specs: {
-                                    select: {
-                                        specs: {
-                                            where: {
-                                                key: 'Khối lượng',
-                                            },
-                                            select: {
-                                                key: true,
-                                                value: true,
-                                            },
-                                        },
-                                    },
-                                },
-                                label_image: true,
-                                price_modifier: true,
-                                discount: true,
-                                slug: true,
-                            },
-                        },
-                        price: true,
-                        quantity: true,
-                        subtotal: true,
-                    },
-                },
-            },
-        })) as OrderDBResponse[];
+        });
 
-        return orders.map((order) => this.convertOrderResponse(order));
+        return orders.map(order => this.convertOrderResponse(order));
     }
 
-    async updatePaymentStatus(
-        id: string,
-        updatePaymentStatusDto: UpdatePaymentStatusDto,
-    ) {
+    async updatePaymentStatus(id: string, updatePaymentStatusDto: UpdatePaymentStatusDto) {
         const { transaction_id } = updatePaymentStatusDto;
         const isExist = await this.prismaService.payment.findUnique({
             where: { id },
@@ -1130,67 +611,43 @@ export class OrderService {
         };
     }
 
-    async updateStatus(
-        id: string,
-        userId: string,
-        updateOrderStatusDto: UpdateOrderStatusDto,
-    ) {
+    async updateStatus(id: string, userId: string, updateOrderStatusDto: UpdateOrderStatusDto) {
         const user = await this.userService.findById(userId);
         if (!user) {
             throw new NotFoundException('User not found');
         }
 
         const order = await this.prismaService.order.findUnique({
-            where: {
-                id,
-                status: { notIn: [OrderStatus.CANCEL, OrderStatus.RECEIVED] },
-            },
-            select: {
-                shipping: true,
-            },
+            where: { id, user_id: user.id },
+            select: { status: true },
         });
+
         if (!order) {
             throw new NotFoundException('Order not found');
         }
 
-        const isUpdated = await this.prismaService.order.update({
-            where: { id },
-            data: { status: updateOrderStatusDto.status },
-            select: {
-                order_details: {
-                    select: {
-                        product_option: {
-                            select: {
-                                thumbnail: true,
-                            },
-                        },
-                    },
-                },
-                user_id: true,
-                payment: {
-                    select: {
-                        transaction_id: true,
-                    },
-                },
-            },
-        });
-
-        if (updateOrderStatusDto.status === OrderStatus.RECEIVED) {
-            await this.cancelGHTKOrder(order.shipping.order_label);
+        if (order.status === OrderStatus.CANCEL) {
+            throw new ForbiddenException('Order has been canceled');
         }
 
-        return {
-            is_success: isUpdated ? true : false,
-            userId: isUpdated.user_id,
-            transaction_id: isUpdated.payment.transaction_id,
-            order_details: isUpdated.order_details,
-        };
+        if (order.status === OrderStatus.RECEIVED) {
+            throw new ForbiddenException('Order has been completed');
+        }
+
+        if (updateOrderStatusDto.status === OrderStatus.CANCEL) {
+            return this.cancel(userId, id);
+        }
+
+        const updatedOrder = await this.prismaService.order.update({
+            where: { id },
+            data: { status: updateOrderStatusDto.status },
+            select: ORDER_UPDATE_STATUS_SELECT,
+        });
+
+        return updatedOrder;
     }
 
-    async updateStatusByAdmin(
-        id: string,
-        updateOrderStatusDto: AdminUpdateOrderStatusDto,
-    ) {
+    async updateStatusByAdmin(id: string, updateOrderStatusDto: AdminUpdateOrderStatusDto) {
         const order = await this.prismaService.order.findUnique({
             where: { id },
             select: {
@@ -1235,12 +692,8 @@ export class OrderService {
         };
     }
 
-    async calculateShippingFee(
-        calculateShippingFeeDto: CalculateShippingFeeDto,
-    ) {
-        const GHTKShippingFee = await this.GHTKShippingFee(
-            calculateShippingFeeDto,
-        );
+    async calculateShippingFee(calculateShippingFeeDto: CalculateShippingFeeDto) {
+        const GHTKShippingFee = await this.GHTKShippingFee(calculateShippingFeeDto);
 
         return {
             is_success: GHTKShippingFee.success,
@@ -1296,7 +749,8 @@ export class OrderService {
         const signData = querystring.stringify(vnp_Params, { encode: false });
 
         const hmac = crypto.createHmac('sha512', secretKey);
-        const signed = hmac.update(new Buffer(signData, 'utf-8')).digest('hex');
+        // const signed = hmac.update(Buffer.from(signData, 'utf-8')).digest('hex');
+        const signed = hmac.update(signData).digest('hex');
         vnp_Params['vnp_SecureHash'] = signed;
         vnpUrl += '?' + querystring.stringify(vnp_Params, { encode: false });
 
@@ -1314,10 +768,7 @@ export class OrderService {
         }
         str.sort();
         for (key = 0; key < str.length; key++) {
-            sorted[str[key]] = encodeURIComponent(obj[str[key]]).replace(
-                /%20/g,
-                '+',
-            );
+            sorted[str[key]] = encodeURIComponent(obj[str[key]]).replace(/%20/g, '+');
         }
         return sorted;
     }
@@ -1335,60 +786,38 @@ export class OrderService {
         let totalPrice = 0;
 
         for (const orderDetailItem of orderData.order_details) {
-            const productOption =
-                await this.prismaService.productOption.findUnique({
-                    where: { id: orderDetailItem.product_option_id },
-                    select: {
-                        sku: true,
-                        discount: true,
-                        price_modifier: true,
-                        product: {
-                            select: { name: true, price: true },
-                        },
-                        technical_specs: {
-                            select: {
-                                specs: {
-                                    where: {
-                                        key: 'Khối lượng',
-                                    },
-                                    select: {
-                                        key: true,
-                                        value: true,
-                                    },
-                                },
-                            },
-                        },
-                    },
-                });
+            const productOption = await this.prismaService.productOption.findUnique({
+                where: { id: orderDetailItem.product_option_id },
+                select: ORDER_PRODUCT_OPTION_WITH_SPECS_SELECT,
+            });
 
             const discount =
                 ((productOption.product.price + productOption.price_modifier) *
                     productOption.discount) /
                 100;
             const modifiedPrice =
-                productOption.product.price +
-                productOption.price_modifier -
-                discount;
+                productOption.product.price + productOption.price_modifier - discount;
+            const subtotal = orderDetailItem.quantity * modifiedPrice;
 
-            totalPrice += orderDetailItem.quantity * modifiedPrice;
+            totalPrice += subtotal;
 
-            const weight = Number(
-                productOption.technical_specs.specs[0].value.replace(
-                    /\D+$/g,
-                    '',
-                ),
-            );
+            let weight = 500;
+            if (
+                productOption.technical_specs?.specs &&
+                productOption.technical_specs.specs.length > 0
+            ) {
+                const weightSpec = productOption.technical_specs.specs[0];
+                if (weightSpec && weightSpec.value) {
+                    const weightValue = weightSpec.value.replace(/[^0-9.]/g, '');
+                    weight = parseFloat(weightValue) * 1000 || 500;
+                }
+            }
 
-            const result = {
-                name:
-                    productOption.product.name +
-                    ' ' +
-                    productOption.sku.replaceAll('-', ' '),
-                weight: weight / (weight < 10 ? 100 : 1000),
+            products.push({
+                name: productOption.product.name,
+                weight,
                 quantity: orderDetailItem.quantity,
-            };
-
-            products.push(result);
+            });
         }
 
         const GHTKOrderObj = {
@@ -1416,9 +845,7 @@ export class OrderService {
 
         const response = await this.httpService.axiosRef({
             method: 'POST',
-            url:
-                this.configService.get<string>('GHTK_API_URL') +
-                '/services/shipment/order',
+            url: `${this.configService.get('GHTK_API_URL')}/shipment/order`,
             data: {
                 products,
                 order: GHTKOrderObj,
@@ -1439,7 +866,7 @@ export class OrderService {
 
         const response = await this.httpService.axiosRef({
             method: 'POST',
-            url: `https://services.giaohangtietkiem.vn/services/shipment/cancel/${label}`,
+            url: `${this.configService.get('GHTK_API_URL')}/shipment/cancel/${label}`,
             headers: {
                 'Content-Type': 'application/json',
                 Token: this.configService.get<string>('GHTK_API_TOKEN_KEY'),
@@ -1454,16 +881,14 @@ export class OrderService {
     ): Promise<GHTKShippingFeeResponse> {
         const response = await this.httpService.axiosRef({
             method: 'POST',
-            url: 'https://services.giaohangtietkiem.vn/services/shipment/fee',
+            url: `${this.configService.get('GHTK_API_URL')}/shipment/fee`,
             headers: {
                 'Content-Type': 'application/json',
                 Token: this.configService.get<string>('GHTK_API_TOKEN_KEY'),
             },
             data: {
-                pick_province:
-                    this.configService.get<string>('GHTK_PICK_PROVINCE'),
-                pick_district:
-                    this.configService.get<string>('GHTK_PICK_DISTRICT'),
+                pick_province: this.configService.get<string>('GHTK_PICK_PROVINCE'),
+                pick_district: this.configService.get<string>('GHTK_PICK_DISTRICT'),
                 pick_ward: this.configService.get<string>('GHTK_PICK_WARD'),
                 province: calculateShippingFee.province,
                 district: calculateShippingFee.district,
@@ -1503,7 +928,7 @@ export class OrderService {
                 name: order.shipping.delivery.name,
                 slug: order.shipping.delivery.slug,
             },
-            order_details: order.order_details.map((orderDetail) => {
+            order_details: order.order_details.map(orderDetail => {
                 return {
                     id: orderDetail.id,
                     product: {
@@ -1514,47 +939,34 @@ export class OrderService {
                             id: orderDetail.product_option.product.brand.id,
                             name: orderDetail.product_option.product.brand.name,
                             slug: orderDetail.product_option.product.brand.slug,
-                            logo_url:
-                                orderDetail.product_option.product.brand
-                                    .logo_url,
+                            logo_url: orderDetail.product_option.product.brand.logo_url,
                         },
                         category: {
                             id: orderDetail.product_option.product.category.id,
-                            name: orderDetail.product_option.product.category
-                                .name,
-                            slug: orderDetail.product_option.product.category
-                                .slug,
+                            name: orderDetail.product_option.product.category.name,
+                            slug: orderDetail.product_option.product.category.slug,
                         },
-                        descriptions:
-                            orderDetail.product_option.product.descriptions.map(
-                                (el) => ({
-                                    id: el.id,
-                                    content: el.content,
-                                }),
-                            ),
+                        descriptions: orderDetail.product_option.product.descriptions.map(el => ({
+                            id: el.id,
+                            content: el.content,
+                        })),
                         label: orderDetail.product_option.product.label,
                         price: orderDetail.product_option.product.price,
-                        promotions:
-                            orderDetail.product_option.product.promotions,
-                        warranties:
-                            orderDetail.product_option.product.warranties,
+                        promotions: orderDetail.product_option.product.promotions,
+                        warranties: orderDetail.product_option.product.warranties,
                         thumbnail: orderDetail.product_option.thumbnail,
-                        options:
-                            orderDetail.product_option.product_option_value.map(
-                                (el) => ({
-                                    name: el.option.name,
-                                    value: el.value,
-                                    adjust_price: el.adjust_price,
-                                }),
-                            ),
+                        options: orderDetail.product_option.product_option_value.map(el => ({
+                            name: el.option.name,
+                            value: el.value,
+                            adjust_price: el.adjust_price,
+                        })),
                         weight: Number(
                             orderDetail.product_option.technical_specs.specs[0].value.split(
                                 ' g',
                             )[0],
                         ), // 188g
                         label_image: orderDetail.product_option.label_image,
-                        price_modifier:
-                            orderDetail.product_option.price_modifier,
+                        price_modifier: orderDetail.product_option.price_modifier,
                         discount: orderDetail.product_option.discount,
                         slug: orderDetail.product_option.slug,
                     },

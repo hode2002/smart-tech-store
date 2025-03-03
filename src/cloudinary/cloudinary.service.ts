@@ -1,8 +1,9 @@
 import { Injectable } from '@nestjs/common';
-import { v2 as cloudinary } from 'cloudinary';
-import { CloudinaryResponse } from './cloudinary/cloudinary-response';
-import * as streamifier from 'streamifier';
 import { ConfigService } from '@nestjs/config';
+import { v2 as cloudinary } from 'cloudinary';
+import * as streamifier from 'streamifier';
+
+import { CloudinaryResponse } from './cloudinary/cloudinary-response';
 
 @Injectable()
 export class CloudinaryService {
@@ -10,29 +11,27 @@ export class CloudinaryService {
 
     uploadFile(
         file: Express.Multer.File,
-        customFolder: string = '',
+        customFolder = '',
         resource_type: 'image' | 'video' | 'auto' | 'raw' = 'image',
     ): Promise<CloudinaryResponse> {
         return new Promise<CloudinaryResponse>((resolve, reject) => {
-            const folderName =
-                this.configService.get('CLOUDINARY_FOLDER_NAME') + customFolder;
+            const folderName = this.configService.get('CLOUDINARY_FOLDER_NAME') + customFolder;
             const uploadStream = cloudinary.uploader.upload_stream(
                 {
                     folder: folderName,
                     resource_type,
                 },
                 (error, result) => {
-                    if (error) return reject(error);
+                    if (error) {
+                        return reject(error);
+                    }
                     resolve(result);
                 },
             );
             streamifier.createReadStream(file.buffer).pipe(uploadStream);
         });
     }
-    deleteFile(
-        filePath: string,
-        resource_type: 'image' | 'video' | 'auto' | 'raw' = 'image',
-    ) {
+    deleteFile(filePath: string, resource_type: 'image' | 'video' | 'auto' | 'raw' = 'image') {
         const folderName = this.configService.get('CLOUDINARY_FOLDER_NAME');
         const arr = filePath.split(folderName);
         const ext = filePath.split('.').pop();
@@ -45,7 +44,9 @@ export class CloudinaryService {
                     resource_type,
                 },
                 (error, result) => {
-                    if (error) return reject(error);
+                    if (error) {
+                        return reject(error);
+                    }
                     resolve(result);
                 },
             );

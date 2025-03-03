@@ -1,132 +1,93 @@
 import {
-    Controller,
-    Get,
-    Post,
     Body,
-    Patch,
-    Param,
-    UseGuards,
+    Controller,
+    Delete,
+    Get,
     HttpCode,
     HttpStatus,
-    Delete,
+    Param,
+    Patch,
+    Post,
+    UseGuards,
 } from '@nestjs/common';
-import { NotificationService } from './notification.service';
+import { Role } from '@prisma/client';
+
+import { AtJwtGuard } from 'src/auth/guards';
+import { GetUserId, Permission, ResponseMessage } from 'src/common/decorators';
+import { RoleGuard } from 'src/common/guards';
+
 import { CreateNotificationDto } from './dto/create-notification.dto';
 import { UpdateNotificationDto } from './dto/update-notification.dto';
-import { GetUserId, Permission } from 'src/common/decorators';
-import { AtJwtGuard } from 'src/auth/guards';
-import { SuccessResponse } from 'src/common/response';
-import { RoleGuard } from 'src/common/guards';
-import { Role } from '@prisma/client';
+import { NotificationService } from './notification.service';
 
 @Controller('/api/v1/notifications')
 export class NotificationController {
     constructor(private readonly notificationService: NotificationService) {}
 
     @Post()
+    @ResponseMessage('Create success')
     @Permission(Role.ADMIN)
     @UseGuards(AtJwtGuard, RoleGuard)
     @HttpCode(HttpStatus.CREATED)
-    async create(
-        @Body() createNotificationDto: CreateNotificationDto,
-    ): Promise<SuccessResponse> {
-        return {
-            statusCode: HttpStatus.CREATED,
-            message: 'Create success',
-            data: await this.notificationService.create(createNotificationDto),
-        };
+    async create(@Body() createNotificationDto: CreateNotificationDto) {
+        return await this.notificationService.create(createNotificationDto);
     }
 
     @Get()
+    @ResponseMessage('Get notifications success')
     @Permission(Role.ADMIN)
     @UseGuards(AtJwtGuard, RoleGuard)
     @HttpCode(HttpStatus.OK)
-    async findAll(): Promise<SuccessResponse> {
-        return {
-            statusCode: HttpStatus.OK,
-            message: 'Get notifications success',
-            data: await this.notificationService.findAll(),
-        };
+    async findAll() {
+        return await this.notificationService.findAll();
     }
 
     @Get('users')
+    @ResponseMessage('Get user notify success')
     @UseGuards(AtJwtGuard)
     @HttpCode(HttpStatus.OK)
-    async findByUserId(@GetUserId() userId: string): Promise<SuccessResponse> {
-        return {
-            statusCode: HttpStatus.OK,
-            message: 'Get user notify success',
-            data: await this.notificationService.findByUserId(userId),
-        };
+    async findByUserId(@GetUserId() userId: string) {
+        return await this.notificationService.findByUserId(userId);
     }
 
     @Post('users/read-all')
+    @ResponseMessage('Update success')
     @UseGuards(AtJwtGuard)
     @HttpCode(HttpStatus.OK)
-    async userReadAllNotifications(
-        @GetUserId() userId: string,
-    ): Promise<SuccessResponse> {
-        return {
-            statusCode: HttpStatus.OK,
-            message: 'Update success',
-            data: await this.notificationService.userReadAllNotifications(
-                userId,
-            ),
-        };
+    async userReadAllNotifications(@GetUserId() userId: string) {
+        return await this.notificationService.userReadAllNotifications(userId);
     }
 
     @Post('users')
+    @ResponseMessage('Create success')
     @UseGuards(AtJwtGuard)
     @HttpCode(HttpStatus.CREATED)
-    async createUserNotification(
-        @Body() createNotificationDto: CreateNotificationDto,
-    ): Promise<SuccessResponse> {
-        return {
-            statusCode: HttpStatus.CREATED,
-            message: 'Create success',
-            data: await this.notificationService.createUserNotification(
-                createNotificationDto,
-            ),
-        };
+    async createUserNotification(@Body() createNotificationDto: CreateNotificationDto) {
+        return await this.notificationService.createUserNotification(createNotificationDto);
     }
 
     @Get('slug/:slug')
+    @ResponseMessage('Get notifications success')
     @HttpCode(HttpStatus.OK)
-    async findBySlug(@Param('slug') slug: string): Promise<SuccessResponse> {
-        return {
-            statusCode: HttpStatus.OK,
-            message: 'Get notifications success',
-            data: await this.notificationService.findBySlug(slug),
-        };
+    async findBySlug(@Param('slug') slug: string) {
+        return await this.notificationService.findBySlug(slug);
     }
 
     @Patch(':id')
+    @ResponseMessage('Update success')
     @Permission(Role.ADMIN)
     @UseGuards(AtJwtGuard, RoleGuard)
     @HttpCode(HttpStatus.OK)
-    async update(
-        @Param('id') id: string,
-        @Body() updateNotificationDto: UpdateNotificationDto,
-    ): Promise<SuccessResponse> {
-        return {
-            statusCode: HttpStatus.OK,
-            message: 'Update success',
-            data: await this.notificationService.update(
-                id,
-                updateNotificationDto,
-            ),
-        };
+    async update(@Param('id') id: string, @Body() updateNotificationDto: UpdateNotificationDto) {
+        return await this.notificationService.update(id, updateNotificationDto);
     }
 
     @Delete(':id')
+    @ResponseMessage('Delete success')
     @Permission(Role.ADMIN)
     @UseGuards(AtJwtGuard, RoleGuard)
     @HttpCode(HttpStatus.OK)
-    async remove(@Param('id') id: string): Promise<SuccessResponse> {
-        return {
-            statusCode: HttpStatus.OK,
-            message: 'Delete success',
-            data: await this.notificationService.remove(id),
-        };
+    async remove(@Param('id') id: string) {
+        return await this.notificationService.remove(id);
     }
 }

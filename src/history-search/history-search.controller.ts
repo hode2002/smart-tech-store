@@ -1,85 +1,60 @@
 import {
-    Controller,
-    Get,
-    Post,
     Body,
-    UseGuards,
+    Controller,
+    Delete,
+    Get,
     HttpCode,
     HttpStatus,
-    Delete,
     Param,
+    Post,
+    UseGuards,
 } from '@nestjs/common';
-import { HistorySearchService } from './history-search.service';
+
 import { AtJwtGuard } from 'src/auth/guards';
-import { GetUserId } from 'src/common/decorators';
-import { SuccessResponse } from 'src/common/response';
+import { GetUserId, ResponseMessage } from 'src/common/decorators';
+
 import { CreateHistorySearchDto, CreateHistorySearchListDto } from './dto';
+import { HistorySearchService } from './history-search.service';
 
 @Controller('/api/v1/history-search')
 export class HistorySearchController {
     constructor(private readonly historySearchService: HistorySearchService) {}
 
     @Get()
+    @ResponseMessage('Get history search success')
     @UseGuards(AtJwtGuard)
     @HttpCode(HttpStatus.OK)
-    async getHistorySearch(
-        @GetUserId() userId: string,
-    ): Promise<SuccessResponse> {
-        return {
-            statusCode: HttpStatus.OK,
-            message: 'Get history search success',
-            data: await this.historySearchService.getHistorySearch(userId),
-        };
+    async getHistorySearch(@GetUserId() userId: string) {
+        return await this.historySearchService.getHistorySearch(userId);
     }
 
     @Post()
+    @ResponseMessage('Create history search success')
     @UseGuards(AtJwtGuard)
     @HttpCode(HttpStatus.CREATED)
     async createHistorySearch(
         @GetUserId() userId: string,
         @Body() createHistorySearchDto: CreateHistorySearchDto,
-    ): Promise<SuccessResponse> {
-        return {
-            statusCode: HttpStatus.CREATED,
-            message: 'Create history search success',
-            data: await this.historySearchService.createHistorySearch(
-                userId,
-                createHistorySearchDto,
-            ),
-        };
+    ) {
+        return await this.historySearchService.createHistorySearch(userId, createHistorySearchDto);
     }
 
     @Post('/list')
+    @ResponseMessage('Create history search list success')
     @UseGuards(AtJwtGuard)
     @HttpCode(HttpStatus.CREATED)
     async createFormLocalStorage(
         @GetUserId() userId: string,
         @Body() historySearchList: CreateHistorySearchListDto[],
-    ): Promise<SuccessResponse> {
-        return {
-            statusCode: HttpStatus.CREATED,
-            message: 'Create history search list success',
-            data: await this.historySearchService.createHistorySearchList(
-                userId,
-                historySearchList,
-            ),
-        };
+    ) {
+        return await this.historySearchService.createHistorySearchList(userId, historySearchList);
     }
 
     @Delete(':id')
+    @ResponseMessage('Delete history search success')
     @UseGuards(AtJwtGuard)
     @HttpCode(HttpStatus.OK)
-    async deleteHistorySearch(
-        @GetUserId() userId: string,
-        @Param('id') searchId: string,
-    ): Promise<SuccessResponse> {
-        return {
-            statusCode: HttpStatus.OK,
-            message: 'Delete history search success',
-            data: await this.historySearchService.deleteHistorySearch(
-                searchId,
-                userId,
-            ),
-        };
+    async deleteHistorySearch(@GetUserId() userId: string, @Param('id') searchId: string) {
+        return await this.historySearchService.deleteHistorySearch(searchId, userId);
     }
 }

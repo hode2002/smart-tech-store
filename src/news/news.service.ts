@@ -4,10 +4,12 @@ import {
     InternalServerErrorException,
     NotFoundException,
 } from '@nestjs/common';
-import { CreateNewsDto } from './dto/create-news.dto';
-import { UpdateNewsDto } from './dto/update-news.dto';
+
 import { PrismaService } from 'src/prisma/prisma.service';
 import { generateSlug } from 'src/utils';
+
+import { CreateNewsDto } from './dto/create-news.dto';
+import { UpdateNewsDto } from './dto/update-news.dto';
 import { MediaService } from '../media/media.service';
 
 @Injectable()
@@ -70,11 +72,7 @@ export class NewsService {
         return news;
     }
 
-    async update(
-        id: string,
-        updateNewsDto: UpdateNewsDto,
-        file?: Express.Multer.File,
-    ) {
+    async update(id: string, updateNewsDto: UpdateNewsDto, file?: Express.Multer.File) {
         if (!id) {
             throw new BadRequestException('Missing news id');
         }

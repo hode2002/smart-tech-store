@@ -1,29 +1,26 @@
+import { InjectQueue } from '@nestjs/bull';
 import {
     ConflictException,
     ForbiddenException,
     Injectable,
     InternalServerErrorException,
 } from '@nestjs/common';
-import { CreateUserDto } from 'src/user/dto';
-import {
-    CreateUserEmailDto,
-    EmailVerificationDto,
-    ThirdPartyLoginDto,
-} from './dto';
-import { Queue } from 'bull';
-import { InjectQueue } from '@nestjs/bull';
-import * as otpGenerator from 'otp-generator';
-import { Otp } from './model/schema.model';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
-import * as bcrypt from 'bcrypt';
-import { UserService } from 'src/user/user.service';
-import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
-import { JwtPayload } from 'src/common/types';
+import { JwtService } from '@nestjs/jwt';
+import { InjectModel } from '@nestjs/mongoose';
 import { AuthType } from '@prisma/client';
-import { Request, Response } from 'express';
-import axios from 'axios';
+import * as bcrypt from 'bcrypt';
+import { Queue } from 'bull';
+import { Response } from 'express';
+import { Model } from 'mongoose';
+import * as otpGenerator from 'otp-generator';
+
+import { JwtPayload } from 'src/common/types';
+import { CreateUserDto } from 'src/user/dto';
+import { UserService } from 'src/user/user.service';
+
+import { CreateUserEmailDto, EmailVerificationDto, ThirdPartyLoginDto } from './dto';
+import { Otp } from './model/schema.model';
 
 @Injectable()
 export class AuthService {
@@ -37,43 +34,56 @@ export class AuthService {
         private readonly configService: ConfigService,
     ) {}
 
-    async getDataFromGoogleToken(token: string) {
-        const response = await axios.get(
-            'https://www.googleapis.com/oauth2/v2/userinfo',
+    private createTokenPairs({ email, role, userId }: JwtPayload) {
+        const accessToken = this.jwtService.sign(
+            { email, role, userId },
             {
-                headers: { Authorization: `Bearer ${token}` },
+                secret: this.configService.get('ACCESS_TOKEN_SECRET'),
+                expiresIn: this.configService.get('ACCESS_TOKEN_EXPIRES_IN'),
             },
         );
-        const userData = response.data;
 
-        const tokens = this.createTokenPairs({
-            email: userData.email,
-            userId: userData.id,
-            role: userData.role,
-        });
-
-        return {
-            profile: {
-                email: userData.email,
-                name: userData.name,
-                avatar: userData.picture,
-                phone: '',
-                role: 'USER',
+        const refreshToken = this.jwtService.sign(
+            { email, role, userId },
+            {
+                secret: this.configService.get('REFRESH_TOKEN_SECRET'),
+                expiresIn: this.configService.get('REFRESH_TOKEN_EXPIRES_IN'),
             },
-            tokens,
-        };
+        );
+
+        return { accessToken, refreshToken };
+    }
+
+    private async setTokens(res: Response, tokens: { accessToken: string; refreshToken: string }) {
+        res.cookie('accessToken', tokens.accessToken, {
+            path: '/',
+            httpOnly: false,
+            maxAge: 60 * 60 * 1000,
+        });
+        res.cookie('refreshToken', tokens.refreshToken, {
+            path: '/',
+            httpOnly: false,
+            maxAge: 60 * 60 * 1000,
+        });
+    }
+
+    private async updateUserRefreshToken(email: string, refreshToken: string) {
+        const isUpdated = await this.userService.updateByEmail(email, {
+            refresh_token: await bcrypt.hash(refreshToken, 10),
+        });
+        if (!isUpdated) {
+            throw new InternalServerErrorException('Internal Server Error');
+        }
+        return true;
     }
 
     async thirdPartyLogin(
-        req: Request,
         res: Response,
         thirdPartyLoginDto: ThirdPartyLoginDto,
         authType: AuthType,
     ) {
         if (!thirdPartyLoginDto?.email) {
-            return res.redirect(
-                this.configService.get<string>('FRONTEND_REDIRECT_URL'),
-            );
+            return res.redirect(this.configService.get<string>('FRONTEND_REDIRECT_URL'));
         }
 
         let user = await this.userService.findByEmail(thirdPartyLoginDto.email);
@@ -93,45 +103,15 @@ export class AuthService {
             role: user.role,
         });
 
-        const isUpdated = await this.userService.updateByEmail(
-            thirdPartyLoginDto.email,
-            {
-                refresh_token: await bcrypt.hash(tokens.refreshToken, 10),
-            },
-        );
-        if (!isUpdated) {
-            throw new InternalServerErrorException('Internal Server Error');
-        }
+        await this.updateUserRefreshToken(thirdPartyLoginDto.email, tokens.refreshToken);
+        await this.setTokens(res, tokens);
 
-        res.cookie('accessToken', tokens.accessToken, {
-            path: '/',
-            httpOnly: false,
-            sameSite: 'none',
-            secure: true,
-            maxAge: 60 * 60 * 1000,
-            domain: this.configService.get('FRONTEND_DOMAIN'),
-        });
-        res.cookie('refreshToken', tokens.refreshToken, {
-            path: '/',
-            httpOnly: false,
-            sameSite: 'none',
-            secure: true,
-            maxAge: 60 * 60 * 1000,
-            domain: this.configService.get('FRONTEND_DOMAIN'),
-        });
-
-        return res.redirect(
-            this.configService.get<string>('FRONTEND_REDIRECT_URL'),
-        );
+        return res.redirect(this.configService.get<string>('FRONTEND_REDIRECT_URL'));
     }
 
     async emailVerification(createUserEmailDto: CreateUserEmailDto) {
         const { email } = createUserEmailDto;
-
-        const response = await fetch(
-            this.configService.get('MAIL_VERIFICATION_URL') + email,
-        );
-
+        const response = await fetch(this.configService.get('MAIL_VERIFICATION_URL') + email);
         return (await response.json()) as EmailVerificationDto;
     }
 
@@ -148,8 +128,7 @@ export class AuthService {
             throw new ConflictException(`Email doesn't exist`);
         }
 
-        const isCreated =
-            await this.userService.createEmail(createUserEmailDto);
+        const isCreated = await this.userService.createEmail(createUserEmailDto);
         if (!isCreated) {
             throw new InternalServerErrorException('Internal Server Error');
         }
@@ -167,16 +146,14 @@ export class AuthService {
             is_active: true,
         });
 
-        return {
-            is_success: isUpdated ? true : false,
-        };
+        return { is_success: isUpdated };
     }
 
     async resendOtp(email: string) {
         return await this.sendOtp(email);
     }
 
-    async sendOtp(email: string, processName: string = 'send-otp') {
+    async sendOtp(email: string, processName = 'send-otp') {
         const otpCode = otpGenerator.generate(6, {
             specialChars: false,
             digits: true,
@@ -197,16 +174,7 @@ export class AuthService {
             throw new InternalServerErrorException('Internal Server Error');
         }
 
-        await this.queue.add(
-            processName,
-            {
-                email,
-                otpCode,
-            },
-            {
-                removeOnComplete: true,
-            },
-        );
+        await this.queue.add(processName, { email, otpCode }, { removeOnComplete: true });
 
         return { email };
     }
@@ -218,12 +186,10 @@ export class AuthService {
         }
 
         const lastOtpObj = otps[otps.length - 1];
-
         const isMatches = await bcrypt.compare(otpCode, lastOtpObj.otpCode);
+
         if (!isMatches) {
-            this.otpModel.updateOne({
-                email,
-            });
+            await this.otpModel.updateOne({ email });
             throw new ForbiddenException('Invalid Email Or OTP Code');
         }
 
@@ -232,9 +198,7 @@ export class AuthService {
             throw new InternalServerErrorException('Internal Server Error');
         }
 
-        return {
-            is_success: true,
-        };
+        return { is_success: true };
     }
 
     async createPassword(createUserDto: CreateUserDto) {
@@ -248,7 +212,6 @@ export class AuthService {
         }
 
         const hashPass = await bcrypt.hash(password, 10);
-
         return await this.userService.updatePassword(email, hashPass);
     }
 
@@ -271,12 +234,7 @@ export class AuthService {
             role: user.role,
         });
 
-        const isUpdated = await this.userService.updateByEmail(email, {
-            refresh_token: await bcrypt.hash(tokens.refreshToken, 10),
-        });
-        if (!isUpdated) {
-            throw new InternalServerErrorException('Internal Server Error');
-        }
+        await this.updateUserRefreshToken(email, tokens.refreshToken);
 
         return {
             profile: {
@@ -292,14 +250,7 @@ export class AuthService {
 
     async refreshToken({ email, userId, role }: JwtPayload) {
         const tokens = this.createTokenPairs({ email, userId, role });
-
-        const isUpdated = await this.userService.updateByEmail(email, {
-            refresh_token: await bcrypt.hash(tokens.refreshToken, 10),
-        });
-        if (!isUpdated) {
-            throw new InternalServerErrorException('Internal Server Error');
-        }
-
+        await this.updateUserRefreshToken(email, tokens.refreshToken);
         return tokens;
     }
 
@@ -311,28 +262,6 @@ export class AuthService {
             throw new InternalServerErrorException('Internal Server Error');
         }
 
-        return {
-            is_success: true,
-        };
-    }
-
-    createTokenPairs({ email, role, userId }: JwtPayload) {
-        const accessToken = this.jwtService.sign(
-            { email, role, userId },
-            {
-                secret: this.configService.get('ACCESS_TOKEN_SECRET'),
-                expiresIn: this.configService.get('ACCESS_TOKEN_EXPIRES_IN'),
-            },
-        );
-
-        const refreshToken = this.jwtService.sign(
-            { email, role, userId },
-            {
-                secret: this.configService.get('REFRESH_TOKEN_SECRET'),
-                expiresIn: this.configService.get('REFRESH_TOKEN_EXPIRES_IN'),
-            },
-        );
-
-        return { accessToken, refreshToken };
+        return { is_success: true };
     }
 }

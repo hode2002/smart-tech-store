@@ -4,10 +4,13 @@ import {
     InternalServerErrorException,
     NotFoundException,
 } from '@nestjs/common';
-import { CreateBannerDto, UpdateBannerDto } from './dto';
-import { PrismaService } from './../prisma/prisma.service';
+
 import { MediaService } from 'src/media/media.service';
+import { PrismaService } from 'src/prisma/prisma.service';
+import { BANNER_BASIC_SELECT, BANNER_FULL_SELECT } from 'src/prisma/selectors';
 import { generateSlug } from 'src/utils';
+
+import { CreateBannerDto, UpdateBannerDto } from './dto';
 
 @Injectable()
 export class BannerService {
@@ -36,17 +39,7 @@ export class BannerService {
                 image: imageUrl,
                 slug,
             },
-            select: {
-                id: true,
-                title: true,
-                image: true,
-                link: true,
-                slug: true,
-                status: true,
-                type: true,
-                created_at: true,
-                updated_at: true,
-            },
+            select: BANNER_FULL_SELECT,
         });
     }
 
@@ -58,60 +51,27 @@ export class BannerService {
             orderBy: {
                 created_at: 'asc',
             },
-            select: {
-                id: true,
-                title: true,
-                image: true,
-                link: true,
-                slug: true,
-                status: true,
-                type: true,
-            },
+            select: BANNER_BASIC_SELECT,
         });
     }
 
     async AdminFindAll() {
         return await this.prismaService.banner.findMany({
-            select: {
-                id: true,
-                title: true,
-                image: true,
-                link: true,
-                slug: true,
-                status: true,
-                type: true,
-                created_at: true,
-                updated_at: true,
-            },
+            select: BANNER_FULL_SELECT,
         });
     }
 
     async findBySlug(slug: string) {
         return await this.prismaService.banner.findFirst({
             where: { slug, status: 'show' },
-            select: {
-                id: true,
-                title: true,
-                image: true,
-                link: true,
-                slug: true,
-                status: true,
-                type: true,
-            },
+            select: BANNER_BASIC_SELECT,
         });
     }
 
     async findById(id: string) {
         const banner = await this.prismaService.banner.findUnique({
             where: { id, status: 'show' },
-            select: {
-                id: true,
-                title: true,
-                image: true,
-                link: true,
-                slug: true,
-                type: true,
-            },
+            select: BANNER_BASIC_SELECT,
         });
         if (!banner) {
             throw new NotFoundException('Banner Not Found');
@@ -120,11 +80,7 @@ export class BannerService {
         return banner;
     }
 
-    async update(
-        id: string,
-        updateBannerDto: UpdateBannerDto,
-        file?: Express.Multer.File,
-    ) {
+    async update(id: string, updateBannerDto: UpdateBannerDto, file?: Express.Multer.File) {
         const banner = await this.prismaService.banner.findUnique({
             where: { id },
         });
@@ -149,15 +105,7 @@ export class BannerService {
                 ...updateBannerDto,
                 image: imageUrl,
             },
-            select: {
-                id: true,
-                title: true,
-                image: true,
-                link: true,
-                slug: true,
-                type: true,
-                status: true,
-            },
+            select: BANNER_BASIC_SELECT,
         });
     }
 

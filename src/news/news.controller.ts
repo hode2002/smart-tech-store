@@ -1,78 +1,65 @@
 import {
-    Controller,
-    Get,
-    Post,
     Body,
-    Patch,
-    Param,
+    Controller,
     Delete,
+    Get,
     HttpCode,
     HttpStatus,
-    UseGuards,
+    Param,
+    Patch,
+    Post,
     UploadedFile,
+    UseGuards,
     UseInterceptors,
 } from '@nestjs/common';
-import { NewsService } from './news.service';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { Role } from '@prisma/client';
+
+import { AtJwtGuard } from 'src/auth/guards';
+import { Permission, ResponseMessage } from 'src/common/decorators';
+import { RoleGuard } from 'src/common/guards';
+
 import { CreateNewsDto } from './dto/create-news.dto';
 import { UpdateNewsDto } from './dto/update-news.dto';
-import { SuccessResponse } from 'src/common/response';
-import { Permission } from 'src/common/decorators';
-import { Role } from '@prisma/client';
-import { RoleGuard } from 'src/common/guards';
-import { AtJwtGuard } from 'src/auth/guards';
-import { FileInterceptor } from '@nestjs/platform-express';
+import { NewsService } from './news.service';
 
 @Controller('/api/v1/news')
 export class NewsController {
     constructor(private readonly newsService: NewsService) {}
 
     @Post()
+    @ResponseMessage('Create success')
     @Permission(Role.ADMIN)
     @UseGuards(AtJwtGuard, RoleGuard)
     @UseInterceptors(FileInterceptor('image'))
     @HttpCode(HttpStatus.CREATED)
-    async create(
-        @Body() createNewsDto: CreateNewsDto,
-        @UploadedFile() file: Express.Multer.File,
-    ): Promise<SuccessResponse> {
-        return {
-            statusCode: HttpStatus.CREATED,
-            message: 'Create success',
-            data: await this.newsService.create(createNewsDto, file),
-        };
+    async create(@Body() createNewsDto: CreateNewsDto, @UploadedFile() file: Express.Multer.File) {
+        return await this.newsService.create(createNewsDto, file);
     }
 
     @Get()
+    @ResponseMessage('Get all news success')
     @HttpCode(HttpStatus.OK)
-    async findAll(): Promise<SuccessResponse> {
-        return {
-            statusCode: HttpStatus.OK,
-            message: 'Get all news success',
-            data: await this.newsService.findAll(),
-        };
+    async findAll() {
+        return await this.newsService.findAll();
     }
 
     @Get('slug/:slug')
+    @ResponseMessage('Get news success')
     @HttpCode(HttpStatus.OK)
-    async findBySlug(@Param('slug') slug: string): Promise<SuccessResponse> {
-        return {
-            statusCode: HttpStatus.OK,
-            message: 'Get news success',
-            data: await this.newsService.findBySlug(slug),
-        };
+    async findBySlug(@Param('slug') slug: string) {
+        return await this.newsService.findBySlug(slug);
     }
 
     @Get(':id')
+    @ResponseMessage('Get news success')
     @HttpCode(HttpStatus.OK)
-    async findById(@Param('id') id: string): Promise<SuccessResponse> {
-        return {
-            statusCode: HttpStatus.OK,
-            message: 'Get news success',
-            data: await this.newsService.findById(id),
-        };
+    async findById(@Param('id') id: string) {
+        return await this.newsService.findById(id);
     }
 
     @Patch(':id')
+    @ResponseMessage('Update success')
     @Permission(Role.ADMIN)
     @UseGuards(AtJwtGuard, RoleGuard)
     @UseInterceptors(FileInterceptor('image'))
@@ -81,23 +68,16 @@ export class NewsController {
         @Param('id') id: string,
         @Body() updateNewsDto: UpdateNewsDto,
         @UploadedFile() file: Express.Multer.File,
-    ): Promise<SuccessResponse> {
-        return {
-            statusCode: HttpStatus.OK,
-            message: 'Update success',
-            data: await this.newsService.update(id, updateNewsDto, file),
-        };
+    ) {
+        return await this.newsService.update(id, updateNewsDto, file);
     }
 
     @Delete(':id')
+    @ResponseMessage('Delete success')
     @Permission(Role.ADMIN)
     @UseGuards(AtJwtGuard, RoleGuard)
     @HttpCode(HttpStatus.OK)
-    async remove(@Param('id') id: string): Promise<SuccessResponse> {
-        return {
-            statusCode: HttpStatus.OK,
-            message: 'Delete success',
-            data: await this.newsService.remove(id),
-        };
+    async remove(@Param('id') id: string) {
+        return await this.newsService.remove(id);
     }
 }

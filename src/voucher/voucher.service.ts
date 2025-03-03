@@ -5,13 +5,22 @@ import {
     Injectable,
     NotFoundException,
 } from '@nestjs/common';
+import { VoucherType } from '@prisma/client';
+import moment from 'moment';
+import * as otpGenerator from 'otp-generator';
+
+import { PrismaService } from 'src/prisma/prisma.service';
+import {
+    VOUCHER_APPLY_SELECT,
+    VOUCHER_BASIC_SELECT,
+    VOUCHER_CHECK_SELECT,
+    VOUCHER_ORDER_SELECT,
+    VOUCHER_UPDATE_SELECT,
+} from 'src/prisma/selectors';
+import { CheckValidVoucherDto } from 'src/voucher/dto/check-valid-voucher.dto';
+
 import { CreateVoucherDto } from './dto/create-voucher.dto';
 import { UpdateVoucherDto } from './dto/update-voucher.dto';
-import { PrismaService } from 'src/prisma/prisma.service';
-import * as otpGenerator from 'otp-generator';
-import { VoucherType } from '@prisma/client';
-import { CheckValidVoucherDto } from 'src/voucher/dto/check-valid-voucher.dto';
-import * as moment from 'moment';
 
 @Injectable()
 export class VoucherService {
@@ -27,6 +36,7 @@ export class VoucherService {
         if (createVoucherDto?.code) {
             const voucher = await this.prismaService.voucher.findFirst({
                 where: { code: createVoucherDto?.code },
+                select: { id: true },
             });
             if (voucher) {
                 throw new ConflictException('Voucher code already exist!');
@@ -47,17 +57,16 @@ export class VoucherService {
                 code: voucherCode,
                 status: 0,
             },
+            select: VOUCHER_BASIC_SELECT,
         });
     }
 
-    async checkValidVoucher(
-        userId: string,
-        checkValidVoucherDto: CheckValidVoucherDto,
-    ) {
+    async checkValidVoucher(userId: string, checkValidVoucherDto: CheckValidVoucherDto) {
         const { voucherCode, totalOrderPrice } = checkValidVoucherDto;
 
         const voucher = await this.prismaService.voucher.findFirst({
             where: { code: voucherCode },
+            select: VOUCHER_CHECK_SELECT,
         });
         if (!voucher) {
             throw new ForbiddenException('Invalid voucher code!');
@@ -87,11 +96,10 @@ export class VoucherService {
                 user_id: userId,
                 order_vouchers: { some: { voucher_id: voucher.id } },
             },
+            select: { id: true },
         });
         if (userOrderWithVoucher) {
-            throw new ForbiddenException(
-                `voucher '${voucherCode}' has already been used!`,
-            );
+            throw new ForbiddenException(`voucher '${voucherCode}' has already been used!`);
         }
 
         if (voucher.available_quantity <= 0) {
@@ -100,9 +108,7 @@ export class VoucherService {
 
         const isValidVoucher = totalOrderPrice > voucher.min_order_value;
         if (!isValidVoucher) {
-            throw new ForbiddenException(
-                'Total order value is not enough to activate voucher!',
-            );
+            throw new ForbiddenException('Total order value is not enough to activate voucher!');
         }
 
         return voucher;
@@ -111,17 +117,15 @@ export class VoucherService {
     async applyVoucherToOrder(orderId: string, voucherCode: string) {
         const voucher = await this.prismaService.voucher.findFirst({
             where: { code: voucherCode },
-            include: { order_vouchers: true },
+            select: VOUCHER_ORDER_SELECT,
         });
 
         if (!voucher) {
             throw new NotFoundException('Voucher not found');
         }
 
-        if (voucher.order_vouchers.some((i) => i.order_id === orderId)) {
-            throw new ForbiddenException(
-                `voucher '${voucherCode}' has already been used!`,
-            );
+        if (voucher.order_vouchers.some(i => i.order_id === orderId)) {
+            throw new ForbiddenException(`voucher '${voucherCode}' has already been used!`);
         }
 
         const order = await this.prismaService.order.findUnique({
@@ -142,9 +146,7 @@ export class VoucherService {
         });
 
         if (!isValid) {
-            throw new ForbiddenException(
-                'The order cannot apply the voucher code.',
-            );
+            throw new ForbiddenException('The order cannot apply the voucher code.');
         }
 
         const isCreated = await this.prismaService.orderVoucher.create({
@@ -152,12 +154,14 @@ export class VoucherService {
                 order_id: orderId,
                 voucher_id: voucher.id,
             },
+            select: { id: true },
         });
 
         if (isCreated?.id) {
             await this.prismaService.voucher.update({
                 where: { id: voucher.id },
                 data: { available_quantity: voucher.available_quantity - 1 },
+                select: VOUCHER_APPLY_SELECT,
             });
         }
 
@@ -165,52 +169,53 @@ export class VoucherService {
     }
 
     async findAll() {
-        return await this.prismaService.voucher.findMany();
+        return await this.prismaService.voucher.findMany({
+            select: VOUCHER_BASIC_SELECT,
+        });
     }
 
     async findOne(id: string) {
         return await this.prismaService.voucher.findUnique({
             where: { id },
+            select: VOUCHER_BASIC_SELECT,
         });
     }
 
     async update(id: string, updateVoucherDto: UpdateVoucherDto) {
         const type = updateVoucherDto?.type;
-        if (
-            type &&
-            !(type === VoucherType.FIXED || type === VoucherType.PERCENT)
-        ) {
+        if (type && !(type === VoucherType.FIXED || type === VoucherType.PERCENT)) {
             throw new BadRequestException('Invalid voucher type');
         }
 
-        const voucher = await this.prismaService.voucher.findFirst({
-            where: { code: updateVoucherDto?.code },
-        });
-        if (voucher) {
-            throw new ConflictException('Voucher code already exist!');
+        if (updateVoucherDto?.code) {
+            const voucher = await this.prismaService.voucher.findFirst({
+                where: {
+                    code: updateVoucherDto.code,
+                    id: { not: id },
+                },
+                select: { id: true },
+            });
+            if (voucher) {
+                throw new ConflictException('Voucher code already exist!');
+            }
         }
 
-        const start_date = moment.utc(
-            updateVoucherDto.start_date.split('T')[0],
-            'DD-MM-YYYY',
-        );
-        const end_date = moment.utc(
-            updateVoucherDto.end_date.split('T')[0],
-            'DD-MM-YYYY',
-        );
+        if (updateVoucherDto.start_date && updateVoucherDto.end_date) {
+            const start_date = moment.utc(updateVoucherDto.start_date.split('T')[0], 'DD-MM-YYYY');
+            const end_date = moment.utc(updateVoucherDto.end_date.split('T')[0], 'DD-MM-YYYY');
 
-        const isValidDate =
-            start_date.isValid() &&
-            end_date.isValid() &&
-            start_date.isBefore(end_date);
+            const isValidDate =
+                start_date.isValid() && end_date.isValid() && start_date.isBefore(end_date);
 
-        if (!isValidDate) {
-            throw new ForbiddenException('Invalid voucher date!');
+            if (!isValidDate) {
+                throw new ForbiddenException('Invalid voucher date!');
+            }
         }
 
         return await this.prismaService.voucher.update({
             where: { id },
             data: { ...updateVoucherDto },
+            select: VOUCHER_UPDATE_SELECT,
         });
     }
 
@@ -218,6 +223,7 @@ export class VoucherService {
         return await this.prismaService.voucher.update({
             where: { id },
             data: { status: 1 },
+            select: VOUCHER_UPDATE_SELECT,
         });
     }
 
@@ -225,6 +231,7 @@ export class VoucherService {
         return await this.prismaService.voucher.update({
             where: { id },
             data: { status: 0 },
+            select: VOUCHER_UPDATE_SELECT,
         });
     }
 }

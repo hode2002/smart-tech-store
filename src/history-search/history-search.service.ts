@@ -1,11 +1,9 @@
-import {
-    BadRequestException,
-    Injectable,
-    NotFoundException,
-} from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+
 import { PrismaService } from 'src/prisma/prisma.service';
-import { CreateHistorySearchDto, CreateHistorySearchListDto } from './dto';
 import { UserService } from 'src/user/user.service';
+
+import { CreateHistorySearchDto, CreateHistorySearchListDto } from './dto';
 
 @Injectable()
 export class HistorySearchService {
@@ -30,10 +28,7 @@ export class HistorySearchService {
         });
     }
 
-    async createHistorySearch(
-        userId: string,
-        createHistorySearchDto: CreateHistorySearchDto,
-    ) {
+    async createHistorySearch(userId: string, createHistorySearchDto: CreateHistorySearchDto) {
         const user = await this.userService.findById(userId);
         if (!user) {
             throw new BadRequestException('User does not exist');
@@ -70,7 +65,7 @@ export class HistorySearchService {
             throw new BadRequestException('User does not exist');
         }
 
-        const promises = createHistorySearchListDto.map(async (searchItem) => {
+        const promises = createHistorySearchListDto.map(async searchItem => {
             return await this.prismaService.historySearch.create({
                 data: {
                     user_id: userId,

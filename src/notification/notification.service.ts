@@ -1,12 +1,10 @@
-import {
-    BadRequestException,
-    Injectable,
-    NotFoundException,
-} from '@nestjs/common';
-import { CreateNotificationDto } from './dto/create-notification.dto';
-import { UpdateNotificationDto } from './dto/update-notification.dto';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+
 import { PrismaService } from 'src/prisma/prisma.service';
 import { generateSlug } from 'src/utils';
+
+import { CreateNotificationDto } from './dto/create-notification.dto';
+import { UpdateNotificationDto } from './dto/update-notification.dto';
 
 @Injectable()
 export class NotificationService {
@@ -25,7 +23,7 @@ export class NotificationService {
             },
         });
 
-        const notificationPromises = users.map((user) => {
+        const notificationPromises = users.map(user => {
             return this.prismaService.userNotification.create({
                 data: {
                     user_id: user.id,
@@ -119,10 +117,7 @@ export class NotificationService {
         return notify;
     }
 
-    async update(
-        notificationId: string,
-        updateNotificationDto: UpdateNotificationDto,
-    ) {
+    async update(notificationId: string, updateNotificationDto: UpdateNotificationDto) {
         const notification = await this.prismaService.notification.findUnique({
             where: { id: notificationId },
         });

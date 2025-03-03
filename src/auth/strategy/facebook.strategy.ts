@@ -1,5 +1,6 @@
 import { PassportStrategy } from '@nestjs/passport';
 import { Profile, Strategy } from 'passport-facebook';
+
 import { ThirdPartyLoginDto } from '../dto';
 
 export class FacebookStrategy extends PassportStrategy(Strategy, 'facebook') {

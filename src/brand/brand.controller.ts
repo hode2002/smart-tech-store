@@ -1,31 +1,33 @@
 import {
-    Controller,
-    Get,
-    Post,
     Body,
-    Patch,
-    Param,
+    Controller,
     Delete,
-    UseGuards,
+    Get,
     HttpCode,
     HttpStatus,
-    UseInterceptors,
+    Param,
+    Patch,
+    Post,
     UploadedFile,
+    UseGuards,
+    UseInterceptors,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { Role } from '@prisma/client';
+
+import { AtJwtGuard } from 'src/auth/guards';
+import { Permission, ResponseMessage } from 'src/common/decorators';
+import { RoleGuard } from 'src/common/guards';
+
 import { BrandService } from './brand.service';
 import { CreateBrandDto, UpdateBrandDto } from './dto';
-import { Permission } from 'src/common/decorators';
-import { Role } from '@prisma/client';
-import { AtJwtGuard } from 'src/auth/guards';
-import { RoleGuard } from 'src/common/guards';
-import { SuccessResponse } from 'src/common/response';
-import { FileInterceptor } from '@nestjs/platform-express';
 
 @Controller('api/v1/brands')
 export class BrandController {
     constructor(private readonly brandService: BrandService) {}
 
     @Post()
+    @ResponseMessage('Create success')
     @Permission(Role.ADMIN)
     @UseGuards(AtJwtGuard, RoleGuard)
     @UseInterceptors(FileInterceptor('logo_url'))
@@ -33,58 +35,42 @@ export class BrandController {
     async create(
         @Body() createBrandDto: CreateBrandDto,
         @UploadedFile() file: Express.Multer.File,
-    ): Promise<SuccessResponse> {
-        return {
-            statusCode: HttpStatus.CREATED,
-            message: 'Create success',
-            data: await this.brandService.create(createBrandDto, file),
-        };
+    ) {
+        return await this.brandService.create(createBrandDto, file);
     }
 
     @Get()
+    @ResponseMessage('Get all brands success')
     @HttpCode(HttpStatus.OK)
-    async findAll(): Promise<SuccessResponse> {
-        return {
-            statusCode: HttpStatus.OK,
-            message: 'Get all brands success',
-            data: await this.brandService.findAll(),
-        };
+    async findAll() {
+        return await this.brandService.findAll();
     }
 
     @Get('admin')
+    @ResponseMessage('Get all brands success')
     @Permission(Role.ADMIN)
     @UseGuards(AtJwtGuard, RoleGuard)
     @HttpCode(HttpStatus.OK)
-    async adminFindAll(): Promise<SuccessResponse> {
-        return {
-            statusCode: HttpStatus.OK,
-            message: 'Get all brands success',
-            data: await this.brandService.adminFindAll(),
-        };
+    async adminFindAll() {
+        return await this.brandService.adminFindAll();
     }
+
     @Get('category/:slug')
+    @ResponseMessage('Get brand success')
     @HttpCode(HttpStatus.OK)
-    async findByCategory(
-        @Param('slug') slug: string,
-    ): Promise<SuccessResponse> {
-        return {
-            statusCode: HttpStatus.OK,
-            message: 'Get brand success',
-            data: await this.brandService.findByCategory(slug),
-        };
+    async findByCategory(@Param('slug') slug: string) {
+        return await this.brandService.findByCategory(slug);
     }
 
     @Get(':id')
+    @ResponseMessage('Get brand success')
     @HttpCode(HttpStatus.OK)
-    async findById(@Param('id') id: string): Promise<SuccessResponse> {
-        return {
-            statusCode: HttpStatus.OK,
-            message: 'Get brand success',
-            data: await this.brandService.findById(id),
-        };
+    async findById(@Param('id') id: string) {
+        return await this.brandService.findById(id);
     }
 
     @Patch(':id')
+    @ResponseMessage('Update success')
     @Permission(Role.ADMIN)
     @UseGuards(AtJwtGuard, RoleGuard)
     @UseInterceptors(FileInterceptor('logo_url'))
@@ -93,35 +79,25 @@ export class BrandController {
         @Param('id') id: string,
         @Body() updateBrandDto: UpdateBrandDto,
         @UploadedFile() file: Express.Multer.File,
-    ): Promise<SuccessResponse> {
-        return {
-            statusCode: HttpStatus.OK,
-            message: 'Update success',
-            data: await this.brandService.update(id, updateBrandDto, file),
-        };
+    ) {
+        return await this.brandService.update(id, updateBrandDto, file);
     }
 
     @Delete(':id')
+    @ResponseMessage('Delete success')
     @Permission(Role.ADMIN)
     @UseGuards(AtJwtGuard, RoleGuard)
     @HttpCode(HttpStatus.OK)
-    async remove(@Param('id') id: string): Promise<SuccessResponse> {
-        return {
-            statusCode: HttpStatus.OK,
-            message: 'Delete success',
-            data: await this.brandService.remove(id),
-        };
+    async remove(@Param('id') id: string) {
+        return await this.brandService.remove(id);
     }
 
     @Post('restore/:id')
+    @ResponseMessage('Restore success')
     @Permission(Role.ADMIN)
     @UseGuards(AtJwtGuard, RoleGuard)
     @HttpCode(HttpStatus.OK)
-    async restore(@Param('id') id: string): Promise<SuccessResponse> {
-        return {
-            statusCode: HttpStatus.OK,
-            message: 'Restore success',
-            data: await this.brandService.restore(id),
-        };
+    async restore(@Param('id') id: string) {
+        return await this.brandService.restore(id);
     }
 }
