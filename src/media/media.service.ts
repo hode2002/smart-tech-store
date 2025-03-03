@@ -1,15 +1,13 @@
-import {
-    BadRequestException,
-    Injectable,
-    InternalServerErrorException,
-} from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { randomBytes } from 'crypto';
-import { generateSlug } from 'src/utils';
+
+import { ObjectCannedACL, S3 } from '@aws-sdk/client-s3';
 import { Upload } from '@aws-sdk/lib-storage';
-import { S3, ObjectCannedACL } from '@aws-sdk/client-s3';
-import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
+import { BadRequestException, Injectable, InternalServerErrorException } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+
 import { CloudinaryResponse } from 'src/cloudinary/cloudinary/cloudinary-response';
+import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
+import { generateSlug } from 'src/utils';
 
 @Injectable()
 export class MediaService {
@@ -29,16 +27,11 @@ export class MediaService {
         return await this.cloudinaryService.uploadFile(file, folder, type);
     }
 
-    async deleteV2(
-        filePath: string,
-        type: 'image' | 'video' | 'auto' | 'raw' = 'image',
-    ) {
+    async deleteV2(filePath: string, type: 'image' | 'video' | 'auto' | 'raw' = 'image') {
         return await this.cloudinaryService.deleteFile(filePath, type);
     }
 
-    async upload(
-        file: Express.Multer.File,
-    ): Promise<{ is_success: boolean; key: string }> {
+    async upload(file: Express.Multer.File): Promise<{ is_success: boolean; key: string }> {
         const uuid = randomBytes(8).toString('hex');
         const arr_name = file.originalname.split('.');
         const extension = arr_name.pop();
@@ -53,11 +46,7 @@ export class MediaService {
         };
     }
 
-    private async uploadS3(
-        file_buffer: Buffer,
-        key: string,
-        content_type: string,
-    ) {
+    private async uploadS3(file_buffer: Buffer, key: string, content_type: string) {
         const s3 = this.createInstanceS3();
         const params = {
             Bucket: this.configService.get('AWS_PUBLIC_BUCKET_NAME'),
@@ -98,9 +87,7 @@ export class MediaService {
             region: this.configService.get('AWS_REGION'),
             credentials: {
                 accessKeyId: this.configService.get('AWS_ACCESS_KEY_ID'),
-                secretAccessKey: this.configService.get(
-                    'AWS_SECRET_ACCESS_KEY',
-                ),
+                secretAccessKey: this.configService.get('AWS_SECRET_ACCESS_KEY'),
             },
         });
     }

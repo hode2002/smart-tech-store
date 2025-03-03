@@ -2,9 +2,7 @@ import { Request } from 'express';
 
 export const pagination = (request: Request, countRecords: number) => {
     const PAGE_SIZE =
-        +request.query['limit'] <= countRecords
-            ? +request.query['limit']
-            : countRecords;
+        +request.query['limit'] <= countRecords ? +request.query['limit'] : countRecords;
 
     const totalPages =
         +(countRecords / PAGE_SIZE) > 1

@@ -1,338 +1,235 @@
 import {
-    Controller,
-    Get,
-    Post,
     Body,
-    Patch,
-    Param,
+    Controller,
     Delete,
-    UseGuards,
+    Get,
     HttpCode,
     HttpStatus,
+    Param,
+    Patch,
+    Post,
     Req,
+    UseGuards,
 } from '@nestjs/common';
-import { ProductService } from './product.service';
+import { Role } from '@prisma/client';
+import { Request } from 'express';
+
+import { AtJwtGuard } from 'src/auth/guards';
+import { Permission, ResponseMessage } from 'src/common/decorators';
+import { RoleGuard } from 'src/common/guards';
+
 import {
+    CreateComboDto,
+    CreateProductComboDto,
     CreateProductDto,
     CreateProductOptionDto,
+    UpdateProductComboDto,
     UpdateProductDto,
     UpdateProductOptionDto,
 } from './dto';
-import { Permission } from 'src/common/decorators';
-import { Role } from '@prisma/client';
-import { AtJwtGuard } from 'src/auth/guards';
-import { RoleGuard } from 'src/common/guards';
-import { SuccessResponse } from 'src/common/response';
-import { Request } from 'express';
-import { CreateProductComboDto } from 'src/product/dto/create-product-combo.dto';
-import { CreateComboDto } from 'src/product/dto/create-combo.dto';
-import { UpdateProductComboDto } from 'src/product/dto/update-product-combo.dto';
+import { ProductService } from './product.service';
 
 @Controller('api/v1/products')
 export class ProductController {
     constructor(private readonly productService: ProductService) {}
 
     @Get()
+    @ResponseMessage('Get products success')
     @HttpCode(HttpStatus.OK)
-    async findAll(@Req() request: Request): Promise<SuccessResponse> {
-        return {
-            statusCode: HttpStatus.OK,
-            message: 'Get products success',
-            data: await this.productService.findAll(request),
-        };
+    async findAll(@Req() request: Request) {
+        return await this.productService.findAll(request);
     }
 
     @Get('images')
+    @ResponseMessage('Get product images success')
     @Permission(Role.ADMIN)
     @UseGuards(AtJwtGuard, RoleGuard)
     @HttpCode(HttpStatus.OK)
-    async getProductImages(): Promise<SuccessResponse> {
-        return {
-            statusCode: HttpStatus.OK,
-            message: 'Get product images success',
-            data: await this.productService.getProductImages(),
-        };
+    async getProductImages() {
+        return await this.productService.getProductImages();
     }
 
     @Get('combos')
+    @ResponseMessage('Get all combo success')
     @Permission(Role.ADMIN)
     @UseGuards(AtJwtGuard, RoleGuard)
     @HttpCode(HttpStatus.OK)
-    async getAllProductCombo(): Promise<SuccessResponse> {
-        return {
-            statusCode: HttpStatus.OK,
-            message: 'Get all combo success',
-            data: await this.productService.getAllProductCombo(),
-        };
+    async getAllProductCombo() {
+        return await this.productService.getAllProductCombo();
     }
 
     @Post('combos')
+    @ResponseMessage('Create combo success')
     @Permission(Role.ADMIN)
     @UseGuards(AtJwtGuard, RoleGuard)
     @HttpCode(HttpStatus.CREATED)
-    async createCombo(
-        @Body() createComboDto: CreateComboDto,
-    ): Promise<SuccessResponse> {
-        return {
-            statusCode: HttpStatus.CREATED,
-            message: 'Create combo success',
-            data: await this.productService.createCombo(createComboDto),
-        };
+    async createCombo(@Body() createComboDto: CreateComboDto) {
+        return await this.productService.createCombo(createComboDto);
     }
 
     @Post('product-combos')
+    @ResponseMessage('Create product combo success')
     @Permission(Role.ADMIN)
     @UseGuards(AtJwtGuard, RoleGuard)
     @HttpCode(HttpStatus.CREATED)
-    async createProductCombo(
-        @Body() createProductComboDto: CreateProductComboDto,
-    ): Promise<SuccessResponse> {
-        return {
-            statusCode: HttpStatus.CREATED,
-            message: 'Create product combo success',
-            data: await this.productService.createProductCombo(
-                createProductComboDto,
-            ),
-        };
+    async createProductCombo(@Body() createProductComboDto: CreateProductComboDto) {
+        return await this.productService.createProductCombo(createProductComboDto);
     }
 
     @Post('get-by-array')
+    @ResponseMessage('Get products success')
     @HttpCode(HttpStatus.OK)
-    async getByArrayIds(
-        @Body('product_option_ids') product_option_ids: string[],
-    ): Promise<SuccessResponse> {
-        return {
-            statusCode: HttpStatus.OK,
-            message: 'Get products success',
-            data: await this.productService.getByArrayIds(product_option_ids),
-        };
+    async getByArrayIds(@Body('product_option_ids') product_option_ids: string[]) {
+        return await this.productService.getByArrayIds(product_option_ids);
     }
 
     @Get(':id/management')
+    @ResponseMessage('Get product success')
     @HttpCode(HttpStatus.OK)
-    async findDetailManagement(
-        @Param('id') id: string,
-    ): Promise<SuccessResponse> {
-        return {
-            statusCode: HttpStatus.OK,
-            message: 'Get product success',
-            data: await this.productService.findDetailManagement(id),
-        };
+    async findDetailManagement(@Param('id') id: string) {
+        return await this.productService.findDetailManagement(id);
     }
 
     @Get('/management')
+    @ResponseMessage('Get products success')
     @HttpCode(HttpStatus.OK)
-    async findAllManagement(@Req() request: Request): Promise<SuccessResponse> {
-        return {
-            statusCode: HttpStatus.OK,
-            message: 'Get products success',
-            data: await this.productService.findAllManagement(request),
-        };
+    async findAllManagement(@Req() request: Request) {
+        return await this.productService.findAllManagement(request);
     }
 
     @Get('sale')
+    @ResponseMessage('Get product sale success')
     @HttpCode(HttpStatus.OK)
-    async getProductSale(): Promise<SuccessResponse> {
-        return {
-            statusCode: HttpStatus.OK,
-            message: 'Get product sale success',
-            data: await this.productService.getProductSale(),
-        };
+    async getProductSale() {
+        return await this.productService.getProductSale();
     }
 
     @Get('brand/:slug')
+    @ResponseMessage('Get products by brand success')
     @HttpCode(HttpStatus.OK)
-    async getByBrand(@Param('slug') slug: string): Promise<SuccessResponse> {
-        return {
-            statusCode: HttpStatus.OK,
-            message: 'Get products by brand success',
-            data: await this.productService.getByBrand(slug),
-        };
+    async getByBrand(@Param('slug') slug: string) {
+        return await this.productService.getByBrand(slug);
     }
 
     @Get('category/:slug')
+    @ResponseMessage('Get products by category success')
     @HttpCode(HttpStatus.OK)
-    async getByCategory(@Param('slug') slug: string): Promise<SuccessResponse> {
-        return {
-            statusCode: HttpStatus.OK,
-            message: 'Get products by category success',
-            data: await this.productService.getByCategory(slug),
-        };
+    async getByCategory(@Param('slug') slug: string) {
+        return await this.productService.getByCategory(slug);
     }
 
     @Get('parameters')
+    @ResponseMessage('Get products success')
     @HttpCode(HttpStatus.OK)
-    async getByParameters(@Req() request: Request): Promise<SuccessResponse> {
-        return {
-            statusCode: HttpStatus.OK,
-            message: 'Get products success',
-            data: await this.productService.getByParameters(request),
-        };
+    async getByParameters(@Req() request: Request) {
+        return await this.productService.getByParameters(request);
     }
 
     @Get('search')
+    @ResponseMessage('Get products success')
     @HttpCode(HttpStatus.OK)
-    async getByName(@Req() request: Request): Promise<SuccessResponse> {
-        return {
-            statusCode: HttpStatus.OK,
-            message: 'Get products success',
-            data: await this.productService.getByName(request),
-        };
+    async getByName(@Req() request: Request) {
+        return await this.productService.getByName(request);
     }
 
     @Get('option-value')
+    @ResponseMessage('Get product option value success')
     @Permission(Role.ADMIN)
     @UseGuards(AtJwtGuard, RoleGuard)
     @HttpCode(HttpStatus.OK)
-    async getOptionValue(): Promise<SuccessResponse> {
-        return {
-            statusCode: HttpStatus.OK,
-            message: 'Get product option value success',
-            data: await this.productService.getOptionValue(),
-        };
+    async getOptionValue() {
+        return await this.productService.getOptionValue();
     }
 
     @Get('slug/:slug')
+    @ResponseMessage('Get product detail success')
     @HttpCode(HttpStatus.OK)
-    async findBySlug(@Param('slug') slug: string): Promise<SuccessResponse> {
-        return {
-            statusCode: HttpStatus.OK,
-            message: 'Get product detail success',
-            data: await this.productService.findBySlug(slug),
-        };
+    async findBySlug(@Param('slug') slug: string) {
+        return await this.productService.findBySlug(slug);
     }
 
     @Get(':id')
+    @ResponseMessage('Get product detail success')
     @HttpCode(HttpStatus.OK)
-    async findById(@Param('id') id: string): Promise<SuccessResponse> {
-        return {
-            statusCode: HttpStatus.OK,
-            message: 'Get product detail success',
-            data: await this.productService.findById(id),
-        };
+    async findById(@Param('id') id: string) {
+        return await this.productService.findById(id);
     }
 
     @Post()
+    @ResponseMessage('Create new product success')
     @Permission(Role.ADMIN)
     @UseGuards(AtJwtGuard, RoleGuard)
     @HttpCode(HttpStatus.CREATED)
-    async create(
-        @Body() createProductDto: CreateProductDto,
-    ): Promise<SuccessResponse> {
-        return {
-            statusCode: HttpStatus.CREATED,
-            message: 'Create new product success',
-            data: await this.productService.create(createProductDto),
-        };
+    async create(@Body() createProductDto: CreateProductDto) {
+        return await this.productService.create(createProductDto);
     }
 
     @Post('options')
+    @ResponseMessage('Create new product option success')
     @Permission(Role.ADMIN)
     @UseGuards(AtJwtGuard, RoleGuard)
     @HttpCode(HttpStatus.CREATED)
-    async createProductOption(
-        @Body() createProductOptionDto: CreateProductOptionDto,
-    ): Promise<SuccessResponse> {
-        return {
-            statusCode: HttpStatus.CREATED,
-            message: 'Create new product option success',
-            data: await this.productService.createProductOption(
-                createProductOptionDto,
-            ),
-        };
+    async createProductOption(@Body() createProductOptionDto: CreateProductOptionDto) {
+        return await this.productService.createProductOption(createProductOptionDto);
     }
 
     @Patch('combos/:id')
+    @ResponseMessage('Update combo success')
     @Permission(Role.ADMIN)
     @UseGuards(AtJwtGuard, RoleGuard)
     @HttpCode(HttpStatus.OK)
-    async updateStatusCombo(
-        @Param('id') id: string,
-        @Body('status') status: number,
-    ): Promise<SuccessResponse> {
-        return {
-            statusCode: HttpStatus.OK,
-            message: 'Update combo success',
-            data: await this.productService.updateStatusCombo(id, status),
-        };
+    async updateStatusCombo(@Param('id') id: string, @Body('status') status: number) {
+        return await this.productService.updateStatusCombo(id, status);
     }
 
     @Patch('product-combos/:id')
+    @ResponseMessage('Update product combo success')
     @Permission(Role.ADMIN)
     @UseGuards(AtJwtGuard, RoleGuard)
     @HttpCode(HttpStatus.OK)
     async updateProductCombo(
         @Param('id') id: string,
         @Body() updateProductComboDto: UpdateProductComboDto,
-    ): Promise<SuccessResponse> {
-        return {
-            statusCode: HttpStatus.OK,
-            message: 'Update product combo success',
-            data: await this.productService.updateProductCombo(
-                id,
-                updateProductComboDto,
-            ),
-        };
+    ) {
+        return await this.productService.updateProductCombo(id, updateProductComboDto);
     }
 
     @Patch(':id')
+    @ResponseMessage('Update product success')
     @Permission(Role.ADMIN)
     @UseGuards(AtJwtGuard, RoleGuard)
     @HttpCode(HttpStatus.OK)
-    async update(
-        @Param('id') id: string,
-        @Body() updateProductDto: UpdateProductDto,
-    ): Promise<SuccessResponse> {
-        return {
-            statusCode: HttpStatus.OK,
-            message: 'Update product success',
-            data: await this.productService.update(id, updateProductDto),
-        };
+    async update(@Param('id') id: string, @Body() updateProductDto: UpdateProductDto) {
+        return await this.productService.update(id, updateProductDto);
     }
 
     @Patch('options/:id')
+    @ResponseMessage('Update product option success')
     @Permission(Role.ADMIN)
     @UseGuards(AtJwtGuard, RoleGuard)
     @HttpCode(HttpStatus.OK)
     async updateProductOption(
         @Param('id') id: string,
         @Body() updateProductOptionDto: UpdateProductOptionDto,
-    ): Promise<SuccessResponse> {
-        return {
-            statusCode: HttpStatus.OK,
-            message: 'Update product option success',
-            data: await this.productService.updateProductOption(
-                id,
-                updateProductOptionDto,
-            ),
-        };
+    ) {
+        return await this.productService.updateProductOption(id, updateProductOptionDto);
     }
 
     @Patch('options/restore/:id')
+    @ResponseMessage('Restore product option success')
     @Permission(Role.ADMIN)
     @UseGuards(AtJwtGuard, RoleGuard)
     @HttpCode(HttpStatus.OK)
-    async restoreProductOption(
-        @Param('id') id: string,
-    ): Promise<SuccessResponse> {
-        return {
-            statusCode: HttpStatus.OK,
-            message: 'Restore product option success',
-            data: await this.productService.restoreProductOption(id),
-        };
+    async restoreProductOption(@Param('id') id: string) {
+        return await this.productService.restoreProductOption(id);
     }
 
     @Delete('options/:id')
+    @ResponseMessage('Remove product option success')
     @Permission(Role.ADMIN)
     @UseGuards(AtJwtGuard, RoleGuard)
     @HttpCode(HttpStatus.OK)
-    async removeProductOption(
-        @Param('id') id: string,
-    ): Promise<SuccessResponse> {
-        return {
-            statusCode: HttpStatus.OK,
-            message: 'Remove product option success',
-            data: await this.productService.removeProductOption(id),
-        };
+    async removeProductOption(@Param('id') id: string) {
+        return await this.productService.removeProductOption(id);
     }
 }

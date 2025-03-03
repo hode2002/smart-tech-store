@@ -1,218 +1,149 @@
 import {
+    Body,
     Controller,
     Get,
-    Post,
-    Body,
-    Patch,
-    Param,
-    UseGuards,
-    HttpStatus,
     HttpCode,
+    HttpStatus,
+    Param,
+    Patch,
+    Post,
     Req,
     Res,
+    UseGuards,
 } from '@nestjs/common';
-import { OrderService } from './order.service';
+import { Throttle } from '@nestjs/throttler';
+import { Role } from '@prisma/client';
+import { Request, Response } from 'express';
+
 import { AtJwtGuard } from 'src/auth/guards';
-import { SuccessResponse } from 'src/common/response';
-import { GetUserId, Permission } from 'src/common/decorators';
-import { OrderResponse } from './types';
+import { GetUserId, Permission, ResponseMessage } from 'src/common/decorators';
+import { RoleGuard } from 'src/common/guards';
+import { CreateOrderComboDto } from 'src/order/dto/create-order-combo';
+
 import {
     CalculateShippingFeeDto,
     CreateOrderDto,
     UpdateOrderStatusDto,
     UpdatePaymentStatusDto,
 } from './dto';
-import { Request, Response } from 'express';
-import { Throttle } from '@nestjs/throttler';
-import { Role } from '@prisma/client';
-import { RoleGuard } from 'src/common/guards';
 import { AdminUpdateOrderStatusDto } from './dto/admin-update-order-status.dto';
-import { CreateOrderComboDto } from 'src/order/dto/create-order-combo';
+import { OrderService } from './order.service';
+import { OrderResponse } from './types';
 
 @Controller('api/v1/orders')
 export class OrderController {
     constructor(private readonly orderService: OrderService) {}
 
     @Get()
+    @ResponseMessage('Get all orders success')
     @Permission(Role.ADMIN)
     @UseGuards(AtJwtGuard, RoleGuard)
     @HttpCode(HttpStatus.OK)
-    async getAll(): Promise<SuccessResponse> {
-        return {
-            statusCode: HttpStatus.OK,
-            message: 'Get all orders success',
-            data: await this.orderService.findAll(),
-        };
+    async getAll() {
+        return await this.orderService.findAll();
     }
 
     @Get('/admin')
+    @ResponseMessage('Get all orders success')
     @Permission(Role.ADMIN)
     @UseGuards(AtJwtGuard, RoleGuard)
     @HttpCode(HttpStatus.OK)
-    async getAllByAdmin(): Promise<SuccessResponse> {
-        return {
-            statusCode: HttpStatus.OK,
-            message: 'Get all orders success',
-            data: await this.orderService.getAllByAdmin(),
-        };
+    async getAllByAdmin() {
+        return await this.orderService.getAllByAdmin();
     }
 
     @Post()
+    @ResponseMessage('Create order success')
     @UseGuards(AtJwtGuard)
     @HttpCode(HttpStatus.CREATED)
-    async create(
-        @GetUserId() userId: string,
-        @Body() createOrderDto: CreateOrderDto,
-    ): Promise<SuccessResponse> {
-        return {
-            statusCode: HttpStatus.CREATED,
-            message: 'Create order success',
-            data: await this.orderService.create(userId, createOrderDto),
-        };
+    async create(@GetUserId() userId: string, @Body() createOrderDto: CreateOrderDto) {
+        return await this.orderService.create(userId, createOrderDto);
     }
 
     @Post('combos')
+    @ResponseMessage('Create order success')
     @UseGuards(AtJwtGuard)
     @HttpCode(HttpStatus.CREATED)
     async createOrderCombo(
         @GetUserId() userId: string,
         @Body() createOrderComboDto: CreateOrderComboDto,
-    ): Promise<SuccessResponse> {
-        return {
-            statusCode: HttpStatus.CREATED,
-            message: 'Create order success',
-            data: await this.orderService.createOrderCombo(
-                userId,
-                createOrderComboDto,
-            ),
-        };
+    ) {
+        return await this.orderService.createOrderCombo(userId, createOrderComboDto);
     }
 
     @Post('vnpay')
+    @ResponseMessage('Payment url')
     @UseGuards(AtJwtGuard)
     @HttpCode(HttpStatus.OK)
-    async vnpayPayment(
-        @Req() req: Request,
-        @Res() res: Response,
-    ): Promise<SuccessResponse> {
-        return {
-            statusCode: HttpStatus.OK,
-            message: 'Payment url',
-            data: await this.orderService.vnpayCreatePayment(req, res),
-        };
+    async vnpayPayment(@Req() req: Request, @Res() res: Response) {
+        return await this.orderService.vnpayCreatePayment(req, res);
     }
 
     @Patch('payment/:id')
+    @ResponseMessage('Payment url')
     @UseGuards(AtJwtGuard)
     @HttpCode(HttpStatus.OK)
     async updatePaymentStatus(
         @Param('id') id: string,
         @Body() updatePaymentStatusDto: UpdatePaymentStatusDto,
-    ): Promise<SuccessResponse> {
-        return {
-            statusCode: HttpStatus.OK,
-            message: 'Payment url',
-            data: await this.orderService.updatePaymentStatus(
-                id,
-                updatePaymentStatusDto,
-            ),
-        };
+    ) {
+        return await this.orderService.updatePaymentStatus(id, updatePaymentStatusDto);
     }
 
     @Post('cancel/:id')
+    @ResponseMessage('Cancel order success')
     @UseGuards(AtJwtGuard)
     @HttpCode(HttpStatus.OK)
-    async cancel(
-        @GetUserId() userId: string,
-        @Param('id') id: string,
-    ): Promise<SuccessResponse> {
-        return {
-            statusCode: HttpStatus.OK,
-            message: 'Cancel order success',
-            data: await this.orderService.cancel(userId, id),
-        };
+    async cancel(@GetUserId() userId: string, @Param('id') id: string) {
+        return await this.orderService.cancel(userId, id);
     }
 
     @Post('shipping/fee')
+    @ResponseMessage('Get shipping fee success')
     @UseGuards(AtJwtGuard)
     @HttpCode(HttpStatus.OK)
-    async calculateShippingFee(
-        @Body() calculateShippingFeeDto: CalculateShippingFeeDto,
-    ): Promise<SuccessResponse> {
-        return {
-            statusCode: HttpStatus.OK,
-            message: 'Get shipping fee success',
-            data: await this.orderService.calculateShippingFee(
-                calculateShippingFeeDto,
-            ),
-        };
+    async calculateShippingFee(@Body() calculateShippingFeeDto: CalculateShippingFeeDto) {
+        return await this.orderService.calculateShippingFee(calculateShippingFeeDto);
     }
 
     @Get(':id')
+    @ResponseMessage('Get order by id success')
     @UseGuards(AtJwtGuard)
     @HttpCode(HttpStatus.OK)
-    async findById(
-        @Param('id') id: string,
-        @GetUserId() userId: string,
-    ): Promise<SuccessResponse> {
-        return {
-            statusCode: HttpStatus.OK,
-            message: 'Get order by id success',
-            data: (await this.orderService.findById(
-                userId,
-                id,
-            )) as OrderResponse,
-        };
+    async findById(@Param('id') id: string, @GetUserId() userId: string) {
+        return (await this.orderService.findById(userId, id)) as OrderResponse;
     }
 
     @Get('status/:status')
+    @ResponseMessage('Get order by status success')
     @UseGuards(AtJwtGuard)
     @HttpCode(HttpStatus.OK)
     @Throttle({ default: { limit: 50, ttl: 60000 } })
-    async findByStatus(
-        @Param('status') status: string,
-        @GetUserId() userId: string,
-    ): Promise<SuccessResponse> {
-        return {
-            statusCode: HttpStatus.OK,
-            message: 'Get order by status success',
-            data: await this.orderService.findByStatus(userId, +status),
-        };
+    async findByStatus(@Param('status') status: string, @GetUserId() userId: string) {
+        return await this.orderService.findByStatus(userId, +status);
     }
 
     @Patch(':id/status')
+    @ResponseMessage('Update order status success')
     @UseGuards(AtJwtGuard)
     @HttpCode(HttpStatus.OK)
     async updateStatus(
         @Param('id') id: string,
         @GetUserId() userId: string,
         @Body() updateOrderStatusDto: UpdateOrderStatusDto,
-    ): Promise<SuccessResponse> {
-        return {
-            statusCode: HttpStatus.OK,
-            message: 'Update order status success',
-            data: await this.orderService.updateStatus(
-                id,
-                userId,
-                updateOrderStatusDto,
-            ),
-        };
+    ) {
+        return await this.orderService.updateStatus(id, userId, updateOrderStatusDto);
     }
 
     @Patch(':id/status/admin')
-    @UseGuards(AtJwtGuard)
+    @ResponseMessage('Update order status success')
+    @Permission(Role.ADMIN)
+    @UseGuards(AtJwtGuard, RoleGuard)
     @HttpCode(HttpStatus.OK)
     async updateStatusByAdmin(
         @Param('id') id: string,
         @Body() updateOrderStatusDto: AdminUpdateOrderStatusDto,
-    ): Promise<SuccessResponse> {
-        return {
-            statusCode: HttpStatus.OK,
-            message: 'Update order status success',
-            data: await this.orderService.updateStatusByAdmin(
-                id,
-                updateOrderStatusDto,
-            ),
-        };
+    ) {
+        return await this.orderService.updateStatusByAdmin(id, updateOrderStatusDto);
     }
 }

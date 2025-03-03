@@ -1,34 +1,32 @@
-import { Module } from '@nestjs/common';
-import {
-    CacheInterceptor,
-    CacheModule,
-    CacheStore,
-} from '@nestjs/cache-manager';
-import type { RedisClientOptions } from 'redis';
-import { redisStore } from 'cache-manager-redis-store';
-import { ConfigModule, ConfigService } from '@nestjs/config';
-import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
-import { PrismaModule } from './prisma/prisma.module';
-import { AuthModule } from './auth/auth.module';
-import { UserModule } from './user/user.module';
-import { MailModule } from './mail/mail.module';
 import { BullModule } from '@nestjs/bull';
+import { CacheInterceptor, CacheModule, CacheStore } from '@nestjs/cache-manager';
+import { Module } from '@nestjs/common';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { MongooseModule } from '@nestjs/mongoose';
-import { BrandModule } from './brand/brand.module';
+import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
+import { redisStore } from 'cache-manager-redis-store';
+
+import { AuthModule } from './auth/auth.module';
 import { BannerModule } from './banner/banner.module';
-import { CategoryModule } from './category/category.module';
-import { ProductModule } from './product/product.module';
-import { MediaModule } from './media/media.module';
-import { HistorySearchModule } from './history-search/history-search.module';
+import { BrandModule } from './brand/brand.module';
 import { CartModule } from './cart/cart.module';
-import { DeliveryModule } from './delivery/delivery.module';
-import { OrderModule } from './order/order.module';
-import { ReviewModule } from './review/review.module';
+import { CategoryModule } from './category/category.module';
 import { CloudinaryModule } from './cloudinary/cloudinary.module';
+import { DeliveryModule } from './delivery/delivery.module';
+import { HistorySearchModule } from './history-search/history-search.module';
+import { MailModule } from './mail/mail.module';
+import { MediaModule } from './media/media.module';
 import { NewsModule } from './news/news.module';
 import { NotificationModule } from './notification/notification.module';
+import { OrderModule } from './order/order.module';
+import { PrismaModule } from './prisma/prisma.module';
+import { ProductModule } from './product/product.module';
+import { ReviewModule } from './review/review.module';
+import { UserModule } from './user/user.module';
 import { VoucherModule } from './voucher/voucher.module';
+
+import type { RedisClientOptions } from 'redis';
 
 @Module({
     imports: [

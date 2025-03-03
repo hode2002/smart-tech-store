@@ -1,12 +1,10 @@
-import {
-    ConflictException,
-    Injectable,
-    NotFoundException,
-} from '@nestjs/common';
-import { CreateDeliveryDto } from './dto/create-delivery.dto';
-import { UpdateDeliveryDto } from './dto/update-delivery.dto';
+import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+
 import { PrismaService } from 'src/prisma/prisma.service';
 import { generateSlug } from 'src/utils';
+
+import { CreateDeliveryDto } from './dto/create-delivery.dto';
+import { UpdateDeliveryDto } from './dto/update-delivery.dto';
 
 @Injectable()
 export class DeliveryService {

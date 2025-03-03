@@ -11,151 +11,96 @@ import {
     UseGuards,
     UseInterceptors,
 } from '@nestjs/common';
-import { UserService } from './user.service';
-import { AtJwtGuard } from 'src/auth/guards';
-import { GetEmail, GetUserId, Permission } from 'src/common/decorators/';
-import {
-    ChangePasswordDto,
-    UpdateUserAddressDto,
-    UpdateUserDto,
-    UpdateUserStatusDto,
-} from './dto';
-import { CreateUserEmailDto } from 'src/auth/dto';
-import { Request } from 'express';
-import { SuccessResponse } from 'src/common/response';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Role } from '@prisma/client';
+import { Request } from 'express';
+
+import { CreateUserEmailDto } from 'src/auth/dto';
+import { AtJwtGuard } from 'src/auth/guards';
+import { GetEmail, GetUserId, Permission, ResponseMessage } from 'src/common/decorators/';
 import { RoleGuard } from 'src/common/guards';
+
+import { ChangePasswordDto, UpdateUserAddressDto, UpdateUserDto, UpdateUserStatusDto } from './dto';
+import { UserService } from './user.service';
 
 @Controller('/api/v1/users')
 export class UserController {
     constructor(private readonly userService: UserService) {}
 
     @Get()
+    @ResponseMessage('Get all users success')
     @Permission(Role.ADMIN)
     @UseGuards(AtJwtGuard, RoleGuard)
     @HttpCode(HttpStatus.OK)
-    async getAll(): Promise<SuccessResponse> {
-        return {
-            statusCode: HttpStatus.OK,
-            message: 'Get all users success',
-            data: await this.userService.getAll(),
-        };
+    async getAll() {
+        return await this.userService.getAll();
     }
 
     @Post('')
+    @ResponseMessage('Update user status success')
     @Permission(Role.ADMIN)
     @UseGuards(AtJwtGuard, RoleGuard)
     @HttpCode(HttpStatus.OK)
-    async updateStatusByEmail(
-        @Body() updateUserStatusDto: UpdateUserStatusDto,
-    ): Promise<SuccessResponse> {
-        return {
-            statusCode: HttpStatus.OK,
-            message: 'Update user status success',
-            data: await this.userService.updateStatusByEmail(
-                updateUserStatusDto,
-            ),
-        };
+    async updateStatusByEmail(@Body() updateUserStatusDto: UpdateUserStatusDto) {
+        return await this.userService.updateStatusByEmail(updateUserStatusDto);
     }
 
     @Get('profile')
+    @ResponseMessage('Get user profile success')
     @UseGuards(AtJwtGuard)
     @HttpCode(HttpStatus.OK)
-    async getProfile(@GetEmail() email: string): Promise<SuccessResponse> {
-        return {
-            statusCode: HttpStatus.OK,
-            message: 'Get user profile success',
-            data: await this.userService.getProfile(email),
-        };
+    async getProfile(@GetEmail() email: string) {
+        return await this.userService.getProfile(email);
     }
 
     @Get('address')
+    @ResponseMessage('Get user address success')
     @UseGuards(AtJwtGuard)
     @HttpCode(HttpStatus.OK)
-    async getAddress(@GetEmail() email: string): Promise<SuccessResponse> {
-        return {
-            statusCode: HttpStatus.OK,
-            message: 'Get user address success',
-            data: await this.userService.getAddress(email),
-        };
+    async getAddress(@GetEmail() email: string) {
+        return await this.userService.getAddress(email);
     }
 
     @Post('change-password')
+    @ResponseMessage('Change password success')
     @UseGuards(AtJwtGuard)
     @HttpCode(HttpStatus.OK)
-    async changePass(
-        @GetEmail() email: string,
-        @Body() changePasswordDto: ChangePasswordDto,
-    ): Promise<SuccessResponse> {
-        return {
-            statusCode: HttpStatus.OK,
-            message: 'Change password success',
-            data: await this.userService.changePassword(
-                email,
-                changePasswordDto,
-            ),
-        };
+    async changePassword(@GetEmail() email: string, @Body() changePasswordDto: ChangePasswordDto) {
+        return await this.userService.changePassword(email, changePasswordDto);
     }
 
     @Post('reset-password')
+    @ResponseMessage('Send new password success')
     @HttpCode(HttpStatus.OK)
-    async resetPass(
-        @Body() createUserEmailDto: CreateUserEmailDto,
-    ): Promise<SuccessResponse> {
-        return {
-            statusCode: HttpStatus.OK,
-            message: 'Send new password success',
-            data: await this.userService.resetPassword(createUserEmailDto),
-        };
+    async resetPassword(@Body() createUserEmailDto: CreateUserEmailDto) {
+        return await this.userService.resetPassword(createUserEmailDto);
     }
 
     @Patch('profile')
+    @ResponseMessage('Update user profile success')
     @UseGuards(AtJwtGuard)
     @HttpCode(HttpStatus.OK)
-    async updateProfile(
-        @Req() req: Request,
-        @Body() updateUserDto: UpdateUserDto,
-    ): Promise<SuccessResponse> {
-        return {
-            statusCode: HttpStatus.OK,
-            message: 'Update user profile success',
-            data: await this.userService.updateByEmail(
-                req.user['email'],
-                updateUserDto,
-            ),
-        };
+    async updateProfile(@Req() req: Request, @Body() updateUserDto: UpdateUserDto) {
+        return await this.userService.updateByEmail(req.user['email'], updateUserDto);
     }
 
     @Patch('address')
+    @ResponseMessage('Update address success')
     @UseGuards(AtJwtGuard)
     @HttpCode(HttpStatus.OK)
     async updatedAddress(
         @GetUserId() userId: string,
         @Body() updateUserAddressDto: UpdateUserAddressDto,
-    ): Promise<SuccessResponse> {
-        return {
-            statusCode: HttpStatus.OK,
-            message: 'Update address success',
-            data: await this.userService.updatedAddress(
-                userId,
-                updateUserAddressDto,
-            ),
-        };
+    ) {
+        return await this.userService.updatedAddress(userId, updateUserAddressDto);
     }
 
     @Patch('avatar')
+    @ResponseMessage('Update avatar success')
     @UseGuards(AtJwtGuard)
     @UseInterceptors(FileInterceptor('avatar'))
     @HttpCode(HttpStatus.OK)
-    async upload(
-        @GetEmail() email: string,
-        @UploadedFile() file: Express.Multer.File,
-    ): Promise<SuccessResponse> {
-        return {
-            statusCode: HttpStatus.OK,
-            message: 'Update avatar success',
-            data: await this.userService.updateAvatar(email, file),
-        };
+    async upload(@GetEmail() email: string, @UploadedFile() file: Express.Multer.File) {
+        return await this.userService.updateAvatar(email, file);
     }
 }

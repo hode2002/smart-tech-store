@@ -1,190 +1,120 @@
 import {
-    Controller,
-    Post,
     Body,
-    UseGuards,
-    Req,
-    HttpStatus,
-    HttpCode,
+    Controller,
     Get,
+    HttpCode,
+    HttpStatus,
+    Post,
+    Req,
     Res,
+    UseGuards,
 } from '@nestjs/common';
-import { AuthService } from './auth.service';
-import { CreateUserDto } from 'src/user/dto';
-import { CreateUserEmailDto, ThirdPartyLoginDto, VerifyOtpDto } from './dto';
 import { Throttle } from '@nestjs/throttler';
-import { AtJwtGuard, FacebookGuard, GoogleGuard, RfJwtGuard } from './guards';
-import { SuccessResponse } from 'src/common/response';
 import { Request, Response } from 'express';
+
+import { ResponseMessage } from 'src/common/decorators';
 import { JwtPayload } from 'src/common/types';
+import { CreateUserDto } from 'src/user/dto';
+
+import { AuthService } from './auth.service';
+import { CreateUserEmailDto, ThirdPartyLoginDto, VerifyOtpDto } from './dto';
+import { AtJwtGuard, FacebookGuard, GoogleGuard, RfJwtGuard } from './guards';
 
 @Controller('api/v1/auth')
 export class AuthController {
     constructor(private readonly authService: AuthService) {}
 
     @Post('email-verification')
-    async emailVerification(
-        @Body() createUserEmailDto: CreateUserEmailDto,
-    ): Promise<SuccessResponse> {
-        return {
-            statusCode: HttpStatus.OK,
-            message: 'Email verify Success',
-            data: await this.authService.emailVerification(createUserEmailDto),
-        };
+    @HttpCode(HttpStatus.OK)
+    @ResponseMessage('Email verify Success')
+    async emailVerification(@Body() createUserEmailDto: CreateUserEmailDto) {
+        return this.authService.emailVerification(createUserEmailDto);
     }
 
     @Get('facebook')
     @UseGuards(FacebookGuard)
-    async facebookLogin(): Promise<SuccessResponse> {
-        return {
-            statusCode: HttpStatus.CREATED,
-            message: 'Redirect to facebook login',
-        };
+    @HttpCode(HttpStatus.OK)
+    @ResponseMessage('Redirect to facebook login')
+    async facebookLogin() {
+        return;
     }
 
     @Get('facebook/redirect')
     @UseGuards(FacebookGuard)
-    async facebookLoginRedirect(
-        @Req() req: Request,
-        @Res() res: Response,
-    ): Promise<SuccessResponse> {
-        return {
-            statusCode: HttpStatus.OK,
-            message: 'Login successfully',
-            data: await this.authService.thirdPartyLogin(
-                req,
-                res,
-                req['user'] as ThirdPartyLoginDto,
-                'FACEBOOK',
-            ),
-        };
+    @HttpCode(HttpStatus.OK)
+    @ResponseMessage('Login successfully')
+    async facebookLoginRedirect(@Req() req: Request, @Res() res: Response) {
+        return this.authService.thirdPartyLogin(res, req['user'] as ThirdPartyLoginDto, 'FACEBOOK');
     }
 
     @Get('google')
     @UseGuards(GoogleGuard)
-    async googleLogin(): Promise<SuccessResponse> {
-        return {
-            statusCode: HttpStatus.CREATED,
-            message: 'Redirect to google login',
-        };
+    @HttpCode(HttpStatus.OK)
+    @ResponseMessage('Redirect to google login')
+    async googleLogin() {
+        return;
     }
 
     @Get('google/redirect')
     @UseGuards(GoogleGuard)
-    async googleLoginRedirect(
-        @Req() req: Request,
-        @Res() res: Response,
-    ): Promise<SuccessResponse> {
-        return {
-            statusCode: HttpStatus.OK,
-            message: 'Login successfully',
-            data: await this.authService.thirdPartyLogin(
-                req,
-                res,
-                req['user'] as ThirdPartyLoginDto,
-                'GOOGLE',
-            ),
-        };
-    }
-
-    @Post('google/token')
-    async getDataFromGoogleToken(
-        @Body('token') token: string,
-    ): Promise<SuccessResponse> {
-        return {
-            statusCode: HttpStatus.OK,
-            message: 'Login successfully',
-            data: await this.authService.getDataFromGoogleToken(token),
-        };
+    @HttpCode(HttpStatus.OK)
+    @ResponseMessage('Login successfully')
+    async googleLoginRedirect(@Req() req: Request, @Res() res: Response) {
+        return this.authService.thirdPartyLogin(res, req['user'] as ThirdPartyLoginDto, 'GOOGLE');
     }
 
     @Post('register')
+    @HttpCode(HttpStatus.OK)
     @Throttle({ default: { limit: 3, ttl: 60000 } })
-    async register(
-        @Body() createUserEmailDto: CreateUserEmailDto,
-    ): Promise<SuccessResponse> {
-        return {
-            statusCode: HttpStatus.OK,
-            message: 'Send otp successfully',
-            data: await this.authService.register(createUserEmailDto),
-        };
+    @ResponseMessage('Send otp successfully')
+    async register(@Body() createUserEmailDto: CreateUserEmailDto) {
+        return this.authService.register(createUserEmailDto);
     }
 
     @Post('otp/resend')
     @HttpCode(HttpStatus.OK)
     @Throttle({ default: { limit: 3, ttl: 60000 } })
-    async resendOtp(
-        @Body() createUserEmailDto: CreateUserEmailDto,
-    ): Promise<SuccessResponse> {
-        return {
-            statusCode: HttpStatus.OK,
-            message: 'Send otp successfully',
-            data: await this.authService.resendOtp(createUserEmailDto.email),
-        };
+    @ResponseMessage('Send otp successfully')
+    async resendOtp(@Body() createUserEmailDto: CreateUserEmailDto) {
+        return this.authService.resendOtp(createUserEmailDto.email);
     }
 
     @Post('active-user-email')
     @HttpCode(HttpStatus.OK)
     @Throttle({ default: { limit: 3, ttl: 60000 } })
-    async activeUserEmail(
-        @Body() verifyOtpDto: VerifyOtpDto,
-    ): Promise<SuccessResponse> {
-        return {
-            statusCode: HttpStatus.OK,
-            message: 'Active User Email Success',
-            data: await this.authService.activeUserEmail(
-                verifyOtpDto.email,
-                verifyOtpDto.otpCode,
-            ),
-        };
+    @ResponseMessage('Active User Email Success')
+    async activeUserEmail(@Body() verifyOtpDto: VerifyOtpDto) {
+        return this.authService.activeUserEmail(verifyOtpDto.email, verifyOtpDto.otpCode);
     }
 
     @Post('create-password')
     @HttpCode(HttpStatus.OK)
     @Throttle({ default: { limit: 3, ttl: 60000 } })
-    async createPassword(
-        @Body() createUserDto: CreateUserDto,
-    ): Promise<SuccessResponse> {
-        return {
-            statusCode: HttpStatus.OK,
-            message: 'Create Password Success',
-            data: await this.authService.createPassword(createUserDto),
-        };
+    @ResponseMessage('Create Password Success')
+    async createPassword(@Body() createUserDto: CreateUserDto) {
+        return this.authService.createPassword(createUserDto);
     }
 
     @Post('login')
     @HttpCode(HttpStatus.OK)
-    async login(
-        @Body() createUserDto: CreateUserDto,
-    ): Promise<SuccessResponse> {
-        return {
-            statusCode: HttpStatus.OK,
-            message: 'Login Success',
-            data: await this.authService.login(createUserDto),
-        };
+    @ResponseMessage('Login Success')
+    async login(@Body() createUserDto: CreateUserDto) {
+        return this.authService.login(createUserDto);
     }
 
     @Post('token/refresh')
     @UseGuards(RfJwtGuard)
     @HttpCode(HttpStatus.OK)
-    async refreshToken(@Req() req: Request): Promise<SuccessResponse> {
-        return {
-            statusCode: HttpStatus.OK,
-            message: 'Refresh Token Success',
-            data: await this.authService.refreshToken(
-                req['user'] as JwtPayload,
-            ),
-        };
+    @ResponseMessage('Refresh Token Success')
+    async refreshToken(@Req() req: Request) {
+        return this.authService.refreshToken(req['user'] as JwtPayload);
     }
 
     @Post('logout')
     @UseGuards(AtJwtGuard)
     @HttpCode(HttpStatus.OK)
-    async logout(@Req() req: Request): Promise<SuccessResponse> {
-        return {
-            statusCode: HttpStatus.OK,
-            message: 'Logout Success',
-            data: await this.authService.logout(req['user'] as JwtPayload),
-        };
+    @ResponseMessage('Logout Success')
+    async logout(@Req() req: Request) {
+        return this.authService.logout(req['user'] as JwtPayload);
     }
 }

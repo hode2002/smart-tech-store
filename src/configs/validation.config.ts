@@ -1,8 +1,4 @@
-import {
-    BadRequestException,
-    INestApplication,
-    ValidationPipe,
-} from '@nestjs/common';
+import { BadRequestException, INestApplication, ValidationPipe } from '@nestjs/common';
 import { ValidationError } from 'class-validator';
 
 export const ValidationConfig = (app: INestApplication) => {
@@ -13,7 +9,7 @@ export const ValidationConfig = (app: INestApplication) => {
             forbidNonWhitelisted: true,
             forbidUnknownValues: true,
             exceptionFactory: (validationErrors: ValidationError[]) => {
-                const errors = validationErrors.map((error) => ({
+                const errors = validationErrors.map(error => ({
                     [error.property]: Object.values(error.constraints)[0],
                 }));
                 return new BadRequestException(errors);

@@ -1,51 +1,48 @@
 import {
+    Body,
     Controller,
-    HttpStatus,
+    Delete,
     HttpCode,
+    HttpStatus,
     Post,
-    UseGuards,
-    UseInterceptors,
     UploadedFile,
     UploadedFiles,
-    Body,
-    Delete,
+    UseGuards,
+    UseInterceptors,
 } from '@nestjs/common';
-import { MediaService } from './media.service';
-import { SuccessResponse } from 'src/common/response';
-import { AtJwtGuard } from 'src/auth/guards';
 import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
+
+import { AtJwtGuard } from 'src/auth/guards';
+import { ResponseMessage } from 'src/common/decorators';
+
+import { MediaService } from './media.service';
 
 @Controller('api/v1/medias')
 export class MediaController {
     constructor(private readonly mediaService: MediaService) {}
 
     @Post('upload/video')
+    @ResponseMessage('Upload success')
     @UseGuards(AtJwtGuard)
     @UseInterceptors(FileInterceptor('video'))
     @HttpCode(HttpStatus.OK)
-    async uploadVideo(
-        @UploadedFile() file: Express.Multer.File,
-        @Body('folder') folder?: string,
-    ): Promise<SuccessResponse> {
+    async uploadVideo(@UploadedFile() file: Express.Multer.File, @Body('folder') folder?: string) {
         const result = await this.mediaService.uploadV2(file, folder, 'video');
         return {
-            statusCode: HttpStatus.OK,
-            message: 'Upload success',
-            data: {
-                is_success: result?.public_id ? true : false,
-                key: result.url,
-            },
+            is_success: result?.public_id ? true : false,
+            key: result.url,
         };
     }
 
     @Post('uploads/video')
+    @ResponseMessage('Upload multiple success')
     @UseGuards(AtJwtGuard)
     @UseInterceptors(FilesInterceptor('videos'))
     @HttpCode(HttpStatus.OK)
     async uploadMultipleVideo(
         @UploadedFiles() files: Express.Multer.File[],
         @Body('folder') folder?: string,
-    ): Promise<SuccessResponse> {
+    ) {
         const results = [];
         for (const file of files) {
             const res = await this.mediaService.uploadV2(file, folder, 'video');
@@ -54,40 +51,31 @@ export class MediaController {
                 key: res.url,
             });
         }
-        return {
-            statusCode: HttpStatus.OK,
-            message: 'Upload multiple success',
-            data: results,
-        };
+        return results;
     }
 
     @Post('upload')
+    @ResponseMessage('Upload success')
     @UseGuards(AtJwtGuard)
     @UseInterceptors(FileInterceptor('image'))
     @HttpCode(HttpStatus.OK)
-    async upload(
-        @UploadedFile() file: Express.Multer.File,
-        @Body('folder') folder?: string,
-    ): Promise<SuccessResponse> {
+    async upload(@UploadedFile() file: Express.Multer.File, @Body('folder') folder?: string) {
         const result = await this.mediaService.uploadV2(file, folder);
         return {
-            statusCode: HttpStatus.OK,
-            message: 'Upload success',
-            data: {
-                is_success: result?.public_id ? true : false,
-                key: result.url,
-            },
+            is_success: result?.public_id ? true : false,
+            key: result.url,
         };
     }
 
     @Post('uploads')
+    @ResponseMessage('Upload multiple success')
     @UseGuards(AtJwtGuard)
     @UseInterceptors(FilesInterceptor('images'))
     @HttpCode(HttpStatus.OK)
     async uploadMultiple(
         @UploadedFiles() files: Express.Multer.File[],
         @Body('folder') folder?: string,
-    ): Promise<SuccessResponse> {
+    ) {
         const results = [];
         for (const file of files) {
             const res = await this.mediaService.uploadV2(file, folder);
@@ -96,20 +84,13 @@ export class MediaController {
                 key: res.url,
             });
         }
-        return {
-            statusCode: HttpStatus.OK,
-            message: 'Upload multiple success',
-            data: results,
-        };
+        return results;
     }
 
     @Delete()
+    @ResponseMessage('Delete file success')
     @HttpCode(HttpStatus.OK)
-    async remove(@Body('filePath') filePath: string): Promise<SuccessResponse> {
-        return {
-            statusCode: HttpStatus.OK,
-            message: 'Delete file success',
-            data: await this.mediaService.deleteV2(filePath),
-        };
+    async remove(@Body('filePath') filePath: string) {
+        return await this.mediaService.deleteV2(filePath);
     }
 }

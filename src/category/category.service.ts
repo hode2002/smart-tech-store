@@ -1,12 +1,11 @@
-import {
-    ConflictException,
-    Injectable,
-    NotFoundException,
-} from '@nestjs/common';
+import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+
+import { PrismaService } from 'src/prisma/prisma.service';
+import { CATEGORY_BASIC_SELECT, CATEGORY_FULL_SELECT } from 'src/prisma/selectors';
+import { generateSlug } from 'src/utils';
+
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
-import { PrismaService } from 'src/prisma/prisma.service';
-import { generateSlug } from 'src/utils';
 
 @Injectable()
 export class CategoryService {
@@ -25,12 +24,7 @@ export class CategoryService {
                 ...createCategoryDto,
                 slug,
             },
-            select: {
-                id: true,
-                name: true,
-                description: true,
-                slug: true,
-            },
+            select: CATEGORY_BASIC_SELECT,
         });
     }
 
@@ -39,50 +33,27 @@ export class CategoryService {
             where: {
                 is_deleted: false,
             },
-            select: {
-                id: true,
-                name: true,
-                description: true,
-                slug: true,
-            },
+            select: CATEGORY_BASIC_SELECT,
         });
     }
 
     async adminFindAll() {
         return await this.prismaService.category.findMany({
-            select: {
-                id: true,
-                name: true,
-                description: true,
-                slug: true,
-                is_deleted: true,
-                created_at: true,
-                updated_at: true,
-            },
+            select: CATEGORY_FULL_SELECT,
         });
     }
 
     async findBySlug(slug: string) {
         return await this.prismaService.category.findFirst({
             where: { slug, is_deleted: false },
-            select: {
-                id: true,
-                name: true,
-                description: true,
-                slug: true,
-            },
+            select: CATEGORY_BASIC_SELECT,
         });
     }
 
     async findById(id: string) {
         const category = await this.prismaService.category.findUnique({
             where: { id, is_deleted: false },
-            select: {
-                id: true,
-                name: true,
-                description: true,
-                slug: true,
-            },
+            select: CATEGORY_BASIC_SELECT,
         });
 
         if (!category) {
@@ -103,12 +74,7 @@ export class CategoryService {
         return await this.prismaService.category.update({
             where: { id },
             data: updateCategoryDto,
-            select: {
-                id: true,
-                name: true,
-                description: true,
-                slug: true,
-            },
+            select: CATEGORY_BASIC_SELECT,
         });
     }
 
@@ -118,7 +84,14 @@ export class CategoryService {
             throw new NotFoundException('Category Not Found');
         }
 
-        return await this.update(id, { is_deleted: true });
+        const isDeleted = await this.prismaService.category.update({
+            where: { id },
+            data: { is_deleted: true },
+        });
+
+        return {
+            is_success: isDeleted ? true : false,
+        };
     }
 
     async restore(id: string) {

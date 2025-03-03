@@ -1,11 +1,5 @@
-import {
-    IsArray,
-    IsBoolean,
-    IsNotEmpty,
-    IsNumber,
-    IsOptional,
-    IsString,
-} from 'class-validator';
+import { IsArray, IsBoolean, IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
+
 import { TechnicalSpecs } from 'src/product/dto/create-product.dto';
 
 export class UpdateProductDto {

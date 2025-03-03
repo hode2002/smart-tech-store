@@ -1,31 +1,33 @@
 import {
-    Controller,
-    Get,
-    Post,
     Body,
-    Patch,
-    Param,
+    Controller,
     Delete,
-    UseGuards,
+    Get,
     HttpCode,
     HttpStatus,
-    UseInterceptors,
+    Param,
+    Patch,
+    Post,
     UploadedFile,
+    UseGuards,
+    UseInterceptors,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { Role } from '@prisma/client';
+
+import { AtJwtGuard } from 'src/auth/guards';
+import { Permission, ResponseMessage } from 'src/common/decorators';
+import { RoleGuard } from 'src/common/guards';
+
 import { BannerService } from './banner.service';
 import { CreateBannerDto, UpdateBannerDto } from './dto';
-import { Permission } from 'src/common/decorators';
-import { Role } from '@prisma/client';
-import { AtJwtGuard } from 'src/auth/guards';
-import { RoleGuard } from 'src/common/guards';
-import { SuccessResponse } from 'src/common/response';
-import { FileInterceptor } from '@nestjs/platform-express';
 
 @Controller('api/v1/banners')
 export class BannerController {
     constructor(private readonly bannerService: BannerService) {}
 
     @Post()
+    @ResponseMessage('Create success')
     @Permission(Role.ADMIN)
     @UseGuards(AtJwtGuard, RoleGuard)
     @UseInterceptors(FileInterceptor('image'))
@@ -33,47 +35,35 @@ export class BannerController {
     async create(
         @Body() createBannerDto: CreateBannerDto,
         @UploadedFile() file: Express.Multer.File,
-    ): Promise<SuccessResponse> {
-        return {
-            statusCode: HttpStatus.CREATED,
-            message: 'Create success',
-            data: await this.bannerService.create(createBannerDto, file),
-        };
+    ) {
+        return await this.bannerService.create(createBannerDto, file);
     }
 
     @Get()
+    @ResponseMessage('Get all banners success')
     @HttpCode(HttpStatus.OK)
-    async findAll(): Promise<SuccessResponse> {
-        return {
-            statusCode: HttpStatus.OK,
-            message: 'Get all banners success',
-            data: await this.bannerService.findAll(),
-        };
+    async findAll() {
+        return await this.bannerService.findAll();
     }
 
     @Get('admin')
+    @ResponseMessage('Get all banners success')
     @Permission(Role.ADMIN)
     @UseGuards(AtJwtGuard, RoleGuard)
     @HttpCode(HttpStatus.OK)
-    async AdminFindAll(): Promise<SuccessResponse> {
-        return {
-            statusCode: HttpStatus.OK,
-            message: 'Get all banners success',
-            data: await this.bannerService.AdminFindAll(),
-        };
+    async AdminFindAll() {
+        return await this.bannerService.AdminFindAll();
     }
 
     @Get(':id')
+    @ResponseMessage('Get banner success')
     @HttpCode(HttpStatus.OK)
-    async findById(@Param('id') id: string): Promise<SuccessResponse> {
-        return {
-            statusCode: HttpStatus.OK,
-            message: 'Get banner success',
-            data: await this.bannerService.findById(id),
-        };
+    async findById(@Param('id') id: string) {
+        return await this.bannerService.findById(id);
     }
 
     @Patch(':id')
+    @ResponseMessage('Update success')
     @Permission(Role.ADMIN)
     @UseGuards(AtJwtGuard, RoleGuard)
     @UseInterceptors(FileInterceptor('image'))
@@ -82,23 +72,16 @@ export class BannerController {
         @Param('id') id: string,
         @Body() updateBannerDto: UpdateBannerDto,
         @UploadedFile() file: Express.Multer.File,
-    ): Promise<SuccessResponse> {
-        return {
-            statusCode: HttpStatus.OK,
-            message: 'Update success',
-            data: await this.bannerService.update(id, updateBannerDto, file),
-        };
+    ) {
+        return await this.bannerService.update(id, updateBannerDto, file);
     }
 
     @Delete(':id')
+    @ResponseMessage('Remove success')
     @Permission(Role.ADMIN)
     @UseGuards(AtJwtGuard, RoleGuard)
     @HttpCode(HttpStatus.OK)
-    async remove(@Param('id') id: string): Promise<SuccessResponse> {
-        return {
-            statusCode: HttpStatus.OK,
-            message: 'Remove success',
-            data: await this.bannerService.remove(id),
-        };
+    async remove(@Param('id') id: string) {
+        return await this.bannerService.remove(id);
     }
 }

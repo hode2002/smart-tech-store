@@ -17,7 +17,7 @@ const translation = {
 
 export const translateSpecs = (specs: technicalSpecs) => {
     return Object.keys(specs)
-        .map((key) => {
+        .map(key => {
             return (
                 translation[key] && {
                     name: <string>translation[key],
@@ -25,5 +25,5 @@ export const translateSpecs = (specs: technicalSpecs) => {
                 }
             );
         })
-        .filter((item) => item != null);
+        .filter(item => item !== null);
 };

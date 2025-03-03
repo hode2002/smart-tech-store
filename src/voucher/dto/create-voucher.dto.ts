@@ -1,11 +1,5 @@
 import { VoucherType } from '@prisma/client';
-import {
-    IsNotEmpty,
-    IsNumber,
-    IsString,
-    IsDateString,
-    IsOptional,
-} from 'class-validator';
+import { IsDateString, IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
 
 export class CreateVoucherDto {
     @IsString()

@@ -1,8 +1,9 @@
-import { MailerService } from '@nestjs-modules/mailer';
+import * as fs from 'fs';
+
 import { Process, Processor } from '@nestjs/bull';
 import { Injectable } from '@nestjs/common';
+import { MailerService } from '@nestjs-modules/mailer';
 import { Job } from 'bull';
-import * as fs from 'fs';
 import handleBars from 'handlebars';
 import * as moment from 'moment';
 @Injectable()
@@ -37,12 +38,7 @@ export class MailService {
         return await this.send(job, subject, templatePath, replacements);
     }
 
-    async send(
-        job: any,
-        subject: string,
-        templatePath: string,
-        replacements: any,
-    ) {
+    async send(job: any, subject: string, templatePath: string, replacements: any) {
         const date = new Date();
         const createDate = moment(date).format('DD/MM/YYYY');
         const source = fs.readFileSync(templatePath, 'utf8').toString();

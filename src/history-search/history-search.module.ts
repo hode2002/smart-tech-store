@@ -1,10 +1,12 @@
+import { BullModule } from '@nestjs/bull';
 import { Module } from '@nestjs/common';
-import { HistorySearchService } from './history-search.service';
-import { HistorySearchController } from './history-search.controller';
+
+import { MediaModule } from 'src/media/media.module';
 import { PrismaModule } from 'src/prisma/prisma.module';
 import { UserService } from 'src/user/user.service';
-import { BullModule } from '@nestjs/bull';
-import { MediaModule } from 'src/media/media.module';
+
+import { HistorySearchController } from './history-search.controller';
+import { HistorySearchService } from './history-search.service';
 
 @Module({
     imports: [
