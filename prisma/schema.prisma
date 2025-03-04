@@ -1,6 +1,5 @@
 generator client {
-  provider        = "prisma-client-js"
-  previewFeatures = ["fullTextSearch", "fullTextIndex"]
+  provider = "prisma-client-js"
 }
 
 datasource db {
@@ -24,6 +23,7 @@ enum NotificationType {
   COMMON
   VOUCHER
   COMMENT
+  POPUP
 }
 
 enum VoucherType {
@@ -67,12 +67,13 @@ model User {
   user_notifications UserNotification[]
 
   @@index([email, is_active])
+  @@index([role, is_active])
   @@map("users")
 }
 
 model UserAddress {
   id         String   @id @default(uuid())
-  user       User     @relation(fields: [user_id], references: [id])
+  user       User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
   user_id    String   @unique
   address    String?
   province   String
@@ -87,9 +88,9 @@ model UserAddress {
 
 model Cart {
   id                String        @id @default(uuid())
-  user              User          @relation(fields: [user_id], references: [id])
+  user              User          @relation(fields: [user_id], references: [id], onDelete: Cascade)
   user_id           String
-  product_option    ProductOption @relation(fields: [product_option_id], references: [id])
+  product_option    ProductOption @relation(fields: [product_option_id], references: [id], onDelete: Cascade)
   product_option_id String
   quantity          Int           @default(1)
   created_at        DateTime      @default(now())
@@ -104,9 +105,9 @@ model Product {
   name            String
   descriptions    ProductDescription[]
   main_image      String
-  brand           Brand                @relation(fields: [brand_id], references: [id])
+  brand           Brand                @relation(fields: [brand_id], references: [id], onDelete: Restrict)
   brand_id        String
-  category        Category             @relation(fields: [category_id], references: [id])
+  category        Category             @relation(fields: [category_id], references: [id], onDelete: Restrict)
   category_id     String
   price           Float
   promotions      Json
@@ -117,12 +118,13 @@ model Product {
   updated_at      DateTime             @updatedAt
 
   @@index([name, brand_id, category_id, price])
+  @@index([name(ops: raw("fulltext"))])
   @@map("products")
 }
 
 model ProductOption {
   id                   String               @id @default(uuid())
-  product              Product              @relation(fields: [product_id], references: [id])
+  product              Product              @relation(fields: [product_id], references: [id], onDelete: Cascade)
   product_id           String
   thumbnail            String
   product_images       ProductImage[]
@@ -142,10 +144,11 @@ model ProductOption {
   product_option_value ProductOptionValue[]
   combos               Combo[]
   product_combos       ProductCombo[]
-  technical_specs      TechnicalSpecs?      @relation(fields: [technical_specs_id], references: [id])
+  technical_specs      TechnicalSpecs?      @relation(fields: [technical_specs_id], references: [id], onDelete: SetNull)
   technical_specs_id   String?              @unique
 
   @@index([slug, product_id, is_sale, is_deleted])
+  @@index([sku])
   @@map("product_options")
 }
 
@@ -183,9 +186,9 @@ model Option {
 
 model ProductOptionValue {
   id                String        @id @default(uuid())
-  product_option    ProductOption @relation(fields: [product_option_id], references: [id])
+  product_option    ProductOption @relation(fields: [product_option_id], references: [id], onDelete: Cascade)
   product_option_id String
-  option            Option        @relation(fields: [option_id], references: [id])
+  option            Option        @relation(fields: [option_id], references: [id], onDelete: Cascade)
   option_id         String
   value             String
   adjust_price      Float         @default(0)
@@ -196,7 +199,7 @@ model ProductOptionValue {
 
 model ProductDescription {
   id         String   @id @default(uuid())
-  product    Product  @relation(fields: [product_id], references: [id])
+  product    Product  @relation(fields: [product_id], references: [id], onDelete: Cascade)
   product_id String
   content    String   @db.LongText
   created_at DateTime @default(now())
@@ -207,7 +210,7 @@ model ProductDescription {
 
 model ProductImage {
   id                String        @id @default(uuid())
-  product_option    ProductOption @relation(fields: [product_option_id], references: [id])
+  product_option    ProductOption @relation(fields: [product_option_id], references: [id], onDelete: Cascade)
   product_option_id String
   image_url         String
   image_alt_text    String?
@@ -248,7 +251,7 @@ model Category {
 
 model Order {
   id             String         @id @default(uuid())
-  User           User           @relation(fields: [user_id], references: [id])
+  User           User           @relation(fields: [user_id], references: [id], onDelete: Restrict)
   user_id        String
   name           String
   phone          String
@@ -265,14 +268,15 @@ model Order {
   order_combo    OrderCombo[]
 
   @@index([user_id, status])
+  @@index([status, created_at])
   @@map("orders")
 }
 
 model OrderDetail {
   id                String        @id @default(uuid())
-  order             Order         @relation(fields: [order_id], references: [id])
+  order             Order         @relation(fields: [order_id], references: [id], onDelete: Cascade)
   order_id          String
-  product_option    ProductOption @relation(fields: [product_option_id], references: [id])
+  product_option    ProductOption @relation(fields: [product_option_id], references: [id], onDelete: Restrict)
   product_option_id String
   quantity          Int           @default(1)
   price             Float
@@ -286,9 +290,9 @@ model OrderDetail {
 
 model OrderCombo {
   id       String @id @default(uuid())
-  order    Order  @relation(fields: [order_id], references: [id])
+  order    Order  @relation(fields: [order_id], references: [id], onDelete: Cascade)
   order_id String
-  combo    Combo  @relation(fields: [combo_id], references: [id])
+  combo    Combo  @relation(fields: [combo_id], references: [id], onDelete: Restrict)
   combo_id String
 
   @@index([order_id, combo_id])
@@ -297,7 +301,7 @@ model OrderCombo {
 
 model Payment {
   id             String   @id @default(uuid())
-  order          Order    @relation(fields: [order_id], references: [id])
+  order          Order    @relation(fields: [order_id], references: [id], onDelete: Cascade)
   order_id       String   @unique
   total_price    Float
   payment_method String
@@ -306,6 +310,7 @@ model Payment {
   updated_at     DateTime @updatedAt
 
   @@index([order_id])
+  @@index([payment_method])
   @@map("payments")
 }
 
@@ -324,9 +329,9 @@ model Delivery {
 
 model OrderShipping {
   id              String   @id @default(uuid())
-  order           Order    @relation(fields: [order_id], references: [id])
+  order           Order    @relation(fields: [order_id], references: [id], onDelete: Cascade)
   order_id        String   @unique
-  delivery        Delivery @relation(fields: [delivery_id], references: [id])
+  delivery        Delivery @relation(fields: [delivery_id], references: [id], onDelete: Restrict)
   delivery_id     String
   address         String?
   province        String
@@ -342,12 +347,13 @@ model OrderShipping {
   updated_at      DateTime @updatedAt
 
   @@index([order_id, status])
+  @@index([tracking_number])
   @@map("order_shipping")
 }
 
 model HistorySearch {
   id             String   @id @default(uuid())
-  user           User     @relation(fields: [user_id], references: [id])
+  user           User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
   user_id        String
   search_content String
   created_at     DateTime @default(now())
@@ -362,9 +368,9 @@ model Review {
   parent            Review?       @relation("parent", fields: [parent_id], references: [id], onDelete: Cascade)
   parent_id         String?
   children          Review[]      @relation("parent")
-  user              User          @relation(fields: [user_id], references: [id])
+  user              User          @relation(fields: [user_id], references: [id], onDelete: Cascade)
   user_id           String
-  product_option    ProductOption @relation(fields: [product_option_id], references: [id])
+  product_option    ProductOption @relation(fields: [product_option_id], references: [id], onDelete: Cascade)
   product_option_id String
   star              Float?        @default(5)
   comment           String
@@ -375,6 +381,7 @@ model Review {
   updated_at        DateTime      @updatedAt
 
   @@index([product_option_id, user_id, star])
+  @@index([created_at])
   @@map("reviews")
 }
 
@@ -405,14 +412,15 @@ model Voucher {
   order_vouchers     OrderVoucher[]
 
   @@index([type, start_date, end_date, available_quantity, status])
+  @@index([code, status])
   @@map("vouchers")
 }
 
 model OrderVoucher {
   id         String   @id @default(uuid())
-  order      Order    @relation(fields: [order_id], references: [id])
+  order      Order    @relation(fields: [order_id], references: [id], onDelete: Cascade)
   order_id   String
-  voucher    Voucher  @relation(fields: [voucher_id], references: [id])
+  voucher    Voucher  @relation(fields: [voucher_id], references: [id], onDelete: Restrict)
   voucher_id String
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
@@ -423,7 +431,7 @@ model OrderVoucher {
 
 model Combo {
   id                String         @id @default(uuid())
-  product_option    ProductOption  @relation(fields: [product_option_id], references: [id])
+  product_option    ProductOption  @relation(fields: [product_option_id], references: [id], onDelete: Cascade)
   product_option_id String
   product_combos    ProductCombo[]
   status            Int            @default(0)
@@ -432,14 +440,15 @@ model Combo {
   order_combos      OrderCombo[]
 
   @@index([product_option_id])
+  @@index([status])
   @@map("combos")
 }
 
 model ProductCombo {
   id                String        @id @default(uuid())
-  combo             Combo         @relation(fields: [combo_id], references: [id])
+  combo             Combo         @relation(fields: [combo_id], references: [id], onDelete: Cascade)
   combo_id          String
-  product_option    ProductOption @relation(fields: [product_option_id], references: [id])
+  product_option    ProductOption @relation(fields: [product_option_id], references: [id], onDelete: Cascade)
   product_option_id String
   discount          Float         @default(0)
   created_at        DateTime      @default(now())
@@ -463,6 +472,7 @@ model Notification {
   user_notifications UserNotification[]
 
   @@index([status])
+  @@index([type, status])
   @@map("notifications")
 }
 
@@ -470,13 +480,14 @@ model UserNotification {
   id              String       @id @default(uuid())
   notification    Notification @relation(fields: [notification_id], references: [id], onDelete: Cascade)
   notification_id String
-  user            User         @relation(fields: [user_id], references: [id])
+  user            User         @relation(fields: [user_id], references: [id], onDelete: Cascade)
   user_id         String
   status          Int          @default(0)
   created_at      DateTime     @default(now())
   updated_at      DateTime     @updatedAt
 
   @@index([notification_id, user_id, status])
+  @@index([user_id, status, created_at])
   @@map("user_notifications")
 }
 
@@ -490,5 +501,6 @@ model News {
   updated_at DateTime @updatedAt
 
   @@index([slug])
+  @@index([title(ops: raw("fulltext"))])
   @@map("news")
 }
