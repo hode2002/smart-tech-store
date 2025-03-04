@@ -23,7 +23,7 @@ import { CreateNewsDto } from './dto/create-news.dto';
 import { UpdateNewsDto } from './dto/update-news.dto';
 import { NewsService } from './news.service';
 
-@Controller('/api/v1/news')
+@Controller('news')
 export class NewsController {
     constructor(private readonly newsService: NewsService) {}
 

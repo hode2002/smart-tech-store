@@ -16,7 +16,7 @@ import { GetUserId, ResponseMessage } from 'src/common/decorators';
 import { CreateHistorySearchDto, CreateHistorySearchListDto } from './dto';
 import { HistorySearchService } from './history-search.service';
 
-@Controller('/api/v1/history-search')
+@Controller('history-search')
 export class HistorySearchController {
     constructor(private readonly historySearchService: HistorySearchService) {}
 

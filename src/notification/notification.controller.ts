@@ -20,7 +20,7 @@ import { CreateNotificationDto } from './dto/create-notification.dto';
 import { UpdateNotificationDto } from './dto/update-notification.dto';
 import { NotificationService } from './notification.service';
 
-@Controller('/api/v1/notifications')
+@Controller('notifications')
 export class NotificationController {
     constructor(private readonly notificationService: NotificationService) {}
 
