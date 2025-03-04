@@ -1,15 +1,81 @@
+version: '3.8'
+
 services:
-    smart-tech-db:
+    api:
+        build:
+            context: .
+            dockerfile: Dockerfile
+        container_name: api
+        ports:
+            - '3001:3001'
+        restart: unless-stopped
+        depends_on:
+            mongo:
+                condition: service_healthy
+            redis:
+                condition: service_healthy
+            mysql:
+                condition: service_healthy
+        env_file:
+            - .env
+        volumes:
+            - ./src:/usr/src/app/src
+        networks:
+            - app-network
+    mysql:
         image: mysql:8.0
         container_name: mysql
         ports:
-            - 3306:3306
-        restart: always
+            - '3306:3306'
+        restart: unless-stopped
         env_file:
             - .env
-    smart-tech-redis:
-        image: redis
+        volumes:
+            - mysql_data:/var/lib/mysql
+        networks:
+            - app-network
+        healthcheck:
+            test: ['CMD', 'mysqladmin', 'ping', '-h', 'localhost']
+            interval: 10s
+            timeout: 5s
+            retries: 5
+    mongo:
+        image: mongo:6.0
+        container_name: mongodb
         ports:
-            - 6379:6379
+            - '27017:27017'
+        restart: unless-stopped
         env_file:
             - .env
+        volumes:
+            - mongo_data:/data/db
+        networks:
+            - app-network
+        healthcheck:
+            test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
+            interval: 10s
+            timeout: 5s
+            retries: 5
+    redis:
+        image: redis:alpine
+        container_name: redis
+        ports:
+            - '6379:6379'
+        env_file:
+            - .env
+        restart: unless-stopped
+        networks:
+            - app-network
+        healthcheck:
+            test: ['CMD', 'redis-cli', 'ping']
+            interval: 10s
+            timeout: 5s
+            retries: 5
+
+networks:
+    app-network:
+        driver: bridge
+
+volumes:
+    mysql_data:
+    mongo_data:
