@@ -23,7 +23,7 @@ import { RoleGuard } from 'src/common/guards';
 import { ChangePasswordDto, UpdateUserAddressDto, UpdateUserDto, UpdateUserStatusDto } from './dto';
 import { UserService } from './user.service';
 
-@Controller('/api/v1/users')
+@Controller('users')
 export class UserController {
     constructor(private readonly userService: UserService) {}
 
