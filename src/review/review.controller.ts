@@ -18,7 +18,7 @@ import { RoleGuard } from 'src/common/guards';
 import { CreateReplyReviewDto, CreateReviewDto } from './dto';
 import { ReviewService } from './review.service';
 
-@Controller('api/v1/reviews')
+@Controller('reviews')
 export class ReviewController {
     constructor(private readonly reviewService: ReviewService) {}
 

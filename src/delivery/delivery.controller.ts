@@ -20,7 +20,7 @@ import { DeliveryService } from './delivery.service';
 import { CreateDeliveryDto } from './dto/create-delivery.dto';
 import { UpdateDeliveryDto } from './dto/update-delivery.dto';
 
-@Controller('api/v1/delivery')
+@Controller('delivery')
 export class DeliveryController {
     constructor(private readonly deliveryService: DeliveryService) {}
 

@@ -22,7 +22,7 @@ import { RoleGuard } from 'src/common/guards';
 import { BrandService } from './brand.service';
 import { CreateBrandDto, UpdateBrandDto } from './dto';
 
-@Controller('api/v1/brands')
+@Controller('brands')
 export class BrandController {
     constructor(private readonly brandService: BrandService) {}
 

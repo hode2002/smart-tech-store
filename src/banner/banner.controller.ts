@@ -22,7 +22,7 @@ import { RoleGuard } from 'src/common/guards';
 import { BannerService } from './banner.service';
 import { CreateBannerDto, UpdateBannerDto } from './dto';
 
-@Controller('api/v1/banners')
+@Controller('banners')
 export class BannerController {
     constructor(private readonly bannerService: BannerService) {}
 
