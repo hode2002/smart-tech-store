@@ -17,7 +17,7 @@ import { ResponseMessage } from 'src/common/decorators';
 
 import { MediaService } from './media.service';
 
-@Controller('api/v1/medias')
+@Controller('medias')
 export class MediaController {
     constructor(private readonly mediaService: MediaService) {}
 

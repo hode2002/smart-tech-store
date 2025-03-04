@@ -29,7 +29,7 @@ import {
 } from './dto';
 import { ProductService } from './product.service';
 
-@Controller('api/v1/products')
+@Controller('products')
 export class ProductController {
     constructor(private readonly productService: ProductService) {}
 

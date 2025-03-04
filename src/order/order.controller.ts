@@ -30,7 +30,7 @@ import { AdminUpdateOrderStatusDto } from './dto/admin-update-order-status.dto';
 import { OrderService } from './order.service';
 import { OrderResponse } from './types';
 
-@Controller('api/v1/orders')
+@Controller('orders')
 export class OrderController {
     constructor(private readonly orderService: OrderService) {}
 

@@ -20,7 +20,7 @@ import { AuthService } from './auth.service';
 import { CreateUserEmailDto, ThirdPartyLoginDto, VerifyOtpDto } from './dto';
 import { AtJwtGuard, FacebookGuard, GoogleGuard, RfJwtGuard } from './guards';
 
-@Controller('api/v1/auth')
+@Controller('auth')
 export class AuthController {
     constructor(private readonly authService: AuthService) {}
 
