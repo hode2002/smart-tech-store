@@ -94,15 +94,6 @@ export default [
                 },
             ],
 
-            'sort-imports': [
-                'warn',
-                {
-                    ignoreCase: true,
-                    ignoreDeclarationSort: true,
-                    ignoreMemberSort: false,
-                },
-            ],
-
             'import/no-unresolved': 'off',
             'no-console': ['warn', { allow: ['warn', 'error', 'info'] }],
             'max-len': [
