@@ -7,25 +7,27 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { redisStore } from 'cache-manager-redis-store';
 
-import { AuthModule } from './auth/auth.module';
-import { BannerModule } from './banner/banner.module';
-import { BrandModule } from './brand/brand.module';
-import { CartModule } from './cart/cart.module';
-import { CategoryModule } from './category/category.module';
-import { CloudinaryModule } from './cloudinary/cloudinary.module';
-import { DeliveryModule } from './delivery/delivery.module';
-import { HealthModule } from './health/health.module';
-import { HistorySearchModule } from './history-search/history-search.module';
-import { MailModule } from './mail/mail.module';
-import { MediaModule } from './media/media.module';
-import { NewsModule } from './news/news.module';
-import { NotificationModule } from './notification/notification.module';
-import { OrderModule } from './order/order.module';
-import { PrismaModule } from './prisma/prisma.module';
-import { ProductModule } from './product/product.module';
-import { ReviewModule } from './review/review.module';
-import { UserModule } from './user/user.module';
-import { VoucherModule } from './voucher/voucher.module';
+import {
+    AuthModule,
+    BannerModule,
+    BrandModule,
+    CartModule,
+    CategoryModule,
+    CloudinaryModule,
+    DeliveryModule,
+    HealthModule,
+    HistorySearchModule,
+    MailModule,
+    MediaModule,
+    NewsModule,
+    NotificationModule,
+    OrderModule,
+    PrismaModule,
+    ProductModule,
+    ReviewModule,
+    UserModule,
+    VoucherModule,
+} from '@v1/modules';
 
 import type { RedisClientOptions } from 'redis';
 

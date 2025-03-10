@@ -5,11 +5,11 @@ import { NestFactory, Reflector } from '@nestjs/core';
 import * as compression from 'compression';
 import helmet from 'helmet';
 
-import { HttpExceptionFilter } from 'src/common/filters';
-import { TransformInterceptor } from 'src/common/interceptors';
+import { HttpExceptionFilter } from '@/common/filters';
+import { TransformInterceptor } from '@/common/interceptors';
 
+import { ValidationConfig } from './api/v1/modules/configs/validation.config';
 import { AppModule } from './app.module';
-import { ValidationConfig } from './configs/validation.config';
 
 const allowedOrigins = process.env.ALLOWED_ORIGINS;
 
