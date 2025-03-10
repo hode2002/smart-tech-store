@@ -14,6 +14,7 @@ import { CartModule } from './cart/cart.module';
 import { CategoryModule } from './category/category.module';
 import { CloudinaryModule } from './cloudinary/cloudinary.module';
 import { DeliveryModule } from './delivery/delivery.module';
+import { HealthModule } from './health/health.module';
 import { HistorySearchModule } from './history-search/history-search.module';
 import { MailModule } from './mail/mail.module';
 import { MediaModule } from './media/media.module';
@@ -85,6 +86,7 @@ import type { RedisClientOptions } from 'redis';
         NewsModule,
         NotificationModule,
         VoucherModule,
+        HealthModule,
     ],
     controllers: [],
     providers: [

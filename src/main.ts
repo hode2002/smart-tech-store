@@ -1,4 +1,4 @@
-import { ForbiddenException } from '@nestjs/common';
+import { ForbiddenException, RequestMethod } from '@nestjs/common';
 import { CorsOptions } from '@nestjs/common/interfaces/external/cors-options.interface';
 import { ConfigService } from '@nestjs/config';
 import { NestFactory, Reflector } from '@nestjs/core';
@@ -44,7 +44,10 @@ async function bootstrap() {
     app.useGlobalInterceptors(new TransformInterceptor(new Reflector()));
     app.useGlobalFilters(new HttpExceptionFilter());
     app.setGlobalPrefix('/api/v1', {
-        exclude: ['/'],
+        exclude: [
+            { path: '/', method: RequestMethod.GET },
+            { path: 'health', method: RequestMethod.GET },
+        ],
     });
 
     const configService = app.get(ConfigService);
