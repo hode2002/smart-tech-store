@@ -3,12 +3,9 @@ import { Prisma } from '@prisma/client';
 export const VOUCHER_BASIC_SELECT = {
     id: true,
     code: true,
-    name: true,
-    description: true,
     type: true,
     value: true,
     min_order_value: true,
-    max_discount_value: true,
     start_date: true,
     end_date: true,
     available_quantity: true,
