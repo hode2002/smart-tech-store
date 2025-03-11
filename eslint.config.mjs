@@ -21,10 +21,10 @@ export default [
     },
     ...compat.extends(
         'plugin:@typescript-eslint/recommended',
-        'plugin:prettier/recommended',
         'plugin:import/errors',
         'plugin:import/warnings',
         'plugin:import/typescript',
+        'plugin:prettier/recommended',
     ),
     {
         plugins: {
@@ -65,12 +65,28 @@ export default [
             '@typescript-eslint/no-inferrable-types': 'warn',
             '@typescript-eslint/no-var-requires': 'warn',
 
-            'prettier/prettier': [
-                'warn',
+            'import/order': [
+                'error',
                 {
+                    groups: ['builtin', 'external', 'internal', 'parent', 'sibling', 'index'],
+                    'newlines-between': 'always',
+                    alphabetize: { order: 'asc', caseInsensitive: true },
+                },
+            ],
+            'prettier/prettier': [
+                'error',
+                {
+                    singleQuote: true,
+                    trailingComma: 'all',
                     tabWidth: 4,
                     printWidth: 100,
-                    usePrettierrc: true,
+                    semi: true,
+                    bracketSpacing: true,
+                    arrowParens: 'avoid',
+                    endOfLine: 'lf',
+                    quoteProps: 'as-needed',
+                    proseWrap: 'preserve',
+                    embeddedLanguageFormatting: 'auto',
                 },
             ],
 
