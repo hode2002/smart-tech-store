@@ -1,6 +1,5 @@
 import { ArgumentsHost, Catch, ExceptionFilter, HttpException, HttpStatus } from '@nestjs/common';
 import { Request, Response } from 'express';
-import { MongooseError } from 'mongoose';
 
 const customMessage = (exception: any) => {
     let status = 'error';
@@ -10,9 +9,9 @@ const customMessage = (exception: any) => {
     if (exception instanceof HttpException) {
         statusCode = exception.getStatus();
         message = exception['response']?.message;
-    } else if (MongooseError) {
-        status = 'MongooseError';
-        message = exception.errorResponse?.errmsg;
+    } else {
+        message = exception.message;
+        status = exception?.code;
     }
     return { statusCode, status, message };
 };
