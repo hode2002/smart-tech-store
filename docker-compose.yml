@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
     api:
         build:
@@ -10,18 +8,29 @@ services:
             - '3001:3001'
         restart: unless-stopped
         depends_on:
-            mongo:
-                condition: service_healthy
-            redis:
-                condition: service_healthy
-            mysql:
-                condition: service_healthy
+            - mongodb
+            - redis
+            - mysql
         env_file:
             - .env
-        volumes:
-            - ./src:/usr/src/app/src
         networks:
             - app-network
+    nginx:
+        image: nginx:latest
+        container_name: nginx
+        restart: unless-stopped
+        ports:
+            - "80:80"
+            - "443:443"
+        volumes:
+            - ./nginx:/etc/nginx/conf.d
+            - /etc/letsencrypt/live/${DOMAIN}:/etc/letsencrypt/live/${DOMAIN}
+            - /etc/letsencrypt/archive/${DOMAIN}:/etc/letsencrypt/archive/${DOMAIN}
+        depends_on:
+        - api
+        networks:
+        - app-network
+
     mysql:
         image: mysql:8.0
         container_name: mysql
@@ -32,50 +41,40 @@ services:
             - .env
         volumes:
             - mysql_data:/var/lib/mysql
+            - ./init.sql:/docker-entrypoint-initdb.d/init.sql
         networks:
             - app-network
-        healthcheck:
-            test: ['CMD', 'mysqladmin', 'ping', '-h', 'localhost']
-            interval: 10s
-            timeout: 5s
-            retries: 5
-    mongo:
+
+    mongodb:
         image: mongo:6.0
         container_name: mongodb
-        ports:
-            - '27017:27017'
         restart: unless-stopped
+        ports:
+        - "27017:27017"
         env_file:
-            - .env
+        - .env
         volumes:
-            - mongo_data:/data/db
+        - mongo_data:/data/db
         networks:
-            - app-network
-        healthcheck:
-            test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
-            interval: 10s
-            timeout: 5s
-            retries: 5
+        - app-network
+
     redis:
         image: redis:alpine
         container_name: redis
-        ports:
-            - '6379:6379'
-        env_file:
-            - .env
         restart: unless-stopped
+        ports:
+        - "6379:6379"
+        env_file:
+        - .env
+        volumes:
+        - redis_data:/data
         networks:
-            - app-network
-        healthcheck:
-            test: ['CMD', 'redis-cli', 'ping']
-            interval: 10s
-            timeout: 5s
-            retries: 5
+        - app-network
 
 networks:
     app-network:
-        driver: bridge
 
 volumes:
     mysql_data:
     mongo_data:
+    redis_data:
