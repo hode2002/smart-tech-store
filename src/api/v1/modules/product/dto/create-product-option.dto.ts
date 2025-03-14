@@ -1,4 +1,5 @@
 import { IsArray, IsBoolean, IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
+
 import { TechnicalSpecs } from '@v1/modules/product/dto/create-product.dto';
 
 export class CreateProductOptionDto {
