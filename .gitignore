@@ -5,6 +5,7 @@
 /prisma/*
 
 .env
+.env.*
 
 # Logs
 logs
