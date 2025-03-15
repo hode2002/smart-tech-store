@@ -16,15 +16,11 @@ import {
 } from '@/config';
 import {
     AuthModule,
-    BrandModule,
     CartModule,
     CategoryModule,
-    CloudinaryModule,
     DeliveryModule,
-    HealthModule,
     HistorySearchModule,
     MailModule,
-    MediaModule,
     NewsModule,
     NotificationModule,
     OrderModule,
@@ -34,7 +30,7 @@ import {
     UserModule,
     VoucherModule,
 } from '@v1/modules';
-import { OtpModule, BannerModule } from '@v2/modules';
+import { OtpModule, HealthModule, BrandModule, BannerModule, MediaModule } from '@v2/modules';
 
 @Module({
     imports: [
@@ -57,7 +53,6 @@ import { OtpModule, BannerModule } from '@v2/modules';
         DeliveryModule,
         OrderModule,
         ReviewModule,
-        CloudinaryModule,
         NewsModule,
         NotificationModule,
         VoucherModule,
