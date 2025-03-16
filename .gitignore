@@ -7,6 +7,9 @@
 .env
 .env.*
 
+# Nginx
+/nginx/default.conf
+
 # Logs
 logs
 *.log
