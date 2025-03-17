@@ -13,7 +13,7 @@ export class MailService {
 
     @Process('send-otp')
     async sendOtpCode(job: Job<any>) {
-        const templatePath = 'src/templates/otp-template.html';
+        const templatePath = 'src/api/v1/modules/templates/otp-template.html';
         const subject = 'Mã xác thực OTP';
         const replacements = {
             email: job.data['email'],
@@ -28,7 +28,7 @@ export class MailService {
 
     @Process('send-new-pass')
     async sendNewPass(job: Job<any>) {
-        const templatePath = 'src/templates/send-new-pass-template.html';
+        const templatePath = 'src/api/v1/modules/templates/send-new-pass-template.html';
         const subject = 'Thay đổi mật khẩu';
         const replacements = {
             email: job.data['email'],
