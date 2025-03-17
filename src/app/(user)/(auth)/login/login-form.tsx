@@ -30,7 +30,7 @@ import {
 } from '@/lib/store/slices';
 import Link from 'next/link';
 
-export function LoginForm() {
+export function LoginForm({ turnstileToken }: { turnstileToken: string }) {
     const router = useRouter();
     const dispatch = useAppDispatch();
     const registerEmail = useAppSelector((state) => state.auth.registerEmail);
@@ -52,6 +52,7 @@ export function LoginForm() {
         const response: LoginResponseType = await authApiRequest.login({
             email,
             password,
+            turnstileToken
         });
         setLoading(false);
         if (response.statusCode === 200) {
@@ -124,7 +125,7 @@ export function LoginForm() {
                         <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />
                     </Button>
                 ) : (
-                    <Button type="submit" className="w-full">
+                    <Button type="submit" className="w-full" disabled={!turnstileToken}>
                         Đăng nhập
                     </Button>
                 )}

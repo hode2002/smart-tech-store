@@ -23,7 +23,7 @@ import authApiRequest from '@/apiRequests/auth';
 import { setRegisterEmail } from '@/lib/store/slices';
 import { useAppDispatch } from '@/lib/store';
 
-export function RegisterForm() {
+export function RegisterForm({ turnstileToken }: { turnstileToken: string }) {
     const router = useRouter();
     const [loading, setLoading] = useState(false);
     const dispatch = useAppDispatch();
@@ -40,6 +40,7 @@ export function RegisterForm() {
         setLoading(true);
         const response: RegisterResType = await authApiRequest.register({
             email,
+            turnstileToken
         });
         setLoading(false);
         if (response.statusCode === 200) {
@@ -70,7 +71,7 @@ export function RegisterForm() {
                     )}
                 />
 
-                <Button type="submit" className="w-full">
+                <Button type="submit" className="w-full" disabled={!turnstileToken}>
                     Đăng ký
                 </Button>
             </form>

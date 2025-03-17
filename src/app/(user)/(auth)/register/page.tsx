@@ -13,9 +13,33 @@ import {
     FacebookLoginButton,
     GoogleLoginButton,
 } from 'react-social-login-buttons';
+import { Turnstile } from '@marsidev/react-turnstile';
+import { useState } from 'react';
+import { Button } from '@/components/ui/button';
 
 export default function Register() {
     const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+    const [turnstileToken, setTurnstileToken] = useState("");
+
+    const handleLogin = async (type: 'google' | 'facebook') => {
+        if (!turnstileToken) {
+            alert("Please complete the CAPTCHA!");
+            return;
+        }
+
+        const response = await fetch(`${apiUrl}/auth/validate-turnstile`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ turnstileToken }),
+        });
+
+        const { data } = await response.json();
+        if (data.success) {
+            window.location.href = `${apiUrl}/auth/${type}`
+        } else {
+            alert("CAPTCHA verification failed!");
+        }
+    };
 
     return (
         <Card className="mx-auto max-w-sm my-10">
@@ -28,8 +52,12 @@ export default function Register() {
             <CardContent>
                 <div className="grid gap-4">
                     <div className="grid gap-2">
-                        <RegisterForm />
+                        <RegisterForm turnstileToken={turnstileToken} />
                     </div>
+                    <Turnstile
+                        siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY as string}
+                        onSuccess={(token) => setTurnstileToken(token)}
+                    />
                     <div className="relative">
                         <div className="absolute inset-0 flex items-center">
                             <span className="w-full border-t"></span>
@@ -41,26 +69,20 @@ export default function Register() {
                         </div>
                     </div>
                     <div className="flex">
-                        <Link
-                            href={apiUrl + '/auth/facebook'}
-                            className="w-[50%]"
-                        >
+                        <Button className="w-[50%]" asChild disabled={!turnstileToken} onClick={() => handleLogin('facebook')}>
                             <FacebookLoginButton
                                 text="Facebook"
                                 align="center"
                                 size="41px"
                             />
-                        </Link>
-                        <Link
-                            href={apiUrl + '/auth/google'}
-                            className="w-[50%]"
-                        >
+                        </Button>
+                        <Button className="w-[50%]" asChild disabled={!turnstileToken} onClick={() => handleLogin('google')}>
                             <GoogleLoginButton
                                 text="Google"
                                 align="center"
                                 size="41px"
                             />
-                        </Link>
+                        </Button>
                     </div>
                 </div>
                 <div className="mt-4 text-center text-sm">

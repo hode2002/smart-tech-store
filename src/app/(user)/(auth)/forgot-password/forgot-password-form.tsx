@@ -22,8 +22,10 @@ import {
     ForgotPasswordResponseType,
     ForgotPasswordType,
 } from '@/schemaValidations/auth.schema';
+import { Turnstile } from '@marsidev/react-turnstile';
 export function ForgotPasswordForm() {
     const router = useRouter();
+    const [turnstileToken, setTurnstileToken] = useState("");
     const [loading, setLoading] = useState(false);
 
     const form = useForm<ForgotPasswordType>({
@@ -39,6 +41,7 @@ export function ForgotPasswordForm() {
         const response: ForgotPasswordResponseType =
             await authApiRequest.forgotPassword({
                 email,
+                turnstileToken
             });
         setLoading(false);
         if (response.statusCode === 200) {
@@ -73,10 +76,15 @@ export function ForgotPasswordForm() {
                             <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />
                         </Button>
                     ) : (
-                        <Button type="submit" className="w-full">
+                        <Button type="submit" className="w-full" disabled={!turnstileToken}>
                             Gửi
                         </Button>
                     )}
+
+                    <Turnstile
+                        siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY as string}
+                        onSuccess={(token) => setTurnstileToken(token)}
+                    />
                 </div>
             </form>
         </Form>

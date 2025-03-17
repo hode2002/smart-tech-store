@@ -7,19 +7,45 @@ import {
     FacebookLoginButton,
     GoogleLoginButton,
 } from 'react-social-login-buttons';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { setRegisterEmail } from '@/lib/store/slices';
 import { useAppDispatch } from '@/lib/store';
+import { Turnstile } from "@marsidev/react-turnstile";
+import { Button } from '@/components/ui/button';
 
 export default function Login() {
     const apiUrl = process.env.NEXT_PUBLIC_API_URL;
     const dispatch = useAppDispatch();
+
+    const [turnstileToken, setTurnstileToken] = useState("");
 
     useEffect(() => {
         return () => {
             dispatch(setRegisterEmail(''));
         };
     }, [dispatch]);
+
+    const handleLogin = async (type: 'google' | 'facebook') => {
+        const turnstileToken = (window as any).turnstile.getResponse();
+        if (!turnstileToken) {
+            alert("Please complete the CAPTCHA!");
+            return;
+        }
+
+        const response = await fetch(`${apiUrl}/auth/validate-turnstile`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ turnstileToken }),
+        });
+
+        const { data } = await response.json();
+        if (data.success) {
+            window.location.href = `${apiUrl}/auth/${type}`
+        } else {
+            alert("CAPTCHA verification failed!");
+        }
+    };
+
 
     return (
         <div className="py-10 bg-popover min-h-screen">
@@ -29,7 +55,11 @@ export default function Login() {
                 </CardHeader>
                 <CardContent>
                     <div className="grid gap-4">
-                        <LoginForm />
+                        <LoginForm turnstileToken={turnstileToken} />
+                        <Turnstile
+                            siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY as string}
+                            onSuccess={(token) => setTurnstileToken(token)}
+                        />
                         <div className="relative">
                             <div className="absolute inset-0 flex items-center">
                                 <span className="w-full border-t"></span>
@@ -41,26 +71,20 @@ export default function Login() {
                             </div>
                         </div>
                         <div className="flex">
-                            <Link
-                                href={apiUrl + '/auth/facebook'}
-                                className="w-[50%]"
-                            >
+                            <Button className="w-[50%]" asChild disabled={!turnstileToken} onClick={() => handleLogin('facebook')}>
                                 <FacebookLoginButton
                                     text="Facebook"
                                     align="center"
                                     size="41px"
                                 />
-                            </Link>
-                            <Link
-                                href={apiUrl + '/auth/google'}
-                                className="w-[50%]"
-                            >
+                            </Button>
+                            <Button className="w-[50%]" asChild disabled={!turnstileToken} onClick={() => handleLogin('google')}>
                                 <GoogleLoginButton
                                     text="Google"
                                     align="center"
                                     size="41px"
                                 />
-                            </Link>
+                            </Button>
                         </div>
                     </div>
                     <div className="mt-4 text-center text-sm">

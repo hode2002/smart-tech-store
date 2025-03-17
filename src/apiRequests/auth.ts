@@ -26,7 +26,7 @@ export type ActiveUserEmailResponseType = {
 };
 
 class AuthApiRequest {
-    async login(body: LoginBodyType) {
+    async login(body: LoginBodyType & { turnstileToken: string }) {
         try {
             const response: LoginResponseType = await http.post(
                 '/auth/login',
@@ -73,7 +73,7 @@ class AuthApiRequest {
         }
     }
 
-    async register(body: RegisterBodyType) {
+    async register(body: RegisterBodyType & { turnstileToken: string }) {
         try {
             const response: RegisterResType = await http.post<RegisterResType>(
                 '/auth/register',
@@ -161,7 +161,9 @@ class AuthApiRequest {
         }
     }
 
-    async forgotPassword(body: ForgotPasswordType) {
+    async forgotPassword(
+        body: ForgotPasswordType & { turnstileToken: string },
+    ) {
         try {
             const response: ForgotPasswordResponseType = await http.post(
                 '/users/reset-password',
