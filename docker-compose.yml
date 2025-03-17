@@ -1,0 +1,16 @@
+services:
+    client:
+        build:
+            context: .
+            dockerfile: Dockerfile
+        container_name: client
+        ports:
+            - '3000:3000'
+        restart: unless-stopped
+        env_file:
+            - .env
+        networks:
+            - app-network
+
+networks:
+    app-network:
