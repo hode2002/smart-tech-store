@@ -1,5 +1,6 @@
 import { InjectQueue } from '@nestjs/bull';
 import {
+    BadRequestException,
     ConflictException,
     ForbiddenException,
     Injectable,
@@ -9,9 +10,10 @@ import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { InjectModel } from '@nestjs/mongoose';
 import { AuthType } from '@prisma/client';
+import axios from 'axios';
 import * as bcrypt from 'bcrypt';
 import { Queue } from 'bull';
-import { Response } from 'express';
+import { Request, Response } from 'express';
 import { Model } from 'mongoose';
 import * as otpGenerator from 'otp-generator';
 
@@ -75,6 +77,35 @@ export class AuthService {
             throw new InternalServerErrorException('Internal Server Error');
         }
         return true;
+    }
+
+    async validateTurnstile(req: Request, turnstileToken: string) {
+        if (!turnstileToken) {
+            throw new BadRequestException('Turnstile token is required');
+        }
+
+        const secretKey = this.configService.get<string>('TURNSTILE_SECRET_KEY');
+        const verifyUrl = this.configService.get<string>('TURNSTILE_VERIFY_URL');
+
+        const { data } = await axios.post(
+            verifyUrl,
+            {
+                secret: secretKey,
+                response: turnstileToken,
+                remoteip: req.ip,
+            },
+            {
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            },
+        );
+
+        if (!data.success) {
+            throw new BadRequestException('Turnstile verification failed');
+        }
+
+        return { success: true };
     }
 
     async thirdPartyLogin(

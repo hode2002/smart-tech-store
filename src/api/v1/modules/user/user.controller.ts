@@ -17,7 +17,7 @@ import { Request } from 'express';
 
 import { GetEmail, GetUserId, Permission, ResponseMessage } from '@/common/decorators';
 import { RoleGuard } from '@/common/guards';
-import { CreateUserEmailDto } from '@v1/modules/auth/dto';
+import { CreateUserEmailDto, TurnstileTokenDto } from '@v1/modules/auth/dto';
 import { AtJwtGuard } from '@v1/modules/auth/guards';
 
 import { ChangePasswordDto, UpdateUserAddressDto, UpdateUserDto, UpdateUserStatusDto } from './dto';
@@ -65,7 +65,10 @@ export class UserController {
     @ResponseMessage('Change password success')
     @UseGuards(AtJwtGuard)
     @HttpCode(HttpStatus.OK)
-    async changePassword(@GetEmail() email: string, @Body() changePasswordDto: ChangePasswordDto) {
+    async changePassword(
+        @GetEmail() email: string,
+        @Body() changePasswordDto: ChangePasswordDto & TurnstileTokenDto,
+    ) {
         return await this.userService.changePassword(email, changePasswordDto);
     }
 
