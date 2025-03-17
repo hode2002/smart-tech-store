@@ -1,9 +1,10 @@
 import { BullModule } from '@nestjs/bull';
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
 import { MongooseModule } from '@nestjs/mongoose';
 import { PassportModule } from '@nestjs/passport';
 
+import { TurnstileMiddleware } from '@/common/middlewares';
 import { PrismaModule } from '@/prisma/prisma.module';
 import { UserModule } from '@v1/modules/user/user.module';
 
@@ -27,4 +28,10 @@ import { AtJwtStrategy, FacebookStrategy, GoogleStrategy, RfJwtStrategy } from '
     providers: [AuthService, AtJwtStrategy, RfJwtStrategy, FacebookStrategy, GoogleStrategy],
     exports: [AuthService],
 })
-export class AuthModule {}
+export class AuthModule implements NestModule {
+    configure(consumer: MiddlewareConsumer) {
+        consumer
+            .apply(TurnstileMiddleware)
+            .forRoutes('auth/login', 'auth/register', 'auth/forgot-password');
+    }
+}

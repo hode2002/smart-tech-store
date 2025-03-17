@@ -17,7 +17,7 @@ import { JwtPayload } from '@/common/types';
 import { CreateUserDto } from '@v1/modules/user/dto';
 
 import { AuthService } from './auth.service';
-import { CreateUserEmailDto, ThirdPartyLoginDto, VerifyOtpDto } from './dto';
+import { CreateUserEmailDto, ThirdPartyLoginDto, TurnstileTokenDto, VerifyOtpDto } from './dto';
 import { AtJwtGuard, FacebookGuard, GoogleGuard, RfJwtGuard } from './guards';
 
 @Controller('auth')
@@ -29,6 +29,16 @@ export class AuthController {
     @ResponseMessage('Email verify Success')
     async emailVerification(@Body() createUserEmailDto: CreateUserEmailDto) {
         return this.authService.emailVerification(createUserEmailDto);
+    }
+
+    @Post('validate-turnstile')
+    @ResponseMessage('Validate turnstile token successfully')
+    @HttpCode(HttpStatus.OK)
+    async validateTurnstile(
+        @Req() request: Request,
+        @Body('turnstileToken') turnstileToken: string,
+    ) {
+        return this.authService.validateTurnstile(request, turnstileToken);
     }
 
     @Get('facebook')
@@ -67,7 +77,7 @@ export class AuthController {
     @HttpCode(HttpStatus.OK)
     @Throttle({ default: { limit: 3, ttl: 60000 } })
     @ResponseMessage('Send otp successfully')
-    async register(@Body() createUserEmailDto: CreateUserEmailDto) {
+    async register(@Body() createUserEmailDto: CreateUserEmailDto & TurnstileTokenDto) {
         return this.authService.register(createUserEmailDto);
     }
 
@@ -98,7 +108,7 @@ export class AuthController {
     @Post('login')
     @HttpCode(HttpStatus.OK)
     @ResponseMessage('Login Success')
-    async login(@Body() createUserDto: CreateUserDto) {
+    async login(@Body() createUserDto: CreateUserDto & TurnstileTokenDto) {
         return this.authService.login(createUserDto);
     }
 
