@@ -1,2 +1,2 @@
-export * from './banner.repository';
-export * from './banner.repository.interface';
+export * from './banner-command.repository';
+export * from './banner-query.repository';
