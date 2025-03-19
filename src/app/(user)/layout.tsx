@@ -19,9 +19,29 @@ import { PageFooter } from '@/components/page-footer';
 const inter = Inter({ subsets: ['vietnamese'] });
 
 export const metadata: Metadata = {
-    title: 'Smart Tech Store',
-    description: 'Smart Tech Store',
+    title: "Điện thoại, Laptop, Phụ kiện, Đồng hồ chính hãng",
+    description: "Hệ thống bán lẻ điện thoại di động, smartphone, máy tính bảng, tablet, laptop, phụ kiện, smartwatch, đồng hồ chính hãng mới nhất, giá tốt.",
+    icons: {
+        icon: "/favicon.webp",
+    },
+    openGraph: {
+        type: "website",
+        locale: "vi_VN",
+        url: "https://store.hovande.id.vn",
+        title: "Điện thoại, Laptop, Phụ kiện, Đồng hồ chính hãng",
+        description: "Hệ thống bán lẻ điện thoại di động, smartphone, máy tính bảng, tablet, laptop, phụ kiện, smartwatch, đồng hồ chính hãng mới nhất, giá tốt.",
+        images: [
+            {
+                url: "/favicon.webp",
+                width: 1200,
+                height: 630,
+                alt: "Smart Tech Store",
+            },
+        ],
+        siteName: "Smart Tech Store",
+    },
 };
+
 export default function RootLayout({
     children,
 }: Readonly<{
