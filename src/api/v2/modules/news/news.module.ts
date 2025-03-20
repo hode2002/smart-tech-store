@@ -23,7 +23,7 @@ import {
 } from '@v2/modules/news/services';
 
 @Module({
-    imports: [CommonModule, MediaModule, CacheModule],
+    imports: [CommonModule, MediaModule, CacheModule.register({})],
     controllers: [NewsController],
     providers: [
         CommonService,

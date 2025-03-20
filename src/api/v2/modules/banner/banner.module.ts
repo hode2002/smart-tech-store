@@ -20,7 +20,7 @@ import { CommonModule } from '@v2/modules/common/common.module';
 import { MediaModule } from '@v2/modules/media/media.module';
 
 @Module({
-    imports: [CommonModule, MediaModule, CacheModule],
+    imports: [CommonModule, MediaModule, CacheModule.register({})],
     controllers: [BannerController],
     providers: [
         {

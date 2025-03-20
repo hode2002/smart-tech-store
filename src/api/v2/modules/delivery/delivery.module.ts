@@ -21,7 +21,7 @@ import {
 } from '@v2/modules/delivery/services';
 
 @Module({
-    imports: [CommonModule, CacheModule],
+    imports: [CommonModule, CacheModule.register({})],
     controllers: [DeliveryController],
     providers: [
         CommonService,
