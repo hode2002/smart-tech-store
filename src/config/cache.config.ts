@@ -8,7 +8,7 @@ export const cacheConfig = {
     useFactory: async (configService: ConfigService): Promise<CacheModuleOptions> => {
         const store = await redisStore({
             url: configService.get<string>('REDIS_URL'),
-            ttl: configService.get<number>('CACHE_TTL'),
+            ttl: configService.get<number>('CACHE_TTL', 3600),
         });
 
         return {
