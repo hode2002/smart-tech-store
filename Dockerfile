@@ -7,7 +7,7 @@ COPY package*.json ./
 COPY prisma ./prisma/
 
 RUN npm ci --legacy-peer-deps && \
-    npx prisma generate
+    npx prisma generate deploy
 
 # Stage 2: Builder
 FROM node:21-alpine AS builder
@@ -30,7 +30,7 @@ COPY package*.json ./
 COPY prisma ./prisma/
 
 RUN npm ci --only=production --legacy-peer-deps && \
-    npx prisma generate
+    npx prisma generate deploy
 
 COPY --from=builder /app/dist ./dist
 
