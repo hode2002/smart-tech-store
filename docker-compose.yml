@@ -8,9 +8,12 @@ services:
             - '3001:3001'
         restart: unless-stopped
         depends_on:
-            - mongodb
-            - redis
-            - mysql
+            mysql:
+                condition: service_healthy
+            mongodb:
+                condition: service_started
+            redis:
+                condition: service_started
         env_file:
             - .env
         networks:
@@ -27,9 +30,9 @@ services:
             - /etc/letsencrypt/live/${DOMAIN}:/etc/letsencrypt/live/${DOMAIN}
             - /etc/letsencrypt/archive/${DOMAIN}:/etc/letsencrypt/archive/${DOMAIN}
         depends_on:
-        - api
+            - api
         networks:
-        - app-network
+            - app-network
 
     mysql:
         image: mysql:8.0
@@ -44,6 +47,20 @@ services:
             - ./init.sql:/docker-entrypoint-initdb.d/init.sql
         networks:
             - app-network
+        healthcheck:
+            test:
+                [
+                    'CMD',
+                    'mysqladmin',
+                    'ping',
+                    '-h',
+                    'localhost',
+                    '-u$$MYSQL_USER',
+                    '-p$$MYSQL_PASSWORD',
+                ]
+            interval: 5s
+            timeout: 5s
+            retries: 10
 
     mongodb:
         image: mongo:6.0
@@ -52,11 +69,11 @@ services:
         ports:
         - "27017:27017"
         env_file:
-        - .env
+            - .env
         volumes:
-        - mongo_data:/data/db
+            - mongo_data:/data/db
         networks:
-        - app-network
+            - app-network
 
     redis:
         image: redis:alpine
@@ -65,11 +82,11 @@ services:
         ports:
         - "6379:6379"
         env_file:
-        - .env
+            - .env
         volumes:
-        - redis_data:/data
+            - redis_data:/data
         networks:
-        - app-network
+            - app-network
 
 networks:
     app-network:
