@@ -5,6 +5,7 @@ import {
     ForbiddenException,
     NotFoundException,
 } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { AuthType, Role } from '@prisma/client';
 
 import { UserAddress, UserProfile } from '@/prisma/selectors';
@@ -29,6 +30,7 @@ import {
 export class UserCommandService implements IUserCommandService {
     constructor(
         private readonly cacheService: CacheService,
+        private readonly configService: ConfigService,
         @Inject(USER_TOKENS.REPOSITORIES.USER_COMMAND_REPOSITORY)
         private readonly userCommandRepository: IUserCommandRepository,
         @Inject(USER_TOKENS.SERVICES.USER_QUERY_SERVICE)
@@ -43,6 +45,7 @@ export class UserCommandService implements IUserCommandService {
         return this.userCommandRepository.create({
             is_active: true,
             auth_type: provider,
+            avatar: this.configService.get('DEFAULT_AVATAR'),
             ...data,
         });
     }
@@ -56,6 +59,7 @@ export class UserCommandService implements IUserCommandService {
         return this.userCommandRepository.create({
             email,
             auth_type: AuthType.EMAIL,
+            avatar: this.configService.get('DEFAULT_AVATAR'),
         });
     }
 
