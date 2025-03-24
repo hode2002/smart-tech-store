@@ -31,6 +31,7 @@ export const USER_WITH_ADDRESS_SELECT = {
             district: true,
             ward: true,
             address: true,
+            hamlet: true,
         },
     },
 } as const;
