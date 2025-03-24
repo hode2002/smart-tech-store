@@ -1,45 +1,44 @@
 import { BullModule } from '@nestjs/bull';
-import { CacheInterceptor, CacheModule } from '@nestjs/cache-manager';
 import { Module } from '@nestjs/common';
-import { ConfigModule, ConfigService } from '@nestjs/config';
-import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
+import { ConfigModule } from '@nestjs/config';
+import { APP_GUARD } from '@nestjs/core';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 
+import { authConfig, bullConfig, mailConfig, mongooseConfig, throttlerConfig } from '@/config';
+import { PrismaModule } from '@/prisma/prisma.module';
 import {
-    authConfig,
-    bullConfig,
-    cacheConfig,
-    mailConfig,
-    mongooseConfig,
-    throttlerConfig,
-} from '@/config';
+    CartModule,
+    NotificationModule,
+    OrderModule,
+    ProductModule,
+    ReviewModule,
+} from '@v1/modules';
 import {
     AuthModule,
-    CartModule,
+    OtpModule,
+    HealthModule,
+    BrandModule,
+    BannerModule,
+    MediaModule,
     CategoryModule,
     DeliveryModule,
     HistorySearchModule,
-    MailModule,
     NewsModule,
-    NotificationModule,
-    OrderModule,
-    PrismaModule,
-    ProductModule,
-    ReviewModule,
+    MailModule,
+    RedisModule,
     UserModule,
     VoucherModule,
-} from '@v1/modules';
-import { OtpModule, HealthModule, BrandModule, BannerModule, MediaModule } from '@v2/modules';
+} from '@v2/modules';
 
 @Module({
     imports: [
         ConfigModule.forRoot({ load: [authConfig, mailConfig], isGlobal: true }),
-        CacheModule.registerAsync(cacheConfig),
         BullModule.forRootAsync(bullConfig),
         MongooseModule.forRootAsync(mongooseConfig),
         ThrottlerModule.forRoot([throttlerConfig]),
         PrismaModule,
+        RedisModule,
         AuthModule,
         UserModule,
         MailModule,
@@ -65,10 +64,6 @@ import { OtpModule, HealthModule, BrandModule, BannerModule, MediaModule } from 
             provide: APP_GUARD,
             useClass: ThrottlerGuard,
         },
-        // {
-        //     provide: APP_INTERCEPTOR,
-        //     useClass: CacheInterceptor,
-        // },
     ],
 })
 export class AppModule {}
