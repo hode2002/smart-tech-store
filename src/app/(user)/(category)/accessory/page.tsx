@@ -30,6 +30,7 @@ import Image from 'next/image';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { A11y, Navigation, Scrollbar } from 'swiper/modules';
 import { useQuery } from '@tanstack/react-query';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 const fetchByCategory = async () => {
     const res = await productApiRequest.getProductsByCategory('accessory');
@@ -44,6 +45,7 @@ const fetchBrands = async () => {
 export default function AccessoryPage() {
     const [sortedBy, setSortedBy] = useState<string>('new');
     const [selectedBrand, setSelectedBrand] = useState<string>('all');
+    const isMobile = useIsMobile()
 
     const { data: products = [] } = useQuery<ProductType[]>({
         queryKey: ['cate-accessory'],
@@ -117,7 +119,7 @@ export default function AccessoryPage() {
                                         modules={[Navigation, Scrollbar, A11y]}
                                         navigation
                                         scrollbar={{ draggable: true }}
-                                        slidesPerView={10}
+                                        slidesPerView={isMobile ? 3 : 10}
                                     >
                                         <SwiperSlide
                                             onClick={() =>
@@ -126,11 +128,10 @@ export default function AccessoryPage() {
                                             className="cursor-pointer flex justify-center items-center p-2"
                                         >
                                             <p
-                                                className={`${
-                                                    selectedBrand === 'all'
-                                                        ? 'border-red-400'
-                                                        : ''
-                                                } p-2 hover:border-red-400 border rounded-md flex justify-center items-center`}
+                                                className={`${selectedBrand === 'all'
+                                                    ? 'border-red-400'
+                                                    : ''
+                                                    } p-2 hover:border-red-400 border text-nowrap text-xs md:text-sm rounded-md flex justify-center items-center`}
                                             >
                                                 Tất cả
                                             </p>
@@ -146,12 +147,11 @@ export default function AccessoryPage() {
                                                 className="cursor-pointer flex justify-center items-center p-2"
                                             >
                                                 <div
-                                                    className={`${
-                                                        selectedBrand ===
+                                                    className={`${selectedBrand ===
                                                         item.slug
-                                                            ? 'border-red-400'
-                                                            : ''
-                                                    } hover:border-red-400 border rounded-md flex justify-center items-center`}
+                                                        ? 'border-red-400'
+                                                        : ''
+                                                        } hover:border-red-400 border rounded-md flex justify-center items-center`}
                                                 >
                                                     <Image
                                                         src={item.logo_url}

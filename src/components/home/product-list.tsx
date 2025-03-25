@@ -11,7 +11,7 @@ export default function ProductList(props: Props) {
     return (
         <>
             {products?.length > 0 ? (
-                <div className="flex flex-wrap justify-center gap-8">
+                <div className="grid grid-cols-2 md:grid-cols-4 md:gap-8">
                     {products.map((product) => (
                         <HomeProductCard key={product.id} product={product} />
                     ))}

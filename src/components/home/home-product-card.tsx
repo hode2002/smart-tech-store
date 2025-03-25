@@ -42,8 +42,8 @@ export default function HomeProductCard(props: Props) {
     const salePrice = formatPrice(
         Number(
             product.price -
-                (product.price * productOption.discount) / 100 +
-                productOption.price_modifier,
+            (product.price * productOption.discount) / 100 +
+            productOption.price_modifier,
         ),
     );
 
@@ -81,10 +81,10 @@ export default function HomeProductCard(props: Props) {
     };
 
     return (
-        <div className="w-[200px] lg:w-auto lg:max-w-[300px]">
+        <div className="lg:w-auto lg:max-w-[300px]">
             <ContextMenu>
                 <ContextMenuTrigger>
-                    <div className="min-h-[410px] md:h-[500px] bg-card hover:shadow-2xl hover:cursor-pointer hover:scale-[1.00] md:hover:scale-[1.1] transition-all duration-300 border-[1px] border-[#ccc] rounded-md px-2 py-3 w-[280px] shadow-md m-3 flex flex-col">
+                    <div className="w-[170px] md:w-[280px] min-h-[330px] md:min-h-[400px] md:h-[450px] bg-card hover:shadow-2xl hover:cursor-pointer hover:scale-[1.00] md:hover:scale-[1.1] transition-all duration-300 border-[1px] border-[#ccc] rounded-md px-2 py-3 shadow-md m-3 flex flex-col">
                         {product?.label && (
                             <p className="mb-4 opacity-70 text-sm">
                                 <span className="bg-[#f1f1f1] text-[#333] rounded-lg animate-pulse">
@@ -102,7 +102,7 @@ export default function HomeProductCard(props: Props) {
                                 width={500}
                                 src={productOption.label_image}
                                 alt="product sticker"
-                                className="h-auto w-[55px] md:w-[70px] absolute top-2 left-3 z-10 animate-bounce"
+                                className="h-auto w-[40px] md:w-[70px] absolute top-2 left-3 z-10 animate-bounce"
                             />
 
                             <div>
@@ -112,26 +112,26 @@ export default function HomeProductCard(props: Props) {
                                     width={200}
                                     src={productOption.thumbnail}
                                     alt={productName}
-                                    className="w-[150px] md:w-[200px] hover:scale-[1.0] md:hover:scale-[1.1] transition-all duration-300"
+                                    className="w-[100px] md:w-[200px] hover:scale-[1.0] md:hover:scale-[1.1] transition-all duration-300"
                                 />
                             </div>
 
                             <div className="flex flex-col gap-2 capitalize">
-                                <p className="text-center font-bold capitalize text-pretty">
+                                <p className="text-center font-bold capitalize text-xs md:text-sm text-pretty">
                                     {productName}
                                 </p>
                                 <div className="flex flex-col gap-3 mt-2 justify-center items-center">
                                     {productOption.discount === 0 ? (
-                                        <p className="text-[#E83A45] font-semibold text-[18px]">
+                                        <p className="text-[#E83A45] text-xs md:text-lg font-semibold text-[18px]">
                                             {price}
                                         </p>
                                     ) : (
                                         <>
-                                            <p className="text-[#E83A45] font-bold text-[18px]">
+                                            <p className="text-[#E83A45] text-xs md:text-lg font-bold text-[18px]">
                                                 {salePrice}
                                             </p>
                                             <p className="text-[14px] flex gap-2">
-                                                <span className="line-through">
+                                                <span className="line-through text-xs md:text-sm">
                                                     {price}
                                                 </span>
                                                 <span>
@@ -173,7 +173,7 @@ export default function HomeProductCard(props: Props) {
 
                         <Button
                             onClick={handleAddToCart}
-                            className="mt-auto py-4 bg-popover-foreground text-popover hover:bg-popover hover:text-popover-foreground hover:border rounded-md"
+                            className="mt-auto py-4 bg-popover-foreground text-xs md:text-sm text-popover hover:bg-popover hover:text-popover-foreground hover:border rounded-md"
                         >
                             Thêm vào giỏ hàng
                         </Button>
