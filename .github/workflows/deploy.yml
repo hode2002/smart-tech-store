@@ -1,0 +1,36 @@
+name: Deploy Smart Tech Store to AWS EC2
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v3
+
+      - name: Login to AWS ECR
+        run: |
+          aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | docker login --username AWS --password-stdin ${{ secrets.AWS_ECR_URI }}
+
+      - name: Build and push Docker image
+        run: |
+          docker build -t smart-tech-api .
+          docker tag smart-tech-api:latest ${{ secrets.AWS_ECR_URI }}:latest
+          docker push ${{ secrets.AWS_ECR_URI }}:latest
+
+      - name: Deploy to EC2
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ec2-user
+          key: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
+          script: |
+            aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | docker login --username AWS --password-stdin ${{ secrets.AWS_ECR_URI }}
+            cd /app
+            docker-compose down api
+            docker pull ${{ secrets.AWS_ECR_URI }}:latest
+            docker-compose up -d api
