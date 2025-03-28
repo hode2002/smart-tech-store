@@ -1,4 +1,5 @@
 import {
+    BadRequestException,
     ConflictException,
     ForbiddenException,
     Inject,
@@ -38,6 +39,7 @@ export class AuthService implements IAuthService {
         @Inject(USER_TOKENS.HANDLERS.USER_PASSWORD_HANDLER)
         private readonly passwordHandler: IUserPasswordHandler,
     ) {}
+
     async verifyEmail(email: string) {
         const url = this.configService.get<string>('MAIL_VERIFICATION_URL');
         const { data } = await axios.get<EmailVerification>(url + email);
@@ -59,6 +61,35 @@ export class AuthService implements IAuthService {
             throw new ForbiddenException('Incorrect Email or Password');
         }
         return user;
+    }
+
+    async validateTurnstile(req: Request, turnstileToken: string) {
+        if (!turnstileToken) {
+            throw new BadRequestException('Turnstile token is required');
+        }
+
+        const secretKey = this.configService.get<string>('TURNSTILE_SECRET_KEY');
+        const verifyUrl = this.configService.get<string>('TURNSTILE_VERIFY_URL');
+
+        const { data } = await axios.post(
+            verifyUrl,
+            {
+                secret: secretKey,
+                response: turnstileToken,
+                remoteip: req.ip,
+            },
+            {
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            },
+        );
+
+        if (!data.success) {
+            throw new BadRequestException('Turnstile verification failed');
+        }
+
+        return { success: true };
     }
 
     async register(email: string) {

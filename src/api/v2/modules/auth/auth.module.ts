@@ -1,7 +1,8 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 
+import { TurnstileMiddleware } from '@/common/middlewares';
 import { AuthController } from '@v2/modules/auth/auth.controller';
 import { AuthService } from '@v2/modules/auth/services/auth.service';
 import { SocialAuthService } from '@v2/modules/auth/services/social.auth.service';
@@ -44,4 +45,10 @@ import { UserModule } from '@v2/modules/user/user.module';
     ],
     exports: [AuthService],
 })
-export class AuthModule {}
+export class AuthModule implements NestModule {
+    configure(consumer: MiddlewareConsumer) {
+        consumer
+            .apply(TurnstileMiddleware)
+            .forRoutes('auth/login', 'auth/register', 'auth/forgot-password');
+    }
+}

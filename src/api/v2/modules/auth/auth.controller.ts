@@ -80,6 +80,16 @@ export class AuthController {
         return this.socialAuthService.googleLogin(req, res);
     }
 
+    @Post('validate-turnstile')
+    @ResponseMessage('Validate turnstile token successfully')
+    @HttpCode(HttpStatus.OK)
+    async validateTurnstile(
+        @Req() request: Request,
+        @Body('turnstileToken') turnstileToken: string,
+    ) {
+        return this.authService.validateTurnstile(request, turnstileToken);
+    }
+
     @Post('register')
     @ApiOperation({ summary: 'Register a new user' })
     @ApiResponse({ status: 201, description: 'User registered successfully.' })
