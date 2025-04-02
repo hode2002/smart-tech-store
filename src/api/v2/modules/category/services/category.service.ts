@@ -1,15 +1,20 @@
-import { Injectable } from '@nestjs/common';
-import { CategoryCommandService } from '@v2/modules/category/services';
-import { CategoryQueryService } from '@v2/modules/category/services/category-query.service';
+import { Inject, Injectable } from '@nestjs/common';
 
-import { CreateCategoryDto } from '../dto/create-category.dto';
-import { UpdateCategoryDto } from '../dto/update-category.dto';
+import { CATEGORY_TOKENS } from '@v2/modules/category/constants';
+import { CreateCategoryDto, UpdateCategoryDto } from '@v2/modules/category/dto';
+import {
+    ICategoryQueryService,
+    ICategoryCommandService,
+    ICategoryService,
+} from '@v2/modules/category/interfaces';
 
 @Injectable()
-export class CategoryService {
+export class CategoryService implements ICategoryService {
     constructor(
-        private readonly categoryCommandService: CategoryCommandService,
-        private readonly categoryQueryService: CategoryQueryService,
+        @Inject(CATEGORY_TOKENS.SERVICES.COMMAND)
+        private readonly categoryCommandService: ICategoryCommandService,
+        @Inject(CATEGORY_TOKENS.SERVICES.QUERY)
+        private readonly categoryQueryService: ICategoryQueryService,
     ) {}
 
     async create(createCategoryDto: CreateCategoryDto) {

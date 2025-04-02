@@ -1,47 +1,46 @@
 import { Module } from '@nestjs/common';
 
-import {
-    CATEGORY_COMMAND_REPOSITORY,
-    CATEGORY_QUERY_REPOSITORY,
-} from '@v2/modules/category/constants';
-import { ICategoryCommandRepository } from '@v2/modules/category/interfaces';
+import { CategoryController } from '@v2/modules/category/category.controller';
+import { CATEGORY_TOKENS } from '@v2/modules/category/constants';
 import {
     CategoryCommandRepository,
     CategoryQueryRepository,
 } from '@v2/modules/category/repositories';
 import { CategoryCommandService, CategoryQueryService } from '@v2/modules/category/services';
+import { CategoryService } from '@v2/modules/category/services/category.service';
 import { CommonModule } from '@v2/modules/common/common.module';
-import { CommonService } from '@v2/modules/common/common.service';
-
-import { CategoryController } from './category.controller';
-import { CategoryService } from './services/category.service';
 
 @Module({
     imports: [CommonModule],
     controllers: [CategoryController],
     providers: [
-        CommonService,
         {
-            provide: CATEGORY_QUERY_REPOSITORY,
+            provide: CATEGORY_TOKENS.REPOSITORIES.QUERY,
             useClass: CategoryQueryRepository,
         },
         {
-            provide: CATEGORY_COMMAND_REPOSITORY,
+            provide: CATEGORY_TOKENS.REPOSITORIES.COMMAND,
             useClass: CategoryCommandRepository,
         },
-        CategoryService,
-        CategoryQueryService,
         {
-            provide: CategoryCommandService,
-            useFactory: (
-                categoryRepo: ICategoryCommandRepository,
-                categoryQueryService: CategoryQueryService,
-            ) => {
-                return new CategoryCommandService(categoryRepo, categoryQueryService);
-            },
-            inject: [CATEGORY_COMMAND_REPOSITORY, CategoryQueryService],
+            provide: CATEGORY_TOKENS.SERVICES.QUERY,
+            useClass: CategoryQueryService,
+        },
+        {
+            provide: CATEGORY_TOKENS.SERVICES.COMMAND,
+            useClass: CategoryCommandService,
+        },
+        {
+            provide: CATEGORY_TOKENS.SERVICES.CATEGORY,
+            useClass: CategoryService,
         },
     ],
-    exports: [CategoryService],
+    exports: [
+        CATEGORY_TOKENS.SERVICES.CATEGORY,
+        CATEGORY_TOKENS.SERVICES.COMMAND,
+        CATEGORY_TOKENS.SERVICES.QUERY,
+        CATEGORY_TOKENS.REPOSITORIES.QUERY,
+        CATEGORY_TOKENS.REPOSITORIES.COMMAND,
+    ],
 })
 export class CategoryModule {}
