@@ -5,6 +5,7 @@ import {
     Get,
     HttpCode,
     HttpStatus,
+    Inject,
     Param,
     Patch,
     Post,
@@ -30,13 +31,17 @@ import { PaginationDto } from '@/common/dtos';
 import { RoleGuard } from '@/common/guards';
 import { FileUploadInterceptor } from '@/common/interceptors';
 import { AtJwtGuard } from '@v2/modules/auth/guards';
+import { BRAND_TOKENS } from '@v2/modules/brand/constants';
 import { CreateBrandDto, UpdateBrandDto } from '@v2/modules/brand/dto';
-import { BrandService } from '@v2/modules/brand/services';
+import { IBrandService } from '@v2/modules/brand/interfaces';
 
 @ApiTags('Brands')
 @Controller('brands')
 export class BrandController {
-    constructor(private readonly brandService: BrandService) {}
+    constructor(
+        @Inject(BRAND_TOKENS.SERVICES.BRAND)
+        private readonly brandService: IBrandService,
+    ) {}
 
     @ApiOperation({ summary: 'Create a new brand' })
     @ApiResponse({ status: 201, description: 'Brand created successfully' })

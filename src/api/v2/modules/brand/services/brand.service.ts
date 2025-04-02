@@ -1,14 +1,21 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 
+import { BRAND_TOKENS } from '@v2/modules/brand/constants';
 import { CreateBrandDto, UpdateBrandDto } from '@v2/modules/brand/dto';
-import { BrandQueryService, BrandCommandService } from '@v2/modules/brand/services';
+import {
+    IBrandCommandService,
+    IBrandQueryService,
+    IBrandService,
+} from '@v2/modules/brand/interfaces';
 import { BrandWhereInput } from '@v2/modules/brand/types';
 
 @Injectable()
-export class BrandService {
+export class BrandService implements IBrandService {
     constructor(
-        private readonly brandQueryService: BrandQueryService,
-        private readonly brandCommandService: BrandCommandService,
+        @Inject(BRAND_TOKENS.SERVICES.QUERY)
+        private readonly brandQueryService: IBrandQueryService,
+        @Inject(BRAND_TOKENS.SERVICES.COMMAND)
+        private readonly brandCommandService: IBrandCommandService,
     ) {}
     async create(createBrandDto: CreateBrandDto, file: Express.Multer.File) {
         return this.brandCommandService.create(createBrandDto, file);

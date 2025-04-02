@@ -1,11 +1,7 @@
 import { Module } from '@nestjs/common';
 
-import {
-    BRAND_COMMAND_REPOSITORY,
-    BRAND_MEDIA_UPLOAD_HANDLER,
-    BRAND_MEDIA_DELETE_HANDLER,
-    BRAND_QUERY_REPOSITORY,
-} from '@v2/modules/brand/constants';
+import { BrandController } from '@v2/modules/brand/brand.controller';
+import { BRAND_TOKENS } from '@v2/modules/brand/constants';
 import {
     CloudinaryMediaDeleteHandler,
     CloudinaryMediaUploadHandler,
@@ -21,33 +17,57 @@ import {
 import { CommonModule } from '@v2/modules/common/common.module';
 import { MediaModule } from '@v2/modules/media/media.module';
 
-import { BrandController } from './brand.controller';
-
 @Module({
     imports: [CommonModule, MediaModule],
     controllers: [BrandController],
     providers: [
         {
-            provide: BRAND_QUERY_REPOSITORY,
+            provide: BRAND_TOKENS.REPOSITORIES.QUERY,
             useClass: BrandQueryRepository,
         },
         {
-            provide: BRAND_COMMAND_REPOSITORY,
+            provide: BRAND_TOKENS.REPOSITORIES.COMMAND,
             useClass: BrandCommandRepository,
         },
         {
-            provide: BRAND_MEDIA_UPLOAD_HANDLER,
+            provide: BRAND_TOKENS.HANDLERS.MEDIA_UPLOAD,
             useClass: CloudinaryMediaUploadHandler,
         },
         {
-            provide: BRAND_MEDIA_DELETE_HANDLER,
+            provide: BRAND_TOKENS.HANDLERS.MEDIA_DELETE,
             useClass: CloudinaryMediaDeleteHandler,
         },
-        BrandMediaUploadService,
-        BrandMediaDeleteService,
-        BrandService,
-        BrandQueryService,
-        BrandCommandService,
+        {
+            provide: BRAND_TOKENS.SERVICES.QUERY,
+            useClass: BrandQueryService,
+        },
+        {
+            provide: BRAND_TOKENS.SERVICES.COMMAND,
+            useClass: BrandCommandService,
+        },
+        {
+            provide: BRAND_TOKENS.SERVICES.MEDIA_UPLOAD,
+            useClass: BrandMediaUploadService,
+        },
+        {
+            provide: BRAND_TOKENS.SERVICES.MEDIA_DELETE,
+            useClass: BrandMediaDeleteService,
+        },
+        {
+            provide: BRAND_TOKENS.SERVICES.BRAND,
+            useClass: BrandService,
+        },
+    ],
+    exports: [
+        BRAND_TOKENS.SERVICES.BRAND,
+        BRAND_TOKENS.SERVICES.COMMAND,
+        BRAND_TOKENS.SERVICES.QUERY,
+        BRAND_TOKENS.SERVICES.MEDIA_UPLOAD,
+        BRAND_TOKENS.SERVICES.MEDIA_DELETE,
+        BRAND_TOKENS.REPOSITORIES.QUERY,
+        BRAND_TOKENS.REPOSITORIES.COMMAND,
+        BRAND_TOKENS.HANDLERS.MEDIA_UPLOAD,
+        BRAND_TOKENS.HANDLERS.MEDIA_DELETE,
     ],
 })
 export class BrandModule {}

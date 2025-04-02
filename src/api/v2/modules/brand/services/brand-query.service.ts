@@ -1,14 +1,14 @@
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 
 import { BrandBasic, BrandFull } from '@/prisma/selectors';
-import { BRAND_QUERY_REPOSITORY } from '@v2/modules/brand/constants';
-import { IBrandQueryRepository } from '@v2/modules/brand/interfaces';
+import { BRAND_TOKENS } from '@v2/modules/brand/constants';
+import { IBrandQueryRepository, IBrandQueryService } from '@v2/modules/brand/interfaces';
 import { BrandWhereInput } from '@v2/modules/brand/types';
 
 @Injectable()
-export class BrandQueryService {
+export class BrandQueryService implements IBrandQueryService {
     constructor(
-        @Inject(BRAND_QUERY_REPOSITORY)
+        @Inject(BRAND_TOKENS.REPOSITORIES.QUERY)
         private readonly brandRepo: IBrandQueryRepository,
     ) {}
 

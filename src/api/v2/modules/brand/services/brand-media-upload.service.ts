@@ -1,12 +1,12 @@
 import { Inject, Injectable } from '@nestjs/common';
 
-import { BRAND_MEDIA_UPLOAD_HANDLER } from '@v2/modules/brand/constants';
-import { IBrandMediaUploadHandler } from '@v2/modules/brand/interfaces';
+import { BRAND_TOKENS } from '@v2/modules/brand/constants';
+import { IBrandMediaUploadHandler, IBrandMediaUploadService } from '@v2/modules/brand/interfaces';
 
 @Injectable()
-export class BrandMediaUploadService {
+export class BrandMediaUploadService implements IBrandMediaUploadService {
     constructor(
-        @Inject(BRAND_MEDIA_UPLOAD_HANDLER)
+        @Inject(BRAND_TOKENS.HANDLERS.MEDIA_UPLOAD)
         private mediaHandler: IBrandMediaUploadHandler,
     ) {}
 

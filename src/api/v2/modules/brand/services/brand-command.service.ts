@@ -1,19 +1,24 @@
 import { ConflictException, Inject, Injectable } from '@nestjs/common';
 
 import { generateSlug } from '@/common/utils';
-import { BRAND_MEDIA_UPLOAD_HANDLER, BRAND_COMMAND_REPOSITORY } from '@v2/modules/brand/constants';
+import { BRAND_TOKENS } from '@v2/modules/brand/constants';
 import { CreateBrandDto, UpdateBrandDto } from '@v2/modules/brand/dto';
-import { IBrandCommandRepository, IBrandMediaUploadHandler } from '@v2/modules/brand/interfaces';
-import { BrandQueryService } from '@v2/modules/brand/services/brand-query.service';
+import {
+    IBrandCommandRepository,
+    IBrandMediaUploadHandler,
+    IBrandCommandService,
+    IBrandQueryService,
+} from '@v2/modules/brand/interfaces';
 
 @Injectable()
-export class BrandCommandService {
+export class BrandCommandService implements IBrandCommandService {
     constructor(
-        @Inject(BRAND_COMMAND_REPOSITORY)
+        @Inject(BRAND_TOKENS.REPOSITORIES.COMMAND)
         private readonly brandRepo: IBrandCommandRepository,
-        @Inject(BRAND_MEDIA_UPLOAD_HANDLER)
+        @Inject(BRAND_TOKENS.HANDLERS.MEDIA_UPLOAD)
         private readonly mediaHandler: IBrandMediaUploadHandler,
-        private readonly brandQueryService: BrandQueryService,
+        @Inject(BRAND_TOKENS.SERVICES.QUERY)
+        private readonly brandQueryService: IBrandQueryService,
     ) {}
 
     async create(createBrandDto: CreateBrandDto, file: Express.Multer.File) {
