@@ -1,6 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 
-import { BRAND_MEDIA_DELETE_HANDLER } from '@v2/modules/brand/constants';
+import { BRAND_TOKENS } from '@v2/modules/brand/constants';
 import { IBrandMediaDeleteHandler, IBrandMediaUploadHandler } from '@v2/modules/brand/interfaces';
 import { CloudinaryResponse } from '@v2/modules/cloudinary/cloudinary';
 import { MediaService } from '@v2/modules/media';
@@ -12,7 +12,7 @@ export class CloudinaryMediaUploadHandler implements IBrandMediaUploadHandler {
 
     constructor(
         private readonly mediaService: MediaService,
-        @Inject(BRAND_MEDIA_DELETE_HANDLER)
+        @Inject(BRAND_TOKENS.HANDLERS.MEDIA_DELETE)
         private readonly mediaDeleteHandler: IBrandMediaDeleteHandler,
     ) {}
 
