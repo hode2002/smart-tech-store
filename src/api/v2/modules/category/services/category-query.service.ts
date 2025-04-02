@@ -1,14 +1,14 @@
 import { Inject, Injectable } from '@nestjs/common';
 
-import { CATEGORY_QUERY_REPOSITORY } from '@v2/modules/category/constants';
-import { ICategoryQueryRepository } from '@v2/modules/category/interfaces';
+import { CATEGORY_TOKENS } from '@v2/modules/category/constants';
+import { ICategoryQueryRepository, ICategoryQueryService } from '@v2/modules/category/interfaces';
 import { CategoryWhereInput } from '@v2/modules/category/types';
 import { CommonService } from '@v2/modules/common/common.service';
 
 @Injectable()
-export class CategoryQueryService {
+export class CategoryQueryService implements ICategoryQueryService {
     constructor(
-        @Inject(CATEGORY_QUERY_REPOSITORY)
+        @Inject(CATEGORY_TOKENS.REPOSITORIES.QUERY)
         private readonly categoryRepo: ICategoryQueryRepository,
         private readonly commonService: CommonService,
     ) {}

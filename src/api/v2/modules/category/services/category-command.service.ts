@@ -1,17 +1,21 @@
 import { ConflictException, Inject, Injectable } from '@nestjs/common';
 
 import { generateSlug } from '@/common/utils';
-import { CATEGORY_COMMAND_REPOSITORY } from '@v2/modules/category/constants';
+import { CATEGORY_TOKENS } from '@v2/modules/category/constants';
 import { CreateCategoryDto, UpdateCategoryDto } from '@v2/modules/category/dto';
-import { ICategoryCommandRepository } from '@v2/modules/category/interfaces';
-import { CategoryQueryService } from '@v2/modules/category/services';
+import {
+    ICategoryCommandRepository,
+    ICategoryCommandService,
+    ICategoryQueryService,
+} from '@v2/modules/category/interfaces';
 
 @Injectable()
-export class CategoryCommandService {
+export class CategoryCommandService implements ICategoryCommandService {
     constructor(
-        @Inject(CATEGORY_COMMAND_REPOSITORY)
+        @Inject(CATEGORY_TOKENS.REPOSITORIES.COMMAND)
         private readonly categoryRepo: ICategoryCommandRepository,
-        private readonly categoryQueryService: CategoryQueryService,
+        @Inject(CATEGORY_TOKENS.SERVICES.QUERY)
+        private readonly categoryQueryService: ICategoryQueryService,
     ) {}
 
     async create(createCategoryDto: CreateCategoryDto) {

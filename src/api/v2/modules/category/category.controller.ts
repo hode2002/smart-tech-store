@@ -5,6 +5,7 @@ import {
     Get,
     HttpCode,
     HttpStatus,
+    Inject,
     Param,
     Patch,
     Post,
@@ -26,14 +27,17 @@ import { Permission, ResponseMessage } from '@/common/decorators';
 import { PaginationDto } from '@/common/dtos';
 import { RoleGuard } from '@/common/guards';
 import { AtJwtGuard } from '@v2/modules/auth/guards';
-
-import { CreateCategoryDto, UpdateCategoryDto } from './dto';
-import { CategoryService } from './services';
+import { CATEGORY_TOKENS } from '@v2/modules/category/constants';
+import { CreateCategoryDto, UpdateCategoryDto } from '@v2/modules/category/dto';
+import { ICategoryService } from '@v2/modules/category/interfaces';
 
 @ApiTags('Categories')
 @Controller('categories')
 export class CategoryController {
-    constructor(private readonly categoryService: CategoryService) {}
+    constructor(
+        @Inject(CATEGORY_TOKENS.SERVICES.CATEGORY)
+        private readonly categoryService: ICategoryService,
+    ) {}
 
     @Post()
     @ApiOperation({ summary: 'Create a new category' })
