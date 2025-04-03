@@ -1,10 +1,10 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { Banner } from '@prisma/client';
+import { Banner, BannerStatus } from '@prisma/client';
 
 import { Pagination } from '@/common/types';
 import { BANNER_QUERY_REPOSITORY } from '@v2/modules/banner/constants';
 import { IBannerQueryRepository } from '@v2/modules/banner/interfaces';
-import { BannerWhereUniqueInput } from '@v2/modules/banner/types';
+import { BannerWhereInput } from '@v2/modules/banner/types';
 import { CacheService } from '@v2/modules/cache/cache.service';
 import { CommonService } from '@v2/modules/common/common.service';
 
@@ -24,7 +24,9 @@ export class BannerQueryService {
             return cacheData;
         }
 
-        const result = await this.queryRepository.findAll(page, limit, { status: 'show' });
+        const result = await this.queryRepository.findAll(page, limit, {
+            status: BannerStatus.ACTIVE,
+        });
         await this.cacheService.set(cacheKey, result);
         return result;
     }
@@ -41,7 +43,7 @@ export class BannerQueryService {
         return result;
     }
 
-    async findById(id: string, where?: BannerWhereUniqueInput, passthrough = false) {
+    async findById(id: string, where?: BannerWhereInput, passthrough = false) {
         const cacheKey = `banner_id_${id}`;
         const cacheData = await this.cacheService.get<Banner>(cacheKey);
         if (cacheData) {

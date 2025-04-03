@@ -1,8 +1,9 @@
 import { ConflictException, Inject, Injectable } from '@nestjs/common';
+import { BannerStatus } from '@prisma/client';
 
 import { generateSlug } from '@/common/utils';
 import { BANNER_COMMAND_REPOSITORY } from '@v2/modules/banner/constants';
-import { CreateBannerDto, UpdateBannerDto } from '@v2/modules/banner/dto';
+import { CreateBannerDto, UpdateBannerDto } from '@/api/v2/modules/banner/dto';
 import { IBannerCommandRepository } from '@v2/modules/banner/interfaces';
 import { BannerMediaDeleteService } from '@v2/modules/banner/services/banner-media-delete.service';
 import { BannerMediaUploadService } from '@v2/modules/banner/services/banner-media-upload.service';
@@ -42,10 +43,13 @@ export class BannerCommandService {
 
     async update(id: string, updateBannerDto: UpdateBannerDto, file?: Express.Multer.File) {
         const banner = await this.bannerQueryService.findById(id);
-        let image = banner.image;
+        let image = banner.image_url;
 
         if (file && file?.size) {
-            const { secure_url } = await this.mediaUploadService.updateImage(banner.image, file);
+            const { secure_url } = await this.mediaUploadService.updateImage(
+                banner.image_url,
+                file,
+            );
             image = secure_url;
         }
 
@@ -66,7 +70,7 @@ export class BannerCommandService {
         const banner = await this.bannerQueryService.findById(id);
 
         await Promise.all([
-            this.mediaDeleteService.deleteImage(banner.image),
+            this.mediaDeleteService.deleteImage(banner.image_url),
             this.cacheService.del(`banner_id_${id}`),
             this.cacheService.del(`banner_slug_${banner.slug}`),
             this.cacheService.deleteByPattern('banners_*'),
@@ -76,7 +80,11 @@ export class BannerCommandService {
     }
 
     async restore(id: string) {
-        const banner = await this.bannerQueryService.findById(id, { status: 'hide' }, true);
+        const banner = await this.bannerQueryService.findById(
+            id,
+            { status: BannerStatus.INACTIVE },
+            true,
+        );
 
         await Promise.all([
             this.cacheService.del(`banner_id_${id}`),
@@ -84,7 +92,7 @@ export class BannerCommandService {
             this.cacheService.deleteByPattern('banners_*'),
         ]);
 
-        const data = { status: 'show' };
+        const data = { status: BannerStatus.ACTIVE };
         return this.commandRepository.update(id, data);
     }
 }
