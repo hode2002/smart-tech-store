@@ -34,26 +34,26 @@ export class NewsCommandService {
         const { secure_url } = await this.mediaUploadService.uploadImage(file);
         const data = {
             ...createNewsDto,
-            image: secure_url,
+            thumbnail: secure_url,
             slug,
         };
 
         await this.cacheService.deleteByPattern('news_*');
-        return await this.commandRepository.create(data);
+        return this.commandRepository.create(data);
     }
 
     async update(id: string, updateNewsDto: UpdateNewsDto, file: Express.Multer.File) {
         const news = await this.newsQueryService.findById(id);
-        let image = news.image;
+        let thumbnail = news.thumbnail;
 
         if (file && file?.size) {
-            const { secure_url } = await this.mediaUploadService.updateImage(news.image, file);
-            image = secure_url;
+            const { secure_url } = await this.mediaUploadService.updateImage(news.thumbnail, file);
+            thumbnail = secure_url;
         }
 
         const data = {
             ...updateNewsDto,
-            image,
+            thumbnail,
         };
 
         await Promise.all([
@@ -69,7 +69,7 @@ export class NewsCommandService {
         const news = await this.newsQueryService.findById(id);
 
         await Promise.all([
-            this.mediaDeleteService.deleteImage(news.image),
+            this.mediaDeleteService.deleteImage(news.thumbnail),
             this.cacheService.del(`news_id_${id}`),
             this.cacheService.del(`news_slug_${news.slug}`),
             this.cacheService.deleteByPattern('news_*'),

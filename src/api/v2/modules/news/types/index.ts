@@ -1,2 +1,2 @@
 export * from './news-query.type';
-export * from './news-data.type';
+export * from './news-command.type';
