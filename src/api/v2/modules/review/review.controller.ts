@@ -80,12 +80,8 @@ export class ReviewController {
         status: 200,
         description: 'Successfully retrieved reviews for the product option.',
     })
-    async findByProductOptionId(@Param('id') id: string, @Query() paginationDto: PaginationDto) {
-        return this.reviewQueryService.findByProductOptionId(
-            id,
-            paginationDto.page,
-            paginationDto.limit,
-        );
+    async findByVariantId(@Param('id') id: string, @Query() paginationDto: PaginationDto) {
+        return this.reviewQueryService.findByVariantId(id, paginationDto.page, paginationDto.limit);
     }
 
     @Get('parents/:id')

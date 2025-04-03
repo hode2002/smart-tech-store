@@ -29,23 +29,22 @@ export class ReviewCommandService implements IReviewCommandService {
         userId: string,
         createReviewDto: CreateReviewDto,
     ): Promise<ReviewDetail> {
-        const { images, video_url, star, comment } = createReviewDto;
-        const reviewImages = images.map(url => ({ image_url: url }));
+        const { images, video_url, rating, comment } = createReviewDto;
 
         return this.reviewCommandRepository.createReview({
-            star,
+            rating,
             comment,
             video_url,
-            review_images: {
+            images: {
                 createMany: {
-                    data: reviewImages,
+                    data: images.map(url => ({ url })),
                 },
             },
             user: {
                 connect: { id: userId },
             },
-            product_option: {
-                connect: { id: createReviewDto.product_option_id },
+            variant: {
+                connect: { id: createReviewDto.variant_id },
             },
         });
     }
@@ -54,7 +53,7 @@ export class ReviewCommandService implements IReviewCommandService {
         review: ReviewDetail,
         createReviewDto: CreateReviewDto,
     ): Promise<ReviewDetail> {
-        const { video_url, images, star, comment } = createReviewDto;
+        const { video_url, images, rating, comment } = createReviewDto;
         const { id } = review;
 
         if (video_url && review?.video_url) {
@@ -62,15 +61,15 @@ export class ReviewCommandService implements IReviewCommandService {
         }
 
         if (images && images?.length > 0) {
-            const imageToDeletedPromises = review.review_images.map(item => {
-                this.reviewMediaService.delete(item.image_url);
+            const imageToDeletedPromises = review.images.map(item => {
+                this.reviewMediaService.delete(item.url);
             });
 
             const createImagesPromise = this.reviewCommandRepository.updateReview(id, {
-                review_images: {
+                images: {
                     deleteMany: { review_id: id },
                     createMany: {
-                        data: images.map(url => ({ image_url: url })),
+                        data: images.map(url => ({ url })),
                     },
                 },
             });
@@ -79,7 +78,7 @@ export class ReviewCommandService implements IReviewCommandService {
         }
 
         return this.reviewCommandRepository.updateReview(id, {
-            star,
+            rating,
             comment,
             video_url,
         });
@@ -91,11 +90,11 @@ export class ReviewCommandService implements IReviewCommandService {
             throw new NotFoundException('User not found');
         }
 
-        const { product_option_id } = createReviewDto;
+        const { variant_id } = createReviewDto;
 
         const [, review] = await Promise.all([
-            this.reviewQueryService.canReview(product_option_id, userId),
-            this.reviewQueryService.findUserReview(userId, product_option_id),
+            this.reviewQueryService.canReview(variant_id, userId),
+            this.reviewQueryService.findUserReview(userId, variant_id),
         ]);
 
         if (review) {
@@ -120,8 +119,8 @@ export class ReviewCommandService implements IReviewCommandService {
             user: {
                 connect: { id: userId },
             },
-            product_option: {
-                connect: { id: review.product_option.id },
+            variant: {
+                connect: { id: review.variant.id },
             },
             parent: {
                 connect: { id: reviewId },

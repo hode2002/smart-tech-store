@@ -4,7 +4,7 @@ export const REVIEW_PARENT_SELECT = {
     user: {
         select: { id: true },
     },
-    product_option_id: true,
+    variant_id: true,
 } as const;
 
 export const USER_COMMENT_SELECT = {
@@ -12,7 +12,7 @@ export const USER_COMMENT_SELECT = {
     user: {
         select: { id: true },
     },
-    product_option_id: true,
+    variant_id: true,
 } as const;
 
 export const REPLY_REVIEW_SELECT = {

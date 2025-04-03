@@ -12,9 +12,9 @@ export interface IReviewQueryRepository {
     ): Promise<Pagination<ReviewDetail>>;
 
     findUserReviewById(reviewId: string, userId: string): Promise<ReviewDetail>;
-    findUserReview(userId: string, productOptionId: string): Promise<ReviewWithProduct>;
-    findByProductOptionId(
-        productOptionId: string,
+    findUserReview(userId: string, variantId: string): Promise<ReviewWithProduct>;
+    findByVariantId(
+        variantId: string,
         page: number,
         limit: number,
     ): Promise<Pagination<ReviewDetail>>;
