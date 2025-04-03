@@ -1,18 +1,22 @@
-import { News } from '@prisma/client';
-
 import { Pagination } from '@/common/types';
-import { CreateNewsData, UpdateNewsData } from '@v2/modules/news/types';
+import { NewsFullWithCategory } from '@/prisma/selectors/news';
+import { NewsCreateInput, UpdateNewsData, NewsWhereInput } from '@v2/modules/news/types';
 
 export interface INewsQueryRepository {
-    findById(id: string): Promise<News>;
-    findBySlug(slug: string): Promise<News>;
-    findAll(page: number, limit: number): Promise<Pagination<News>>;
+    findById(id: string): Promise<NewsFullWithCategory>;
+    findBySlug(slug: string): Promise<NewsFullWithCategory>;
+    findAll(
+        page: number,
+        limit: number,
+        where?: NewsWhereInput,
+    ): Promise<Pagination<NewsFullWithCategory>>;
 }
 
 export interface INewsCommandRepository {
-    create(data: CreateNewsData): Promise<News>;
-    update(id: string, data: UpdateNewsData): Promise<News>;
+    create(data: NewsCreateInput): Promise<NewsFullWithCategory>;
+    update(id: string, data: UpdateNewsData): Promise<NewsFullWithCategory>;
     delete(id: string): Promise<boolean>;
+    incrementViewCount(id: string): Promise<boolean>;
 }
 
 export interface INewsRepository extends INewsQueryRepository, INewsCommandRepository {}
