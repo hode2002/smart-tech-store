@@ -1,11 +1,5 @@
-import { IsBoolean, IsOptional, IsString } from 'class-validator';
+import { OmitType, PartialType } from '@nestjs/mapped-types';
 
-export class UpdateCategoryDto {
-    @IsString()
-    @IsOptional()
-    description?: string;
+import { CreateCategoryDto } from '@v2/modules/category/dto';
 
-    @IsBoolean()
-    @IsOptional()
-    is_deleted?: boolean;
-}
+export class UpdateCategoryDto extends PartialType(OmitType(CreateCategoryDto, ['name'])) {}

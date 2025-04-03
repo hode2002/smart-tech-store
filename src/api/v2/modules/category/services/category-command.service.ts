@@ -49,9 +49,15 @@ export class CategoryCommandService implements ICategoryCommandService {
     }
 
     async restore(id: string) {
-        await this.categoryQueryService.findById(id, { is_deleted: true }, true);
+        await this.categoryQueryService.findById(
+            id,
+            {
+                deleted_at: { not: null },
+            },
+            true,
+        );
 
-        const data = { is_deleted: false };
+        const data = { deleted_at: null };
         return this.categoryRepo.update(id, data);
     }
 }

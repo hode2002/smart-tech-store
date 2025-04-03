@@ -5,11 +5,13 @@ export const CATEGORY_BASIC_SELECT = {
     name: true,
     description: true,
     slug: true,
+    image: true,
+    status: true,
 } as const;
 
 export const CATEGORY_FULL_SELECT = {
     ...CATEGORY_BASIC_SELECT,
-    is_deleted: true,
+    deleted_at: true,
     created_at: true,
     updated_at: true,
 } as const;

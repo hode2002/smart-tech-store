@@ -18,4 +18,22 @@ export class CreateCategoryDto {
     @IsString()
     @IsOptional()
     description?: string;
+
+    @ApiProperty({
+        description: 'The parent id of the category',
+        example: '123',
+        required: false,
+    })
+    @IsString()
+    @IsOptional()
+    parent_id?: string;
+
+    @ApiProperty({
+        description: 'The image of the category',
+        example: 'https://example.com/image.jpg',
+        required: false,
+    })
+    @IsString()
+    @IsOptional()
+    image?: string;
 }
