@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsBoolean, IsOptional, IsString } from 'class-validator';
+import { Status } from '@prisma/client';
+import { IsEnum, IsOptional, IsString } from 'class-validator';
 
 export class UpdateBrandDto {
     @ApiProperty({
@@ -16,7 +17,7 @@ export class UpdateBrandDto {
         example: false,
         required: false,
     })
-    @IsBoolean()
+    @IsEnum(Status)
     @IsOptional()
-    is_deleted?: boolean;
+    status?: Status;
 }

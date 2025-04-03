@@ -3,8 +3,8 @@ import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { PrismaService } from '@/prisma/prisma.service';
 import { BRAND_FULL_SELECT } from '@/prisma/selectors';
 import { BRAND_TOKENS } from '@v2/modules/brand/constants';
-import { CreateBrandDto, UpdateBrandDto } from '@v2/modules/brand/dto';
 import { IBrandCommandRepository, IBrandMediaDeleteHandler } from '@v2/modules/brand/interfaces';
+import { BrandCreateInput, BrandUpdateInput } from '@v2/modules/brand/types';
 
 @Injectable()
 export class BrandCommandRepository implements IBrandCommandRepository {
@@ -14,7 +14,7 @@ export class BrandCommandRepository implements IBrandCommandRepository {
         private readonly mediaHandler: IBrandMediaDeleteHandler,
     ) {}
 
-    async create(data: CreateBrandDto & { slug: string; logo_url: string }) {
+    async create(data: BrandCreateInput) {
         return this.prisma.$transaction(async tx => {
             try {
                 const brand = await tx.brand.create({ data, select: BRAND_FULL_SELECT });
@@ -26,7 +26,7 @@ export class BrandCommandRepository implements IBrandCommandRepository {
         });
     }
 
-    async update(id: string, data: UpdateBrandDto & { logo_url?: string }) {
+    async update(id: string, data: BrandUpdateInput) {
         return this.prisma.$transaction(async tx => {
             try {
                 const brand = await tx.brand.update({
@@ -37,14 +37,17 @@ export class BrandCommandRepository implements IBrandCommandRepository {
 
                 return brand;
             } catch (error) {
-                await this.mediaHandler.deleteLogo(data.logo_url);
+                await this.mediaHandler.deleteLogo(data.logo_url as string);
                 throw new BadRequestException(error);
             }
         });
     }
 
     async softDelete(id: string) {
-        await this.prisma.brand.update({ where: { id }, data: { is_deleted: true } });
+        await this.prisma.brand.update({
+            where: { id },
+            data: { deleted_at: new Date() },
+        });
         return true;
     }
 

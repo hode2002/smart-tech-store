@@ -65,9 +65,9 @@ export class BrandCommandService implements IBrandCommandService {
     }
 
     async restore(id: string) {
-        await this.brandQueryService.findById(id, { is_deleted: true }, true);
+        await this.brandQueryService.findById(id, { deleted_at: { not: null } });
 
-        const data = { is_deleted: false };
+        const data = { deleted_at: null };
         return this.brandRepo.update(id, data);
     }
 }
