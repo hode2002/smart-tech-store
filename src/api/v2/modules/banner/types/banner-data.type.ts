@@ -1,11 +1,4 @@
-export type CreateBannerData = {
-    title: string;
-    link: string;
-    type?: string;
-    image: string;
-    slug: string;
-};
+import { Prisma } from '@prisma/client';
 
-export type UpdateBannerData = Partial<Omit<CreateBannerData, 'title' | 'slug'>> & {
-    status?: string;
-};
+export type BannerCreateInput = Prisma.BannerCreateInput;
+export type BannerUpdateInput = Prisma.BannerUpdateInput;

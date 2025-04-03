@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 
-import { CreateBannerDto, UpdateBannerDto } from '@v2/modules/banner/dto';
+import { CreateBannerDto, UpdateBannerDto } from '@/api/v2/modules/banner/dto';
 import { BannerCommandService } from '@v2/modules/banner/services/banner-command.service';
 import { BannerQueryService } from '@v2/modules/banner/services/banner-query.service';
 
