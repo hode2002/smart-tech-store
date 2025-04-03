@@ -2,12 +2,13 @@ import { Prisma } from '@prisma/client';
 
 export const HISTORY_SEARCH_BASIC_SELECT = {
     id: true,
-    search_content: true,
+    content: true,
     user_id: true,
 } as const;
 
 export const HISTORY_SEARCH_FULL_SELECT = {
     ...HISTORY_SEARCH_BASIC_SELECT,
+    category_id: true,
     updated_at: true,
     created_at: true,
 } as const;

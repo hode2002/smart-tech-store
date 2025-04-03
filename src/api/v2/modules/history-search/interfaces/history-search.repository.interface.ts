@@ -1,7 +1,7 @@
 import { HistorySearch } from '@prisma/client';
 
 import { Pagination } from '@/common/types';
-import { CreateHistorySearchDto, CreateHistorySearchListDto } from '@v2/modules/history-search/dto';
+import { CreateHistorySearchDto } from '@v2/modules/history-search/dto';
 
 export interface IHistorySearchQueryRepository {
     findById(id: string): Promise<HistorySearch>;
@@ -10,7 +10,6 @@ export interface IHistorySearchQueryRepository {
 
 export interface IHistorySearchCommandRepository {
     create(userId: string, data: CreateHistorySearchDto): Promise<HistorySearch>;
-    createMany(userId: string, data: CreateHistorySearchListDto[]): Promise<void>;
     delete(userId: string, id: string): Promise<boolean>;
 }
 

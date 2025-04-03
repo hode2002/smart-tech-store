@@ -22,7 +22,7 @@ import {
 import { GetUserId, ResponseMessage } from '@/common/decorators';
 import { PaginationDto } from '@/common/dtos';
 import { AtJwtGuard } from '@v2/modules/auth/guards';
-import { CreateHistorySearchDto, CreateHistorySearchListDto } from '@v2/modules/history-search/dto';
+import { CreateHistorySearchDto } from '@v2/modules/history-search/dto';
 import {
     HistorySearchCommandService,
     HistorySearchQueryService,
@@ -73,27 +73,6 @@ export class HistorySearchController {
         @Body() createHistorySearchDto: CreateHistorySearchDto,
     ) {
         return this.historySearchCommandService.create(userId, createHistorySearchDto);
-    }
-
-    @Post('list')
-    @ResponseMessage('Create history search list success')
-    @UseGuards(AtJwtGuard)
-    @HttpCode(HttpStatus.CREATED)
-    @ApiBearerAuth('access-token')
-    @ApiOperation({
-        summary: 'Create multiple history searches',
-        description:
-            'Create multiple history searches from local storage for the authenticated user.',
-    })
-    @ApiBody({ type: [CreateHistorySearchListDto] })
-    @ApiResponse({ status: 201, description: 'History searches created successfully.' })
-    @ApiResponse({ status: 400, description: 'Invalid input data' })
-    @ApiResponse({ status: 401, description: 'Unauthorized' })
-    async createFormLocalStorage(
-        @GetUserId() userId: string,
-        @Body() historySearchList: CreateHistorySearchListDto[],
-    ) {
-        return this.historySearchCommandService.createMany(userId, historySearchList);
     }
 
     @Delete(':id')
