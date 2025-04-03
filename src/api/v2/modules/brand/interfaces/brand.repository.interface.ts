@@ -1,8 +1,7 @@
 import { Brand } from '@prisma/client';
 
 import { Pagination } from '@/common/types';
-import { CreateBrandDto, UpdateBrandDto } from '@v2/modules/brand/dto';
-import { BrandWhereInput } from '@v2/modules/brand/types';
+import { BrandWhereInput, BrandCreateInput, BrandUpdateInput } from '@v2/modules/brand/types';
 
 export interface IBrandQueryRepository {
     findById(id: string, where?: BrandWhereInput): Promise<Brand>;
@@ -11,8 +10,8 @@ export interface IBrandQueryRepository {
 }
 
 export interface IBrandCommandRepository {
-    create(data: CreateBrandDto & { logo_url: string; slug: string }): Promise<Brand>;
-    update(id: string, data: UpdateBrandDto & { logo_url?: string }): Promise<Brand>;
+    create(data: BrandCreateInput): Promise<Brand>;
+    update(id: string, data: BrandUpdateInput): Promise<Brand>;
     softDelete(id: string): Promise<boolean>;
     permanentlyDelete(id: string): Promise<boolean>;
 }

@@ -6,11 +6,12 @@ export const BRAND_BASIC_SELECT = {
     description: true,
     logo_url: true,
     slug: true,
+    status: true,
 } as const;
 
 export const BRAND_FULL_SELECT = {
     ...BRAND_BASIC_SELECT,
-    is_deleted: true,
+    deleted_at: true,
     created_at: true,
     updated_at: true,
 } as const;

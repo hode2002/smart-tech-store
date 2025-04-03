@@ -20,7 +20,7 @@ export class BrandQueryService implements IBrandQueryService {
     }
 
     async findAll(page = 1, limit = 10) {
-        return this.brandRepo.findAll(page, limit, { is_deleted: false });
+        return this.brandRepo.findAll(page, limit, { deleted_at: null });
     }
 
     async adminFindAll(page = 1, limit = 10) {
@@ -28,7 +28,7 @@ export class BrandQueryService implements IBrandQueryService {
     }
 
     async findBySlug(slug: string, passthrough = false) {
-        const brand = await this.brandRepo.findBySlug(slug, { is_deleted: false });
+        const brand = await this.brandRepo.findBySlug(slug, { deleted_at: null });
         if (passthrough) {
             return brand;
         }
@@ -36,7 +36,7 @@ export class BrandQueryService implements IBrandQueryService {
     }
 
     async findById(id: string, where?: BrandWhereInput, passthrough = false) {
-        const brand = await this.brandRepo.findById(id, { is_deleted: false, ...where });
+        const brand = await this.brandRepo.findById(id, { deleted_at: null, ...where });
         if (passthrough) {
             return brand;
         }
