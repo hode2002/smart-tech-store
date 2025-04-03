@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 
 import { PrismaService } from '@/prisma/prisma.service';
-import { CreateHistorySearchDto, CreateHistorySearchListDto } from '@v2/modules/history-search/dto';
+import { CreateHistorySearchDto } from '@v2/modules/history-search/dto';
 import { IHistorySearchCommandRepository } from '@v2/modules/history-search/interfaces';
 
 @Injectable()
@@ -13,7 +13,7 @@ export class HistorySearchCommandRepository implements IHistorySearchCommandRepo
             const searchData = await tx.historySearch.findFirst({
                 where: {
                     user_id: userId,
-                    search_content: data.content,
+                    content: data.content,
                 },
                 select: { id: true },
             });
@@ -26,21 +26,11 @@ export class HistorySearchCommandRepository implements IHistorySearchCommandRepo
             } else {
                 return tx.historySearch.create({
                     data: {
-                        search_content: data.content,
+                        content: data.content,
                         user_id: userId,
                     },
                 });
             }
-        });
-    }
-
-    async createMany(userId: string, data: CreateHistorySearchListDto[]) {
-        await this.prisma.historySearch.createMany({
-            data: data.map(item => ({
-                user_id: userId,
-                search_content: item.content,
-                ...item,
-            })),
         });
     }
 
