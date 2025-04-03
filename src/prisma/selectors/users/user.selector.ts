@@ -3,8 +3,8 @@ import { Prisma } from '@prisma/client';
 export const USER_SELECT_FIELDS = {
     id: true,
     email: true,
-    name: true,
-    avatar: true,
+    full_name: true,
+    avatar_url: true,
     phone: true,
 } as const;
 
@@ -23,15 +23,17 @@ export type UserProfile = Prisma.UserGetPayload<{
 
 export const USER_WITH_ADDRESS_SELECT = {
     ...USER_SELECT_FIELDS,
-    is_active: true,
+    status: true,
     created_at: true,
-    address: {
+    addresses: {
         select: {
+            full_name: true,
+            phone: true,
+            address_line: true,
             province: true,
             district: true,
             ward: true,
-            address: true,
-            hamlet: true,
+            is_default: true,
         },
     },
 } as const;
@@ -41,11 +43,14 @@ export type UserWithAddress = Prisma.UserGetPayload<{
 }>;
 
 export const USER_ADDRESS_SELECT = {
-    address: true,
+    id: true,
+    full_name: true,
+    phone: true,
+    address_line: true,
     province: true,
     district: true,
     ward: true,
-    hamlet: true,
+    is_default: true,
 } as const;
 
 export type UserAddress = Prisma.UserAddressGetPayload<{

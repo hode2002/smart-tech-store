@@ -1,3 +1,4 @@
+import { UserStatus } from '@prisma/client';
 import { IsBoolean, IsEmail, IsNotEmpty } from 'class-validator';
 
 export class UpdateUserStatusDto {
@@ -7,5 +8,5 @@ export class UpdateUserStatusDto {
 
     @IsNotEmpty()
     @IsBoolean()
-    is_active?: boolean;
+    status?: UserStatus;
 }

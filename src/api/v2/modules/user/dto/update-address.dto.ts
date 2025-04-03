@@ -1,9 +1,9 @@
-import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { IsBoolean, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 export class UpdateUserAddressDto {
     @IsOptional()
     @IsString()
-    address: string;
+    address_line: string;
 
     @IsNotEmpty()
     @IsString()
@@ -18,6 +18,6 @@ export class UpdateUserAddressDto {
     ward: string;
 
     @IsOptional()
-    @IsString()
-    hamlet: string;
+    @IsBoolean()
+    is_default?: boolean;
 }

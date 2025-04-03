@@ -53,16 +53,12 @@ export class UserQueryRepository implements IUserQueryRepository {
         return this.prisma.user.findFirst({ where, select: USER_PROFILE_SELECT });
     }
 
-    async findAddress(userId: string): Promise<UserAddress | null> {
-        const userAddress = await this.prisma.user.findUnique({
-            where: { id: userId },
-            select: {
-                address: {
-                    select: USER_ADDRESS_SELECT,
-                },
-            },
+    async findAddresses(userId: string): Promise<UserAddress[]> {
+        const userAddress = await this.prisma.userAddress.findMany({
+            where: { user_id: userId },
+            select: USER_ADDRESS_SELECT,
         });
 
-        return userAddress.address;
+        return userAddress;
     }
 }

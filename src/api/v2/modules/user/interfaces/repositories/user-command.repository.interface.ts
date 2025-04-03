@@ -11,6 +11,10 @@ import {
 export interface IUserCommandRepository {
     create(data: UserCreateInput): Promise<UserProfile>;
     update(where: UserWhereInput, data: UserUpdateInput): Promise<UserProfile>;
+    updateAddress(
+        where: UserAddressWhereUniqueInput,
+        update: UserAddressUpdateInput,
+    ): Promise<UserAddress>;
     upsertAddress(
         where: UserAddressWhereUniqueInput,
         create: UserAddressCreateInput,

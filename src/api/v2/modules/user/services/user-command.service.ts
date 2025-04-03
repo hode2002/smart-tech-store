@@ -6,7 +6,7 @@ import {
     NotFoundException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { AuthType, Role } from '@prisma/client';
+import { AuthProvider, Role, UserStatus } from '@prisma/client';
 
 import { UserAddress, UserProfile } from '@/prisma/selectors';
 import { FacebookProfile, GoogleProfile } from '@v2/modules/auth/types';
@@ -41,10 +41,13 @@ export class UserCommandService implements IUserCommandService {
         private readonly passwordHandler: IUserPasswordHandler,
     ) {}
 
-    async create(data: GoogleProfile | FacebookProfile, provider: AuthType): Promise<UserProfile> {
+    async create(
+        data: GoogleProfile | FacebookProfile,
+        provider: AuthProvider,
+    ): Promise<UserProfile> {
         return this.userCommandRepository.create({
-            is_active: true,
-            auth_type: provider,
+            status: UserStatus.PENDING,
+            auth_provider: provider,
             avatar: this.configService.get('DEFAULT_AVATAR'),
             ...data,
         });
@@ -58,19 +61,19 @@ export class UserCommandService implements IUserCommandService {
 
         return this.userCommandRepository.create({
             email,
-            auth_type: AuthType.EMAIL,
-            avatar: this.configService.get('DEFAULT_AVATAR'),
+            auth_provider: AuthProvider.EMAIL,
+            avatar_url: this.configService.get('DEFAULT_AVATAR'),
         });
     }
 
     async updateStatusByEmail(updateUserStatusDto: UpdateUserStatusDto): Promise<UserProfile> {
-        const { email, is_active } = updateUserStatusDto;
+        const { email, status } = updateUserStatusDto;
         const user = await this.userCommandRepository.update(
             {
                 email,
                 NOT: { role: Role.ADMIN },
             },
-            { is_active },
+            { status },
         );
 
         await Promise.all([
@@ -122,17 +125,16 @@ export class UserCommandService implements IUserCommandService {
             this.cacheService.deleteByPattern('users_*'),
         ]);
 
-        return this.userCommandRepository.upsertAddress(
+        const userAddress = await this.userQueryService.findAddress(userId);
+        if (!userAddress) {
+            throw new NotFoundException('User address not found');
+        }
+
+        return this.userCommandRepository.updateAddress(
             {
-                user_id: userId,
+                id: userAddress.id,
             },
-            {
-                user: { connect: { id: userId } },
-                ...updateUserAddressDto,
-            },
-            {
-                ...updateUserAddressDto,
-            },
+            updateUserAddressDto,
         );
     }
 
@@ -156,11 +158,11 @@ export class UserCommandService implements IUserCommandService {
 
     async updateAvatar(userId: string, file: Express.Multer.File): Promise<UserProfile> {
         const user = await this.userQueryService.findById(userId);
-        let avatar = user.avatar;
+        let avatar_url = user.avatar_url;
 
         if (file && file?.size) {
-            const { secure_url } = await this.userMediaService.updateAvatar(user.avatar, file);
-            avatar = secure_url;
+            const { secure_url } = await this.userMediaService.updateAvatar(user.avatar_url, file);
+            avatar_url = secure_url;
         }
 
         await Promise.all([
@@ -168,6 +170,6 @@ export class UserCommandService implements IUserCommandService {
             this.cacheService.deleteByPattern('users_*'),
         ]);
 
-        return this.userCommandRepository.update({ id: userId }, { avatar });
+        return this.userCommandRepository.update({ id: userId }, { avatar_url });
     }
 }
