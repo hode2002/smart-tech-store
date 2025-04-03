@@ -5,8 +5,8 @@ export interface IReviewQueryService {
     findAll(page: number, limit: number): Promise<Pagination<ReviewDetail>>;
     findById(id: string): Promise<ReviewWithProduct>;
 
-    findByProductOptionId(
-        productOptionId: string,
+    findByVariantId(
+        variantId: string,
         page: number,
         limit: number,
     ): Promise<Pagination<ReviewDetail>>;
@@ -15,7 +15,7 @@ export interface IReviewQueryService {
         page: number,
         limit: number,
     ): Promise<Pagination<ReviewDetail>>;
-    findUserReview(userId: string, productOptionId: string): Promise<ReviewWithProduct>;
+    findUserReview(userId: string, variantId: string): Promise<ReviewWithProduct>;
 
-    canReview(productOptionId: string, userId: string): Promise<boolean>;
+    canReview(variantId: string, userId: string): Promise<boolean>;
 }

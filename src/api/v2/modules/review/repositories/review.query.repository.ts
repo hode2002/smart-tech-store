@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { OrderStatus } from '@prisma/client';
 
 import { formatPagination } from '@/common/helpers';
 import { Pagination } from '@/common/types';
@@ -9,7 +10,6 @@ import {
     ReviewDetail,
     ReviewWithProduct,
 } from '@/prisma/selectors';
-import { OrderStatus } from '@v1/modules/order/types';
 import { IReviewQueryRepository } from '@v2/modules/review/interfaces';
 import { ReviewFindFirstArgs, ReviewWhereInput } from '@v2/modules/review/types';
 
@@ -54,21 +54,21 @@ export class ReviewQueryRepository implements IReviewQueryRepository {
         });
     }
 
-    async findUserReview(userId: string, productOptionId: string): Promise<ReviewWithProduct> {
+    async findUserReview(userId: string, variantId: string): Promise<ReviewWithProduct> {
         return this.prisma.review.findFirst({
-            where: { user_id: userId, product_option_id: productOptionId },
+            where: { user_id: userId, variant_id: variantId },
             select: REVIEW_WITH_PRODUCT_SELECT,
         });
     }
 
-    async canReview(productOptionId: string, userId: string): Promise<boolean> {
+    async canReview(variantId: string, userId: string): Promise<boolean> {
         const isReviewable = await this.prisma.order.findFirst({
             where: {
                 user_id: userId,
-                status: OrderStatus.RECEIVED,
-                order_details: {
+                status: OrderStatus.DELIVERED,
+                items: {
                     some: {
-                        product_option_id: productOptionId,
+                        variant_id: variantId,
                     },
                 },
             },
@@ -77,13 +77,13 @@ export class ReviewQueryRepository implements IReviewQueryRepository {
         return isReviewable ? true : false;
     }
 
-    async findByProductOptionId(
-        productOptionId: string,
+    async findByVariantId(
+        variantId: string,
         page: number,
         limit: number,
     ): Promise<Pagination<ReviewDetail>> {
         return this.findMany(page, limit, {
-            product_option_id: productOptionId,
+            variant_id: variantId,
         });
     }
 

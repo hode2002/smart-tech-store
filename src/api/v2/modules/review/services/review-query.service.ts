@@ -24,12 +24,12 @@ export class ReviewQueryService implements IReviewQueryService {
         return review;
     }
 
-    async findByProductOptionId(
-        productOptionId: string,
+    async findByVariantId(
+        variantId: string,
         page = 1,
         limit = 10,
     ): Promise<Pagination<ReviewDetail>> {
-        return this.reviewQueryRepository.findByProductOptionId(productOptionId, page, limit);
+        return this.reviewQueryRepository.findByVariantId(variantId, page, limit);
     }
 
     async findByParentId(
@@ -45,8 +45,8 @@ export class ReviewQueryService implements IReviewQueryService {
         return this.reviewQueryRepository.findByParentId(parentId, page, limit);
     }
 
-    async findUserReview(userId: string, productOptionId: string): Promise<ReviewWithProduct> {
-        return this.reviewQueryRepository.findUserReview(userId, productOptionId);
+    async findUserReview(userId: string, variantId: string): Promise<ReviewWithProduct> {
+        return this.reviewQueryRepository.findUserReview(userId, variantId);
     }
 
     async canReview(productOptionId: string, userId: string): Promise<boolean> {

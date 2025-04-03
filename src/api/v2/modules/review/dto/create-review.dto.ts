@@ -5,12 +5,12 @@ export class CreateReviewDto {
     @ApiProperty({ description: 'ID of the product option', type: String })
     @IsString()
     @IsNotEmpty()
-    product_option_id: string;
+    variant_id: string;
 
     @ApiProperty({ description: 'Star rating for the review', type: Number })
     @IsNumber()
     @IsNotEmpty()
-    star: number;
+    rating: number;
 
     @ApiProperty({ description: 'Comment for the review', type: String })
     @IsString()

@@ -5,14 +5,10 @@ export const REVIEW_USER_SELECT = {
     name: true,
     email: true,
     avatar: true,
-} as const;
-
-export const REVIEW_USER_WITH_ROLE_SELECT = {
-    ...REVIEW_USER_SELECT,
     role: true,
 } as const;
 
-export const REVIEW_PRODUCT_OPTION_SELECT = {
+export const REVIEW_PRODUCT_VARIANT_SELECT = {
     id: true,
     sku: true,
     thumbnail: true,
@@ -25,7 +21,7 @@ export const REVIEW_PRODUCT_OPTION_SELECT = {
 } as const;
 
 export const REVIEW_IMAGE_SELECT = {
-    image_url: true,
+    url: true,
 } as const;
 
 export const REVIEW_CHILD_SELECT = {
@@ -40,7 +36,7 @@ export const REVIEW_CHILD_SELECT = {
 export const REVIEW_CHILD_WITH_ROLE_SELECT = {
     id: true,
     user: {
-        select: REVIEW_USER_WITH_ROLE_SELECT,
+        select: REVIEW_USER_SELECT,
     },
     comment: true,
     _count: true,
@@ -51,7 +47,7 @@ export const REVIEW_BASIC_SELECT = {
     user: {
         select: REVIEW_USER_SELECT,
     },
-    star: true,
+    rating: true,
     comment: true,
     _count: true,
     created_at: true,
@@ -60,7 +56,7 @@ export const REVIEW_BASIC_SELECT = {
 export const REVIEW_DETAIL_SELECT = {
     ...REVIEW_BASIC_SELECT,
     video_url: true,
-    review_images: {
+    images: {
         select: REVIEW_IMAGE_SELECT,
     },
     children: {
@@ -70,17 +66,17 @@ export const REVIEW_DETAIL_SELECT = {
 
 export const REVIEW_WITH_PRODUCT_SELECT = {
     ...REVIEW_DETAIL_SELECT,
-    product_option: {
-        select: REVIEW_PRODUCT_OPTION_SELECT,
+    variant: {
+        select: REVIEW_PRODUCT_VARIANT_SELECT,
     },
 } as const;
 
 export const REVIEW_UPDATE_SELECT = {
     id: true,
-    star: true,
+    rating: true,
     comment: true,
     video_url: true,
-    review_images: {
+    images: {
         select: REVIEW_IMAGE_SELECT,
     },
 } as const;
@@ -90,11 +86,11 @@ export const REVIEW_DELETE_SELECT = {
     user: {
         select: { id: true },
     },
-    star: true,
+    rating: true,
     parent_id: true,
-    product_option_id: true,
+    variant_id: true,
     video_url: true,
-    review_images: {
+    images: {
         select: REVIEW_IMAGE_SELECT,
     },
 } as const;
