@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common';
-import { ICategoryQueryRepository } from '@v2/modules/category/interfaces';
-import { CategoryWhereInput, CategoryWhereUniqueInput } from '@v2/modules/category/types';
 
 import { formatPagination } from '@/common/helpers';
 import { PrismaService } from '@/prisma/prisma.service';
 import { CATEGORY_FULL_SELECT } from '@/prisma/selectors';
+import { ICategoryQueryRepository } from '@v2/modules/category/interfaces';
+import { CategoryWhereInput, CategoryWhereUniqueInput } from '@v2/modules/category/types';
 
 @Injectable()
 export class CategoryQueryRepository implements ICategoryQueryRepository {

@@ -18,7 +18,7 @@ export class CategoryQueryService implements ICategoryQueryService {
     }
 
     async findBySlug(slug: string, passthrough = false) {
-        const category = await this.categoryRepo.findBySlug(slug, { is_deleted: false });
+        const category = await this.categoryRepo.findBySlug(slug, { deleted_at: null });
         if (passthrough) {
             return category;
         }
@@ -26,7 +26,7 @@ export class CategoryQueryService implements ICategoryQueryService {
     }
 
     async findById(id: string, where?: CategoryWhereInput, passthrough = false) {
-        const category = await this.categoryRepo.findById(id, { is_deleted: false, ...where });
+        const category = await this.categoryRepo.findById(id, { deleted_at: null, ...where });
 
         if (passthrough) {
             return category;

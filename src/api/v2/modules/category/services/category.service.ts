@@ -22,7 +22,7 @@ export class CategoryService implements ICategoryService {
     }
 
     async findAll(page = 1, limit = 10) {
-        return this.categoryQueryService.findAll(page, limit, { is_deleted: false });
+        return this.categoryQueryService.findAll(page, limit, { deleted_at: null });
     }
 
     async adminFindAll(page = 1, limit = 10) {
@@ -46,10 +46,12 @@ export class CategoryService implements ICategoryService {
     }
 
     async permanentlyDelete(id: string) {
-        return this.categoryCommandService.permanentlyDelete(id);
+        const result = await this.categoryCommandService.permanentlyDelete(id);
+        return !!result;
     }
 
     async restore(id: string) {
-        return this.categoryCommandService.restore(id);
+        const result = await this.categoryCommandService.restore(id);
+        return !!result;
     }
 }

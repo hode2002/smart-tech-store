@@ -1,18 +1,24 @@
-import { Category } from '@prisma/client';
-
 import { Pagination } from '@/common/types';
-import { CreateCategoryDto, UpdateCategoryDto } from '@v2/modules/category/dto';
-import { CategoryWhereInput } from '@v2/modules/category/types';
+import { CategoryFull } from '@/prisma/selectors';
+import {
+    CategoryCreateInput,
+    CategoryUpdateInput,
+    CategoryWhereInput,
+} from '@v2/modules/category/types';
 
 export interface ICategoryQueryRepository {
-    findById(id: string, where?: CategoryWhereInput): Promise<Category>;
-    findBySlug(slug: string, where?: CategoryWhereInput): Promise<Category>;
-    findAll(page: number, limit: number, where?: CategoryWhereInput): Promise<Pagination<Category>>;
+    findById(id: string, where?: CategoryWhereInput): Promise<CategoryFull>;
+    findBySlug(slug: string, where?: CategoryWhereInput): Promise<CategoryFull>;
+    findAll(
+        page: number,
+        limit: number,
+        where?: CategoryWhereInput,
+    ): Promise<Pagination<CategoryFull>>;
 }
 
 export interface ICategoryCommandRepository {
-    create(data: CreateCategoryDto & { slug: string }): Promise<Category>;
-    update(id: string, data: UpdateCategoryDto): Promise<Category>;
+    create(data: CategoryCreateInput): Promise<CategoryFull>;
+    update(id: string, data: CategoryUpdateInput): Promise<CategoryFull>;
     softDelete(id: string): Promise<boolean>;
     permanentlyDelete(id: string): Promise<boolean>;
 }
