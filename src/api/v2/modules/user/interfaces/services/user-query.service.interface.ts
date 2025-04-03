@@ -1,7 +1,7 @@
 import { User } from '@prisma/client';
 
 import { Pagination } from '@/common/types';
-import { UserAddress, UserProfile, UserWithAddress } from '@/prisma/selectors';
+import { UserProfile, UserWithAddress, UserAddress } from '@/prisma/selectors';
 import { UserFindFirstArgs, UserWhereInput } from '@v2/modules/user/types';
 
 export interface IUserQueryService {
@@ -13,4 +13,5 @@ export interface IUserQueryService {
     getProfile(userId: string): Promise<UserProfile>;
     getProfileWithAddress(userId: string): Promise<UserWithAddress>;
     getAddress(userId: string): Promise<Partial<UserAddress>>;
+    findAddress(userId: string): Promise<UserAddress | null>;
 }

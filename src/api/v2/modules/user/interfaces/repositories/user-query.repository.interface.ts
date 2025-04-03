@@ -13,5 +13,5 @@ export interface IUserQueryRepository {
     ): Promise<Pagination<UserWithAddress>>;
     findUnique<T>(where: UserWhereUniqueInput, select: any): Promise<T>;
     findFirst(where: UserWhereInput): Promise<UserProfile>;
-    findAddress(userId: string): Promise<UserAddress | null>;
+    findAddresses(userId: string): Promise<UserAddress[]>;
 }

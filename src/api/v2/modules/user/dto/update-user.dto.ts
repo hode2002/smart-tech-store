@@ -1,6 +1,7 @@
+import { Prisma, UserStatus } from '@prisma/client';
 import { IsBoolean, IsOptional, IsString, Matches } from 'class-validator';
 
-export class UpdateUserDto {
+export class UpdateUserDto implements Prisma.UserUpdateInput {
     @IsOptional()
     @Matches(/^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{6,}$/, {
         message:
@@ -10,21 +11,17 @@ export class UpdateUserDto {
 
     @IsOptional()
     @IsString()
-    name?: string;
+    full_namee?: string;
 
     @IsOptional()
     @IsString()
-    avatar?: string;
+    avatar_url?: string;
 
     @IsOptional()
     @IsString()
     phone?: string;
 
     @IsOptional()
-    @IsString()
-    refresh_token?: string;
-
-    @IsOptional()
     @IsBoolean()
-    is_active?: boolean;
+    status?: UserStatus;
 }

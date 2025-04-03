@@ -82,4 +82,8 @@ export class UserQueryService implements IUserQueryService {
         await this.userCacheService.setUserProfileWithAddress(userId, profile);
         return profile;
     }
+
+    async findAddress(userId: string): Promise<UserAddress | null> {
+        return this.userQueryRepository.findAddress(userId);
+    }
 }

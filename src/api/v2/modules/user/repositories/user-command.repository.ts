@@ -48,4 +48,15 @@ export class UserCommandRepository implements IUserCommandRepository {
             select: USER_ADDRESS_SELECT,
         });
     }
+
+    async updateAddress(
+        where: UserAddressWhereUniqueInput,
+        data: UserAddressUpdateInput,
+    ): Promise<UserAddress> {
+        return this.prismaService.userAddress.update({
+            where,
+            data,
+            select: USER_ADDRESS_SELECT,
+        });
+    }
 }
