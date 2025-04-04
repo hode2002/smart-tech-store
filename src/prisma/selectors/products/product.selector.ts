@@ -1,18 +1,11 @@
 import { Prisma } from '@prisma/client';
 
-export const PRODUCT_BASIC_SELECT = {
+export const PRODUCT_IMAGE_SELECT = {
     id: true,
-    name: true,
-    price: true,
-    main_image: true,
-    promotions: true,
-    warranties: true,
-    label: true,
+    url: true,
+    alt_text: true,
+    position: true,
 } as const;
-
-export type ProductBasic = Prisma.ProductGetPayload<{
-    select: typeof PRODUCT_BASIC_SELECT;
-}>;
 
 export const PRODUCT_DESCRIPTION_SELECT = {
     id: true,
@@ -32,10 +25,18 @@ export const PRODUCT_CATEGORY_SELECT = {
     slug: true,
 } as const;
 
-export const PRODUCT_IMAGE_SELECT = {
+export const PRODUCT_PROMOTION_SELECT = {
     id: true,
-    image_url: true,
-    image_alt_text: true,
+    name: true,
+    description: true,
+    discount_type: true,
+    discount_value: true,
+} as const;
+
+export const PRODUCT_WARRANTY_SELECT = {
+    duration: true,
+    unit: true,
+    conditions: true,
 } as const;
 
 export const PRODUCT_TECHNICAL_SPECS_SELECT = {
@@ -45,16 +46,6 @@ export const PRODUCT_TECHNICAL_SPECS_SELECT = {
             value: true,
         },
     },
-} as const;
-
-export const PRODUCT_OPTION_VALUE_SELECT = {
-    option: {
-        select: {
-            name: true,
-        },
-    },
-    value: true,
-    adjust_price: true,
 } as const;
 
 export const PRODUCT_REVIEW_USER_SELECT = {
@@ -71,6 +62,7 @@ export const PRODUCT_REVIEW_CHILD_SELECT = {
     },
     comment: true,
     created_at: true,
+    updated_at: true,
 } as const;
 
 export const PRODUCT_REVIEW_SELECT = {
@@ -78,33 +70,76 @@ export const PRODUCT_REVIEW_SELECT = {
     user: {
         select: PRODUCT_REVIEW_USER_SELECT,
     },
-    star: true,
+    rating: true,
     comment: true,
+    video_url: true,
+    images: {
+        select: PRODUCT_IMAGE_SELECT,
+    },
     _count: true,
     children: {
         select: PRODUCT_REVIEW_CHILD_SELECT,
     },
     created_at: true,
+    updated_at: true,
 } as const;
 
-export const PRODUCT_OPTION_SELECT = {
+export const ATTRIBUTE_SELECT = {
+    id: true,
+    name: true,
+    slug: true,
+} as const;
+
+export const VARIANT_ATTRIBUTE_SELECT = {
+    id: true,
+    value: true,
+    attribute: {
+        select: ATTRIBUTE_SELECT,
+    },
+} as const;
+
+export const PRODUCT_COMBO_SELECT = {
+    id: true,
+    name: true,
+    slug: true,
+    main_variant_id: true,
+    price: true,
+    original_price: true,
+    discount: true,
+    status: true,
+    start_date: true,
+    end_date: true,
+} as const;
+
+export const PRODUCT_VARIANT_SELECT = {
     id: true,
     sku: true,
     thumbnail: true,
-    price_modifier: true,
-    stock: true,
+    price: true,
+    compare_at_price: true,
+    stock_quantity: true,
+    weight: true,
     discount: true,
-    is_sale: true,
+    is_featured: true,
     slug: true,
-    label_image: true,
-    product_images: {
+    created_at: true,
+    updated_at: true,
+    deleted_at: true,
+    status: true,
+    is_default: true,
+    additional_specs: true,
+    dimensions: true,
+    images: {
         select: PRODUCT_IMAGE_SELECT,
     },
     technical_specs: {
         select: PRODUCT_TECHNICAL_SPECS_SELECT,
     },
-    product_option_value: {
-        select: PRODUCT_OPTION_VALUE_SELECT,
+    warranties: {
+        select: PRODUCT_WARRANTY_SELECT,
+    },
+    attributes: {
+        select: VARIANT_ATTRIBUTE_SELECT,
     },
     reviews: {
         where: {
@@ -112,10 +147,42 @@ export const PRODUCT_OPTION_SELECT = {
         },
         select: PRODUCT_REVIEW_SELECT,
     },
+    combos: {
+        select: PRODUCT_COMBO_SELECT,
+    },
+    product: {
+        select: {
+            id: true,
+        },
+    },
 } as const;
+
+export type ProductVariant = Prisma.ProductVariantGetPayload<{
+    select: typeof PRODUCT_VARIANT_SELECT;
+}>;
+
+export const PRODUCT_BASIC_SELECT = {
+    id: true,
+    name: true,
+    main_image: true,
+    slug: true,
+    short_description: true,
+    is_featured: true,
+    status: true,
+    images: {
+        select: PRODUCT_IMAGE_SELECT,
+    },
+} as const;
+
+export type ProductBasic = Prisma.ProductGetPayload<{
+    select: typeof PRODUCT_BASIC_SELECT;
+}>;
 
 export const PRODUCT_DETAIL_SELECT = {
     ...PRODUCT_BASIC_SELECT,
+    created_at: true,
+    updated_at: true,
+    deleted_at: true,
     descriptions: {
         select: PRODUCT_DESCRIPTION_SELECT,
     },
@@ -125,12 +192,25 @@ export const PRODUCT_DETAIL_SELECT = {
     category: {
         select: PRODUCT_CATEGORY_SELECT,
     },
-    product_options: {
-        where: { is_deleted: false, stock: { gte: 1 } },
-        select: PRODUCT_OPTION_SELECT,
+    promotions: {
+        select: PRODUCT_PROMOTION_SELECT,
+    },
+    warranties: {
+        select: PRODUCT_WARRANTY_SELECT,
+    },
+    variants: {
+        select: PRODUCT_VARIANT_SELECT,
+    },
+    technical_specs: {
+        select: PRODUCT_TECHNICAL_SPECS_SELECT,
     },
 } as const;
 
 export type ProductDetail = Prisma.ProductGetPayload<{
     select: typeof PRODUCT_DETAIL_SELECT;
 }>;
+
+export type ProductWithVariant = {
+    product: ProductDetail;
+    variants: ProductVariant[];
+};
