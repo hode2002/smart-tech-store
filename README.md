@@ -1,69 +1,137 @@
 <p align="center">
-  <a href="http://nextjs.org/" target="blank"><img src="https://assets.vercel.com/image/upload/v1662130559/nextjs/Icon_dark_background.png" width="150" alt="Nest Logo" /></a>
-   <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="150" alt="Nest Logo" /></a>
+  <img src="https://assets.vercel.com/image/upload/v1662130559/nextjs/Icon_dark_background.png" width="100" alt="Next.js Logo" />
+  <img src="https://nestjs.com/img/logo-small.svg" width="100" alt="Nest.js Logo" />
 </p>
 
+<h1 align="center">🛒 Smart Tech Store</h1>
+
 <div align="center">
+  <p>📱 A modern e-commerce platform for electronics and tech accessories 💻</p>
+  
   <div>
     <img src="https://img.shields.io/badge/-TypeScript-black?style=for-the-badge&logoColor=white&logo=typescript&color=3178C6" alt="typescript" />
-     <img src="https://img.shields.io/badge/-Next_JS-black?style=for-the-badge&logoColor=white&logo=nextdotjs&color=000000" alt="nextdotjs" />    
+    <img src="https://img.shields.io/badge/-Next_JS-black?style=for-the-badge&logoColor=white&logo=nextdotjs&color=000000" alt="nextdotjs" />    
     <img src="https://img.shields.io/badge/-Tailwind_CSS-black?style=for-the-badge&logoColor=white&logo=tailwindcss&color=06B6D4" alt="tailwindcss" />
     <img src="https://img.shields.io/badge/nestjs-%23E0234E.svg?style=for-the-badge&logo=nestjs&logoColor=white" alt="nestjs" />
-    <img src="https://img.shields.io/badge/mysql-4479A1.svg?style=for-the-badge&logo=mysql&logoColor=white" alt="mysql" />
+    <img src="https://img.shields.io/badge/prisma-2D3748.svg?style=for-the-badge&logo=prisma&logoColor=white" alt="prisma" />
+    <img src="https://img.shields.io/badge/MySQL-4479A1.svg?style=for-the-badge&logo=mysql&logoColor=white" alt="mysql" />
     <img src="https://img.shields.io/badge/MongoDB-%234ea94b.svg?style=for-the-badge&logo=mongodb&logoColor=white" alt="mongodb" />
-    <img src="https://img.shields.io/badge/redis-%23DD0031.svg?style=for-the-badge&logo=redis&logoColor=white" alt="redis" />
-    <img src="https://img.shields.io/badge/react_native-%2320232a.svg?style=for-the-badge&logo=react&logoColor=%2361DAFB" alt="react-native" />
-     <img src="https://img.shields.io/badge/expo-1C1E24?style=for-the-badge&logo=expo&logoColor=#D04A37" alt="expo" />
-    <img src="https://img.shields.io/badge/python-3670A0?style=for-the-badge&logo=python&logoColor=ffdd54" alt="python" />
-    <img src="https://img.shields.io/badge/flask-%23000.svg?style=for-the-badge&logo=flask&logoColor=white" alt="flask" />
+    <img src="https://img.shields.io/badge/Redis-%23DD0031.svg?style=for-the-badge&logo=redis&logoColor=white" alt="redis" />
   </div>
-  <h1 align="center">Smart Tech Store</h1>
 </div>
 
-## <a> Mô tả</a>
+<br />
 
-Xây dựng một website bán lẻ các mặt hàng điện tử như điện thoại, laptop và phụ kiện công nghệ. Người dùng có thể dễ dàng tìm kiếm, mua sắm sản phẩm yêu thích với thông tin chi tiết, đánh giá từ khách hàng và các ưu đãi hấp dẫn.
+## 📋 Overview
 
-## <a>Công Nghệ Sử Dụng</a>
+Smart Tech Store is a comprehensive e-commerce platform specializing in electronic products such as smartphones, laptops, and tech accessories.The platform delivers a responsive and feature-rich shopping experience with:
 
--   TypeScript
--   Next.js
--   TailwindCSS
--   ShadCN
--   Nest.js
--   Prisma
--   Mysql
--   MongoDB
+- Secure user authentication
+- Comprehensive order management
+- Detailed product information and reviews
+- Advanced admin dashboard with analytics
+- Notification system for promotions and order updates
 
-## <a>Các chức năng chính</a>
+## ✨ Features
 
-### <a>Người Mua Hàng</a>
+### 👤 Customer Features
 
-👉 **Xác Thực Với JWT/ Passport**: Người dùng có thể tạo tài khoản hoặc đăng nhập thông qua Facebook, Google.
+- **🔐 Secure Authentication**
+  - JWT-based authentication
+  - Social login (Google, Facebook)
+  - Password reset functionality
 
-👉 **Cập Nhật Thông Tin**: Cập nhật thông tin khách hàng như tên, sđt, địa chỉ, mật khẩu...
+- **👤 Profile Management**
+  - Personal information management
+  - Multiple delivery addresses
+  - Order history and tracking
 
-👉 **Tạo, Quản Lý Và Thanh Toán Đơn Hàng**: Người dùng dễ dàng tìm kiếm sản phẩm thông qua từ khóa hoặc theo danh mục, thêm sản phẩm yêu thích vào giỏ hàng và tiến hành thanh toán COD hoặc online thông qua VNPAY.
+- **🛒 Shopping Experience**
+  - Advanced product search and filtering
+  - Responsive shopping cart
+  - Multiple payment options (COD, VNPAY)
 
-👉 **Theo Dõi Trạng Thái Đơn Hàng**: Người dùng có thể kiểm tra các đơn hàng đã đặt thông qua trạng thái đơn và có thể thực hiện các thao tác như nhận hàng hoặc hủy đơn.
+- **⭐ Product Interaction**
+  - Detailed product specifications
+  - Customer reviews and ratings
 
-👉 **Đánh Gía Sản Phẩm**: Người dùng có thể xem các đánh giá về sản phẩm hoặc thực hiện đánh giá sau khi mua.
+### 👑 Admin Features
 
-### <a>Quản Trị (ADMIN)</a>
+- **📊 Dashboard Analytics**
+  - User engagement statistics
+  - Inventory monitoring
 
-👉 **Admin Dashboard**: Thống kê doanh thu, số lượng sản phẩm,
-người dùng, phản hồi của người dùng và các đơn hàng.
+- **📦 Order Management**
+  - Comprehensive order lifecycle handling
+  - Period-based reporting (daily, weekly, monthly)
+  - Advanced order search and filtering
 
-👉 **Quản Lí Đơn Hàng**: Kiểm tra doanh thu, phê duyệt các
-đơn hàng theo tuần, tháng, năm và tìm kiếm đơn hàng theo số điện thoại hoặc trạng thái đơn hàng..
+- **🏷️ Product Management**
+  - Category and brand organization
+  - Product bundling and promotions
+  - SEO optimization tools
 
-👉 **Quản Lý Khách Hàng**: Admin có thể xem các người dùng đã đăng ký tài khoản ở website. Ngoài ra, có thể xem các sản phẩm mà người dùng đã mua hoặc xóa người dùng.
+- **👥 Customer Management**
+  - Customer segmentation
+  - Purchase history analysis
 
-👉 **Quản Lý Danh Sách Sản Phẩm**: Admin có thể thêm, chỉnh sửa và xem
-danh sách sản phẩm, danh mục sản phẩm, thương hiệu và các combo sản phẩm.
+- **🎟️ Marketing Tools**
+  - Voucher creation and management
+  - Promotional campaign scheduling
+  - Email notification templates
 
-👉 **Quản Lý Tin Tức**: Admin có thể tạo các tin tức liên quan đến sản phẩm, công nghệ.
+## 🚀 Tech Stack
 
-👉 **Quản Lý Voucher**: Admin có thể tạo, chỉnh sửa và xóa các voucher có trên website.
-
-👉 **Quản Lý Thông Báo**: Admin có thể tạo các thông báo về voucher, hoặc các chương trình khuyến mãi sản phẩm…
+<table>
+  <tr>
+    <td>
+      <strong>🔧 Frontend</strong>
+      <ul>
+        <li>TypeScript</li>
+        <li><b>Next.js</b> 14</li>
+        <li>React Query</li>
+        <li>Redux Toolkit</li>
+        <li>TailwindCSS</li>
+        <li>Radix UI Components</li>
+        <li>Zod Validation</li>
+      </ul>
+    </td>
+    <td>
+      <strong>⚙️ Backend</strong>
+      <ul>
+        <li><b>NestJS</b></li>
+        <li>Prisma ORM</li>
+        <li>JWT Authentication</li>
+        <li>Passport</li>
+        <li>Class Validator</li>
+        <li>Swagger API Docs</li>
+      </ul>
+    </td>
+    <td>
+      <strong>💾 Data Storage</strong>
+      <ul>
+        <li>MySQL (primary data)</li>
+        <li>Redis (caching)</li>
+      </ul>
+    </td>
+  </tr>
+  <tr>
+    <td>
+      <strong>📱 Mobile</strong>
+      <ul>
+        <li>React Native</li>
+        <li>Expo</li>
+        <li>React Navigation</li>
+        <li>Native Base</li>
+      </ul>
+    </td>
+    <td>
+      <strong>🔄 DevOps</strong>
+      <ul>
+        <li>Docker & Docker Compose</li>
+        <li>Nginx</li>
+        <li>AWS EC2</li>
+      </ul>
+    </td>
+  </tr>
+</table>
